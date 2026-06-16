@@ -1,53 +1,60 @@
 // =============================================================
-// FINAL — Official paper (print template)
-// A faithful, government-style print layout for any service form.
-// Drives @media print CSS in final_print.css.
+// FINAL — Official paper (Word-faithful print template)
+// Mirrors the exact 8-table layout of the official .docx forms:
+//   T1 title bar · T2 subscriber header · T3 address ·
+//   T4 documents matrix · T5 (opt) doc details · T6 (opt) notes ·
+//   T7 routing · T8 signatures · (opt) declaration block
 // =============================================================
 
-function cbBox(on) { return on ? '☑' : '☐'; }
+const OF_CLASSES = ['منزلي','تجاري','صناعي','زراعي','حكومي','مجمع سكني','مشروع استثماري'];
+const OF_PHASES  = ['أحادي الطور','ثلاثي الطور'];
+const OF_ROUTING = ['خدمات المشتركين','الدائرة الفنية','الدائرة القانونية','الصندوق','شؤون الموظفين','إلغاء الطلب'];
+const OF_CENTER_NAME = 'مركز النضال — كهرباء الرصافة';
+const OF_CENTER_CODE = 'RS-014';
 
-function fmtDateAR() {
-  return new Date().toLocaleDateString('ar-IQ-u-ca-gregory', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
+function _cb(on) { return on ? '☑' : '☐'; }
+
+function _fmtDate(d = new Date()) {
+  return d.toLocaleDateString('ar-IQ-u-ca-gregory', { day:'numeric', month:'numeric', year:'numeric' });
 }
 
-// ---------- helpers ----------
-function PPCell({ label, value, full }) {
-  return (
-    <div className={`pp-cell ${full ? 'pp-cell--full' : ''}`}>
-      <div className="pp-cell__l">{label}</div>
-      <div className="pp-cell__v">{value || ' '}</div>
-    </div>
-  );
-}
-function PPSection({ title, code, children }) {
-  return (
-    <section className="pp-section">
-      <header className="pp-section__head">
-        {code && <span className="pp-section__code">{code}</span>}
-        <h3 className="pp-section__title">{title}</h3>
-      </header>
-      <div className="pp-section__body">{children}</div>
-    </section>
-  );
+// Does a doc row apply to a given class? Reproduces the Word ticking pattern:
+//  - `all:true`  → ticked in every class column
+//  - `for: 'صناعي|زراعي'` → ticked only in matching columns
+//  - else → ticked everywhere except classes listed in `not`
+function _docAppliesTo(doc, cls) {
+  if (doc.all) return true;
+  if (doc.for) return doc.for.split('|').map(s => s.trim()).includes(cls);
+  if (doc.not) return !doc.not.split('|').map(s => s.trim()).includes(cls);
+  return true;
 }
 
-// ---------- main paper ----------
-function OfficialPaper({ svc, schema, form, branch = 'الرصافة — فرع النضال (RS-014)' }) {
-  const docs = form.docs || {};
-  const today = fmtDateAR();
-  const serial = (form._serial || `TQ-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`);
+// =============================================================
+function OfficialPaper({ svc, schema, form }) {
+  const today = _fmtDate();
+  const serial = form._serial ||
+    `${svc.code}-${OF_CENTER_CODE}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+
+  const docsList = (schema.sections || [])
+    .filter(sx => sx.kind === 'documents')
+    .flatMap(sx => sx.list || []);
+
+  const showPhase   = (schema.sections || []).some(sx =>
+    sx.kind === 'classification' && Array.isArray(sx.phases));
+  const showClass   = (schema.sections || []).some(sx => sx.kind === 'classification');
+  const routing     = schema.routing || OF_ROUTING;
+  const docDetails  = schema.extraDocsTable;
+  const showNotes   = !!form.reason;
 
   return (
-    <div className="pp-wrap">
-      {/* on-screen toolbar (hidden in print) */}
-      <div className="pp-toolbar no-print">
-        <span className="pp-toolbar__hint">
+    <div className="of-wrap">
+      {/* on-screen toolbar (hidden on print) */}
+      <div className="of-toolbar no-print">
+        <span className="of-toolbar__hint">
           <Icon name="info" />
-          معاينة نموذج الطباعة الرسمي — اضغط طباعة أو حفظ كـ PDF
+          معاينة الفورمة الأصلية — مطابقة لـ Word
         </span>
-        <div className="pp-toolbar__btns">
+        <div className="of-toolbar__btns">
           <button className="f-btn" onClick={() => window.print()}>
             <Icon name="print" /> طباعة
           </button>
@@ -57,162 +64,252 @@ function OfficialPaper({ svc, schema, form, branch = 'الرصافة — فرع 
         </div>
       </div>
 
-      {/* The printable sheet */}
-      <article className="pp-sheet" dir="rtl" id="pp-print-root">
+      {/* PRINTABLE SHEET */}
+      <article className="of-paper" dir="rtl" id="of-print-root">
 
-        {/* HEADER BAND */}
-        <header className="pp-header">
-          <div className="pp-header__col pp-header__col--start">
-            <div className="pp-header__mini">جمهورية العراق</div>
-            <div className="pp-header__mini">وزارة الكهرباء</div>
-            <div className="pp-header__org">الشركة العامة لتوزيع كهرباء بغداد</div>
-            <div className="pp-header__org pp-header__org--accent">كهرباء الرصافة</div>
-          </div>
+        {/* ─── T1 · TITLE BAR ─────────────────────────────── */}
+        <table className="of-tbl of-titlebar">
+          <tbody>
+            <tr>
+              <td className="of-title-main">{schema.paperTitle || svc.name}</td>
+              <td className="of-title-code">نموذج رقم ({svc.code})</td>
+            </tr>
+            <tr>
+              <td className="of-title-rcptL">رقم وصل قبض (رسوم طلب الخدمة)</td>
+              <td className="of-title-rcptV">{form._receiptNo || ''}</td>
+            </tr>
+          </tbody>
+        </table>
 
-          <div className="pp-header__col pp-header__col--center">
-            <div className="pp-crest" aria-hidden="true">
-              <span className="pp-crest__ring" />
-              <span className="pp-crest__mark">⚡</span>
-            </div>
-            <div className="pp-header__brand">تدفّق الخير</div>
-            <div className="pp-header__brand-sub">مركز خدمات المشتركين</div>
-          </div>
-
-          <div className="pp-header__col pp-header__col--end">
-            <div className="pp-stamp">
-              <div className="pp-stamp__row"><span>رقم النموذج</span><b>{svc.code}</b></div>
-              <div className="pp-stamp__row"><span>التاريخ</span><b>{today}</b></div>
-              <div className="pp-stamp__row"><span>المسلسل</span><b dir="ltr">{serial}</b></div>
-            </div>
-          </div>
-        </header>
-
-        {/* TITLE BAR */}
-        <div className="pp-titlebar">
-          <span className="pp-titlebar__deco" aria-hidden="true">◆</span>
-          <h1 className="pp-titlebar__title">{schema.paperTitle || svc.name}</h1>
-          <span className="pp-titlebar__deco" aria-hidden="true">◆</span>
-        </div>
-
-        {/* META STRIP */}
-        <div className="pp-meta">
-          <div className="pp-meta__cell">
-            <span className="pp-meta__l">المركز</span>
-            <span className="pp-meta__v">{branch}</span>
-          </div>
-          <div className="pp-meta__cell">
-            <span className="pp-meta__l">رمز الخدمة</span>
-            <span className="pp-meta__v" dir="ltr">{svc.code}</span>
-          </div>
-          <div className="pp-meta__cell">
-            <span className="pp-meta__l">مدّة الإنجاز المعتادة</span>
-            <span className="pp-meta__v">{svc.sla} أيام عمل</span>
-          </div>
-          <div className="pp-meta__cell">
-            <span className="pp-meta__l">رقم وصل القبض</span>
-            <span className="pp-meta__v pp-meta__v--blank">..........................</span>
-          </div>
-        </div>
-
-        {/* SECTIONS */}
-        {schema.sections && schema.sections.map((sx, i) => {
-          // documents section gets a dedicated rendering
-          if (sx.kind === 'documents') {
-            return (
-              <PPSection key={i} title={sx.title} code={`(${i + 1})`}>
-                <ul className="pp-docs">
-                  {sx.items.map((it, j) => (
-                    <li key={j} className="pp-docs__row">
-                      <span className="pp-docs__cb">{cbBox(!!docs[it.k])}</span>
-                      <span className="pp-docs__name">{it.l}</span>
-                      {it.note && <span className="pp-docs__note">— {it.note}</span>}
-                    </li>
+        {/* ─── T2 · SUBSCRIBER HEADER ─────────────────────── */}
+        <table className="of-tbl of-header">
+          <colgroup>
+            <col style={{ width:'13%' }} />
+            <col style={{ width:'21%' }} />
+            <col style={{ width:'13%' }} />
+            <col style={{ width:'17%' }} />
+            <col style={{ width:'15%' }} />
+            <col style={{ width:'21%' }} />
+          </colgroup>
+          <tbody>
+            <tr>
+              <th>اسم المركز</th>
+              <td>{OF_CENTER_NAME}</td>
+              <th>تاريخ الطلب</th>
+              <td>{today}</td>
+              <th>الرقم المرجعي</th>
+              <td className="of-serial">{serial}</td>
+            </tr>
+            <tr>
+              <th>رقم المركز</th>
+              <td>{OF_CENTER_CODE}</td>
+              <th>اسم المشترك / طالب الخدمة</th>
+              <td>{form.name || ''}</td>
+              <th>رقم البطاقة الموحدة / الهوية</th>
+              <td className="of-mono">{form.nid || ''}</td>
+            </tr>
+            {showClass && (
+              <tr>
+                <th>{form._classLabel || 'صنف الاشتراك'}</th>
+                <td colSpan={5} className="of-checks">
+                  {OF_CLASSES.map(c => (
+                    <span key={c} className="of-check">
+                      <span className="of-check__b">{_cb(form.cls === c)}</span> {c}
+                    </span>
                   ))}
-                </ul>
-              </PPSection>
-            );
-          }
+                </td>
+              </tr>
+            )}
+            {showPhase && (
+              <tr>
+                <th>قوة التغذية المطلوبة (نوع الربط)</th>
+                <td colSpan={5} className="of-checks">
+                  {OF_PHASES.map(p => (
+                    <span key={p} className="of-check">
+                      <span className="of-check__b">{_cb(form.phase === p)}</span> {p}
+                    </span>
+                  ))}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
-          // classification (segmented chooser → label row)
-          if (sx.kind === 'classification') {
-            return (
-              <PPSection key={i} title={sx.title} code={`(${i + 1})`}>
-                <div className="pp-row">
-                  <PPCell full label="الصنف المختار"
-                          value={sx.classes.map(c => `${cbBox(form.cls === c)} ${c}`).join('    ')} />
-                </div>
-                {sx.phases && (
-                  <div className="pp-row">
-                    <PPCell full label="قوة التغذية / نوع الربط"
-                            value={sx.phases.map(p => `${cbBox(form.phase === p)} ${p}`).join('    ')} />
-                  </div>
-                )}
-              </PPSection>
-            );
-          }
+        {/* heading */}
+        <h3 className="of-heading">بيانات طالب الخدمة / المشترك القانوني</h3>
 
-          // generic rows of fields
-          if (sx.rows) {
-            return (
-              <PPSection key={i} title={sx.title} code={`(${i + 1})`}>
-                {sx.rows.map((row, ri) => (
-                  <div key={ri} className="pp-row" style={{ '--pp-cols': row.length }}>
-                    {row.map(f => (
-                      <PPCell key={f.k} label={f.l} value={form[f.k]} full={f.full} />
-                    ))}
-                  </div>
-                ))}
-              </PPSection>
-            );
-          }
+        {/* ─── T3 · ADDRESS ───────────────────────────────── */}
+        <table className="of-tbl of-address">
+          <tbody>
+            <tr>
+              <th style={{ width:'15%' }}>رقم بطاقة السكن</th>
+              <td style={{ width:'25%' }} className="of-mono">{form.housing || ''}</td>
+              <th colSpan={6} className="of-subhead">عنوان العقار / الدار / الشقة / المطلوب له الخدمة</th>
+            </tr>
+            <tr>
+              <th>رقم الحساب المخصص</th>
+              <td className="of-mono">{form.acct || ''}</td>
+              <th style={{ width:'7%' }}>حي</th>
+              <td style={{ width:'13%' }}>{form.hay || ''}</td>
+              <th style={{ width:'7%' }}>محلة</th>
+              <td style={{ width:'10%' }} className="of-mono">{form.mahalla || ''}</td>
+              <th style={{ width:'7%' }}>زقاق</th>
+              <td style={{ width:'9%' }} className="of-mono">{form.zuqaq || ''}</td>
+            </tr>
+            <tr>
+              <th>الترميز الجديد</th>
+              <td className="of-mono">{form.ramz || ''}</td>
+              <th>دار</th>
+              <td className="of-mono">{form.dar || ''}</td>
+              <th>رقم القطعة والمقاطعة</th>
+              <td colSpan={3}>{form.piece || ''}</td>
+            </tr>
+            <tr>
+              <th>رقم هاتف / موبايل</th>
+              <td className="of-mono">{form.phone || ''}</td>
+              <th>GPS</th>
+              <td className="of-mono">{form.gps || ''}</td>
+              <th>نقطة دالة</th>
+              <td>{form.landmark || ''}</td>
+              <th>رقم الشقة</th>
+              <td className="of-mono">{form.apt || ''}</td>
+            </tr>
+          </tbody>
+        </table>
 
-          return null;
-        })}
-
-        {/* DECLARATION */}
-        {schema.declaration && (
-          <PPSection title="الإقرار والتعهّد" code="(✓)">
-            <p className="pp-decl">{schema.declaration}</p>
-            <div className="pp-decl__ack">
-              <span className="pp-docs__cb">{cbBox(!!form.declAgreed)}</span>
-              <span>أُقرّ بصحّة المعلومات أعلاه وأتحمّل المسؤولية القانونية الكاملة عن أيّ مخالفة.</span>
-            </div>
-          </PPSection>
+        {/* heading */}
+        {docsList.length > 0 && (
+          <h3 className="of-heading">الوثائق / المستمسكات المطلوبة</h3>
         )}
 
-        {/* SIGNATURE BLOCK */}
-        <section className="pp-signs">
-          <div className="pp-sign">
-            <div className="pp-sign__l">توقيع مقدّم الطلب</div>
-            <div className="pp-sign__line" />
-            <div className="pp-sign__sub">الاسم الثلاثي: ........................</div>
-            <div className="pp-sign__sub">التاريخ: ........................</div>
-          </div>
-          <div className="pp-sign">
-            <div className="pp-sign__l">الموظف المسؤول</div>
-            <div className="pp-sign__line" />
-            <div className="pp-sign__sub">الاسم: ........................</div>
-            <div className="pp-sign__sub">التوقيع/الختم</div>
-          </div>
-          <div className="pp-sign">
-            <div className="pp-sign__l">مدير المركز</div>
-            <div className="pp-sign__line" />
-            <div className="pp-sign__sub">الاسم: ........................</div>
-            <div className="pp-sign__sub">التوقيع/الختم</div>
-          </div>
-        </section>
+        {/* ─── T4 · DOCS MATRIX ───────────────────────────── */}
+        {docsList.length > 0 && (
+          <table className="of-tbl of-docs">
+            <thead>
+              <tr>
+                <th style={{ width:'7%' }}>الحالة</th>
+                <th style={{ width:'4%' }}>#</th>
+                <th>الصنف</th>
+                {OF_CLASSES.map(c => (
+                  <th key={c} className="of-docs__cls">{c}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {docsList.map((d, i) => {
+                const dk = `doc_${i}`;
+                return (
+                  <tr key={i}>
+                    <td className="of-docs__cb">{_cb(!!(form.docs && form.docs[dk]))}</td>
+                    <td className="of-docs__n">{i + 1}</td>
+                    <td className="of-docs__name">
+                      {d.n}{d.opt && <span className="of-docs__opt"> ({d.opt})</span>}
+                    </td>
+                    {OF_CLASSES.map(c => (
+                      <td key={c} className="of-docs__cls">
+                        {_docAppliesTo(d, c) ? '☐' : <span className="of-dot">·</span>}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
 
-        {/* FOOTER STRIP */}
-        <footer className="pp-foot">
-          <div className="pp-foot__col">
-            <span>هذا النموذج وثيقة رسمية صادرة عن شركة توزيع كهرباء الرصافة.</span>
-            <span>أيّ تعديل خطّيّ يستوجب توقيع مدير المركز وختمه.</span>
-          </div>
-          <div className="pp-foot__col pp-foot__col--end">
-            <span>صفحة <b className="pp-foot__pg" /></span>
-            <span>صدر بتاريخ {today}</span>
-          </div>
-        </footer>
+        {/* ─── T5 · DOC DETAILS (optional) ─────────────────── */}
+        {docDetails && docDetails.length > 0 && (
+          <table className="of-tbl of-docdetails">
+            <thead>
+              <tr>
+                <th style={{ width:'50%' }}>الوثيقة</th>
+                <th style={{ width:'25%' }}>رقم الوثيقة</th>
+                <th style={{ width:'25%' }}>تاريخ الوثيقة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {docDetails.map(name => (
+                <tr key={name}>
+                  <td>{name}</td>
+                  <td className="of-mono">{(form._extraDocs && form._extraDocs[name + '_no']) || ''}</td>
+                  <td className="of-mono">{(form._extraDocs && form._extraDocs[name + '_dt']) || ''}</td>
+                </tr>
+              ))}
+              <tr>
+                <td>رقم وصل قبض (رسوم المطالبة المالية بعد الدراسة)</td>
+                <td className="of-mono">{form._postFeeReceiptNo || ''}</td>
+                <td className="of-mono">{form._postFeeReceiptDt || ''}</td>
+              </tr>
+            </tbody>
+          </table>
+        )}
+
+        {/* ─── T6 · NOTES (optional) ──────────────────────── */}
+        {showNotes && (
+          <>
+            <h3 className="of-heading">شروحات</h3>
+            <table className="of-tbl of-notes">
+              <tbody>
+                <tr>
+                  <th style={{ width:'22%' }}>سبب الطلب / الملاحظات</th>
+                  <td>{form.reason || ''}</td>
+                </tr>
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {/* ─── T7 · ROUTING ────────────────────────────────── */}
+        <table className="of-tbl of-routing">
+          <tbody>
+            <tr>
+              <th style={{ width:'24%' }}>يحول لاستكمال الإجراءات:</th>
+              <td className="of-checks">
+                {routing.map(r => (
+                  <span key={r} className="of-check">
+                    <span className="of-check__b">☐</span> {r}
+                  </span>
+                ))}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* ─── T8 · SIGNATURES ────────────────────────────── */}
+        <table className="of-tbl of-signs">
+          <thead>
+            <tr>
+              <th>اسم وتوقيع موظف خدمات المشتركين</th>
+              <th>اسم وتوقيع مقدم الطلب</th>
+              <th>اسم وتوقيع مسؤول مركز خدمات المشتركين</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+          </tbody>
+        </table>
+
+        {/* ─── DECLARATION (optional, multi-paragraph) ────── */}
+        {schema.declaration && (
+          <section className="of-decl">
+            <h3 className="of-heading of-heading--decl">إقرار وتعهّد والتزام</h3>
+            <div className="of-decl__body">
+              {schema.declaration.split('\n').filter(Boolean).map((line, i) => (
+                <p key={i}>{line.trim()}</p>
+              ))}
+            </div>
+            <div className="of-decl__sign">
+              <div className="of-decl__col">
+                <div className="of-decl__line" />
+                <div className="of-decl__lbl">اسم وتوقيع مقدم الطلب</div>
+              </div>
+              <div className="of-decl__col">
+                <div className="of-decl__line" />
+                <div className="of-decl__lbl">التاريخ</div>
+              </div>
+            </div>
+          </section>
+        )}
       </article>
     </div>
   );
