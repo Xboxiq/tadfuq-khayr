@@ -1927,14 +1927,14 @@ a { color: inherit; text-decoration: none; }
   inset-inline-end: 18%;
 }
 
-/* eyebrow: "تطوير وتصميم" */
+/* eyebrow: "Designed & Developed" */
 .f-sigfoot__credit-eyebrow {
-  font-family: var(--sf-arab);
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-family: var(--sf-mono);
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
   color: var(--f-ink-3);
-  text-transform: none;
+  text-transform: uppercase;
 }
 
 /* the name — bilingual, refined */
@@ -1966,10 +1966,14 @@ a { color: inherit; text-decoration: none; }
 .f-sigfoot__credit-name-en {
   font-family: var(--sf-serif);
   font-style: italic;
-  font-weight: 500;
-  font-size: 0.95rem;
-  color: var(--f-ink-2);
-  letter-spacing: 0.005em;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--f-ink);
+  letter-spacing: -0.008em;
+  font-feature-settings: "liga" 1, "dlig" 1, "kern" 1;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.65),
+    0 1px 5px color-mix(in srgb, var(--f-gold) 16%, transparent);
 }
 
 /* meta */
@@ -1995,7 +1999,12 @@ a { color: inherit; text-decoration: none; }
 .f-body.dark .f-sigfoot__brand-y     { color: var(--f-bg); }
 .f-body.dark .f-sigfoot__brand-name  { color: var(--f-bg); }
 .f-body.dark .f-sigfoot__credit-name-ar { color: #fff; }
-.f-body.dark .f-sigfoot__credit-name-en { color: color-mix(in srgb, #fff 80%, var(--f-gold-soft)); }
+.f-body.dark .f-sigfoot__credit-name-en {
+  color: color-mix(in srgb, #fff 88%, var(--f-gold-soft));
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.4),
+    0 1px 6px color-mix(in srgb, var(--f-gold) 22%, transparent);
+}
 .f-body.dark .f-sigfoot__credit::before,
 .f-body.dark .f-sigfoot__credit::after {
   border-color: color-mix(in srgb, var(--f-gold) 65%, transparent);
@@ -2008,9 +2017,8 @@ a { color: inherit; text-decoration: none; }
   .f-sigfoot__brand { flex-wrap: wrap; justify-content: center; }
 }
 @media (max-width: 540px) {
-  .f-sigfoot__credit-name-ar { font-size: 0.95rem; }
-  .f-sigfoot__credit-name-en { font-size: 0.82rem; }
-  .f-sigfoot__credit-eyebrow { font-size: 0.55rem; letter-spacing: 0.18em; }
+  .f-sigfoot__credit-name-en { font-size: 1.05rem; }
+  .f-sigfoot__credit-eyebrow { font-size: 0.5rem; letter-spacing: 0.22em; }
   .f-sigfoot__credit-meta    { font-size: 0.5rem; letter-spacing: 0.13em; }
   .f-sigfoot__brand-sub      { display: none; }
 }
