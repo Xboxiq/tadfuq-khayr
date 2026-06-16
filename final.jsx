@@ -31,7 +31,7 @@ function TopChrome({ tab, setTab, dark, setDark, onCmdK }) {
         <span className="f-top__sep" />
         <button className="f-team">
           <span className="f-team__avatar">رص</span>
-          <span>RS-014 · الكرادة</span>
+          <span>RS-014 · النضال</span>
           <Icon name="unfold_more" />
         </button>
         <span className="f-top__push" />
@@ -77,7 +77,7 @@ function PageHead({ onCmdK, nav }) {
       <div className="f-pagehead__intro">
         <span className="f-pagehead__date">
           <span className="pulse" />
-          {dateStr} · مركز الرصافة · الكرادة
+          {dateStr} · مركز الرصافة · فرع النضال
         </span>
         <h1>أهلاً مهندس كرار — <em>ابدأ من القسم</em></h1>
         <p className="f-pagehead__lede">
@@ -634,7 +634,43 @@ function App() {
         مقارنة التصاميم
         <span className="f-floatcompare__btn"><Icon name="compare" /> افتح</span>
       </a>
+      <SignatureFooter />
     </div>
+  );
+}
+
+// =============================================================
+// SIGNATURE FOOTER — distinctive credits strip
+// =============================================================
+function SignatureFooter() {
+  return (
+    <footer className="f-sigfoot" role="contentinfo" aria-label="حقوق التطوير">
+      <div className="f-sigfoot__line" aria-hidden="true" />
+      <div className="f-sigfoot__inner">
+        <div className="f-sigfoot__left">
+          <span className="f-sigfoot__mono">© 2026</span>
+          <span className="f-sigfoot__dot" />
+          <span className="f-sigfoot__brand">تدفّق الخير · كهرباء الرصافة</span>
+        </div>
+
+        <div className="f-sigfoot__sign" aria-label="2026 Dev by Hussain Ali">
+          <span className="f-sigfoot__crest">
+            <span className="f-sigfoot__crest-mono">HA</span>
+            <span className="f-sigfoot__crest-ring" aria-hidden="true" />
+          </span>
+          <span className="f-sigfoot__sign-text">
+            <span className="f-sigfoot__sign-pre">Crafted with care</span>
+            <span className="f-sigfoot__sign-main">
+              <span className="f-sigfoot__year">2026</span>
+              <span className="f-sigfoot__sep">·</span>
+              <span className="f-sigfoot__dev">Dev by</span>
+              <span className="f-sigfoot__name">Hussain Ali</span>
+            </span>
+          </span>
+          <span className="f-sigfoot__spark" aria-hidden="true" />
+        </div>
+      </div>
+    </footer>
   );
 }
 
