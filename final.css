@@ -1778,3 +1778,238 @@ a { color: inherit; text-decoration: none; }
 
 
 /* (حلقة التركيز وطبقة قوانين UX — مؤجلة: تجربتها في Adoption Bank قبل الاعتماد) */
+
+
+/* =============================================================
+   SIGNATURE FOOTER — distinctive credits strip
+   Calm by default · gold/navy accent · subtle motion
+   ============================================================= */
+.f-sigfoot {
+  position: relative;
+  max-width: 1480px;
+  margin: -20px auto 0;
+  padding: 22px 24px 32px;
+  font-family: var(--f-arab);
+  color: var(--f-ink-2);
+  isolation: isolate;
+}
+.f-sigfoot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(420px 160px at 88% 0%, color-mix(in srgb, var(--f-gold) 9%, transparent), transparent 70%),
+    radial-gradient(420px 160px at 12% 100%, color-mix(in srgb, var(--f-navy) 7%, transparent), transparent 70%),
+    linear-gradient(180deg, transparent, color-mix(in srgb, var(--f-surface-3) 35%, transparent));
+}
+.f-sigfoot__line {
+  height: 1px;
+  width: 100%;
+  margin-bottom: 18px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--f-border-2) 60%, transparent) 18%,
+    var(--f-gold) 50%,
+    color-mix(in srgb, var(--f-border-2) 60%, transparent) 82%,
+    transparent 100%
+  );
+  opacity: 0.7;
+}
+.f-sigfoot__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.f-sigfoot__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--f-ink-3);
+}
+.f-sigfoot__mono {
+  font-family: var(--f-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--f-ink-2);
+}
+.f-sigfoot__dot {
+  width: 4px; height: 4px;
+  border-radius: 999px;
+  background: var(--f-gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--f-gold) 18%, transparent);
+}
+.f-sigfoot__brand {
+  font-weight: 600;
+  color: var(--f-ink-2);
+}
+
+.f-sigfoot__sign {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--f-surface) 92%, transparent),
+      color-mix(in srgb, var(--f-surface-2) 92%, transparent));
+  border: 1px solid color-mix(in srgb, var(--f-gold) 28%, var(--f-border));
+  box-shadow:
+    var(--f-shadow-sm),
+    inset 0 0 0 1px color-mix(in srgb, #fff 60%, transparent);
+  overflow: hidden;
+}
+.f-sigfoot__sign::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    color-mix(in srgb, var(--f-gold-soft) 35%, transparent) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: f-sigfoot-shimmer 6s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes f-sigfoot-shimmer {
+  0%, 100% { transform: translateX(-120%); }
+  55%      { transform: translateX(120%); }
+}
+
+.f-sigfoot__crest {
+  position: relative;
+  width: 34px; height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--f-navy), var(--f-ink));
+  color: #fff;
+  flex-shrink: 0;
+}
+.f-sigfoot__crest-mono {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #fff, var(--f-gold-soft));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.f-sigfoot__crest-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--f-gold) 60%, transparent);
+  opacity: 0.7;
+  animation: f-sigfoot-ring 3.2s var(--f-ease) infinite;
+}
+@keyframes f-sigfoot-ring {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 0.2; }
+}
+
+.f-sigfoot__sign-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+.f-sigfoot__sign-pre {
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--f-ink-3);
+}
+.f-sigfoot__sign-main {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 3px;
+  font-family: var(--f-disp);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.f-sigfoot__year {
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--f-gold);
+  letter-spacing: 0.04em;
+}
+.f-sigfoot__sep {
+  color: var(--f-ink-3);
+  font-weight: 400;
+  margin-inline: 2px;
+}
+.f-sigfoot__dev {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--f-ink-2);
+}
+.f-sigfoot__name {
+  background: linear-gradient(
+    100deg,
+    var(--f-ink) 0%,
+    var(--f-navy) 40%,
+    var(--f-gold) 80%,
+    var(--f-crimson) 110%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+
+.f-sigfoot__spark {
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: var(--f-gold);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--f-gold) 20%, transparent),
+    0 0 14px color-mix(in srgb, var(--f-gold) 55%, transparent);
+  animation: f-sigfoot-spark 2.4s var(--f-ease) infinite;
+}
+@keyframes f-sigfoot-spark {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.25); }
+}
+
+/* Dark mode */
+.f-body.dark .f-sigfoot__sign {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--f-surface) 60%, transparent),
+      color-mix(in srgb, var(--f-surface-2) 60%, transparent));
+  border-color: color-mix(in srgb, var(--f-gold) 38%, var(--f-border-2));
+}
+.f-body.dark .f-sigfoot__dev    { color: var(--f-ink-2); }
+.f-body.dark .f-sigfoot__brand  { color: var(--f-ink-2); }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .f-sigfoot { margin: -10px auto 0; padding: 18px 16px 24px; }
+  .f-sigfoot__inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .f-sigfoot__sign  { align-self: stretch; justify-content: center; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .f-sigfoot__sign::before,
+  .f-sigfoot__crest-ring,
+  .f-sigfoot__spark {
+    animation: none;
+  }
+}

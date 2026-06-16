@@ -467,7 +467,7 @@ function OriginalPaper({ svc, schema, form }) {
 
         <div className="head-band">
           <span>رقم وصل قبض (رسوم طلب الخدمة): ............</span>
-          <span>اسم المركز: الرصافة — الكرادة (RS-014)</span>
+          <span>اسم المركز: الرصافة — فرع النضال (RS-014)</span>
           <span>تاريخ الطلب: {new Date().toLocaleDateString('ar-IQ-u-ca-gregory')}</span>
         </div>
 
