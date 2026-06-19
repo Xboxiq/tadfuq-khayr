@@ -48,11 +48,12 @@ function _PaperFooter() {
 }
 
 // =============================================================
-function OfficialPaper({ svc, schema, form, attachments }) {
+function OfficialPaper({ svc, schema, form, attachments, mode, setMode }) {
   const settings = (window.DB && window.DB.settings.get()) || {};
   const today = _fmtDate();
   const serial = form._serial ||
     `${svc.code}-${(settings.centerCode || 'RS-014')}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+  const isLegacy = mode === 'legacy';
 
   const docsList = (schema.sections || [])
     .filter(sx => sx.kind === 'documents')
@@ -72,10 +73,24 @@ function OfficialPaper({ svc, schema, form, attachments }) {
     <div className="of-wrap">
       {/* on-screen toolbar (hidden on print) */}
       <div className="of-toolbar no-print">
-        <span className="of-toolbar__hint">
-          <Icon name="info" />
-          معاينة الورقة الرسمية — مطابقة لـ Word ({svc.code})
-        </span>
+        <div className="of-modeswitch" role="tablist">
+          <button className={`of-modeswitch__btn ${isLegacy ? 'is-on' : ''}`}
+                  onClick={() => setMode && setMode('legacy')} role="tab" aria-selected={isLegacy}>
+            <Icon name="article" />
+            <span>
+              <strong>النسخة الأصلية</strong>
+              <small>حرفياً مثل الوورد</small>
+            </span>
+          </button>
+          <button className={`of-modeswitch__btn ${!isLegacy ? 'is-on' : ''}`}
+                  onClick={() => setMode && setMode('pro')} role="tab" aria-selected={!isLegacy}>
+            <Icon name="auto_awesome" />
+            <span>
+              <strong>النسخة الاحترافية</strong>
+              <small>تصميم محسّن</small>
+            </span>
+          </button>
+        </div>
         <div className="of-toolbar__btns">
           <button className="f-btn" onClick={() => window.print()}>
             <Icon name="print" /> طباعة
@@ -86,14 +101,14 @@ function OfficialPaper({ svc, schema, form, attachments }) {
           {window.exportFormWithAttachments && (
             <button className="f-btn"
                     onClick={() => window.exportFormWithAttachments({ svc, schema, form, attachments: attachments || [], fileName })}>
-              <Icon name="file_save" /> PDF موحّد {hasAttachments && <small style={{ opacity: 0.7 }}>(مع المرفقات)</small>}
+              <Icon name="file_save" /> PDF موحّد {hasAttachments && <small style={{ opacity: 0.7 }}>(+ {attachments.length})</small>}
             </button>
           )}
         </div>
       </div>
 
       {/* PRINTABLE SHEET — wrapped in a table so <thead> repeats every page */}
-      <article className="of-paper" dir="rtl" id="of-print-root">
+      <article className={`of-paper ${isLegacy ? 'of-paper--legacy' : 'of-paper--pro'}`} dir="rtl" id="of-print-root">
         <table className="of-pagedoc">
           <thead>
             <tr><td>

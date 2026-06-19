@@ -33,20 +33,54 @@
   gap: 12px;
   width: 100%;
   max-width: 794px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background: var(--f-surface);
   border: 1px solid var(--f-border);
-  border-radius: var(--f-r);
+  border-radius: var(--f-r-md);
   font-family: var(--f-arab);
+  flex-wrap: wrap;
 }
-.of-toolbar__hint {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.82rem; color: var(--f-ink-2);
-}
-.of-toolbar__hint .material-symbols-outlined { font-size: 16px; color: var(--f-navy); }
-.f-body.dark .of-toolbar__hint .material-symbols-outlined { color: var(--f-cs); }
 .of-toolbar__btns { display: inline-flex; gap: 8px; flex-wrap: wrap; }
 .of-toolbar__btns small { font-size: 0.72rem; }
+
+/* Mode switcher — between "legacy" (Word-faithful) and "pro" (enhanced) */
+.of-modeswitch {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--f-bg-2);
+  padding: 4px;
+  border-radius: var(--f-r);
+  border: 1px solid var(--f-border);
+}
+.of-modeswitch__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--f-r-sm);
+  color: var(--f-ink-2);
+  font-family: var(--f-arab);
+  cursor: pointer;
+  transition: all var(--f-dur);
+  text-align: start;
+}
+.of-modeswitch__btn:hover { color: var(--f-ink); }
+.of-modeswitch__btn.is-on {
+  background: var(--f-surface);
+  color: var(--f-ink);
+  box-shadow: var(--f-shadow-xs);
+}
+.of-modeswitch__btn.is-on .material-symbols-outlined { color: var(--f-navy); }
+.f-body.dark .of-modeswitch__btn.is-on .material-symbols-outlined { color: var(--f-cs); }
+.of-modeswitch__btn .material-symbols-outlined { font-size: 20px; color: var(--f-ink-3); }
+.of-modeswitch__btn span {
+  display: flex; flex-direction: column;
+  line-height: 1.15;
+}
+.of-modeswitch__btn strong { font-size: 0.86rem; font-weight: 700; }
+.of-modeswitch__btn small { font-size: 0.7rem; color: var(--f-ink-3); }
 
 /* ---------- THE A4 SHEET (screen preview) ---------- */
 .of-paper {
@@ -63,6 +97,119 @@
     0 24px 56px -20px rgba(0,0,0,0.18);
   border-radius: 2px;
   position: relative;
+}
+
+/* ============================================================
+   LEGACY MODE — verbatim Word reproduction
+   No design enhancements. Same fonts, spacing, colors as Word.
+   ============================================================ */
+.of-paper--legacy {
+  font-family: "Tajawal", "Calibri", "Arial", "Tahoma", sans-serif;
+  font-size: 11pt;
+  line-height: 1.35;
+  color: #000;
+  padding: 12mm 12mm 14mm;
+}
+.of-paper--legacy .of-sheet-header {
+  border-bottom: 1.5pt solid #000;
+  padding-bottom: 3pt;
+  margin-bottom: 6pt;
+  gap: 8pt;
+}
+.of-paper--legacy .of-sheet-header img { width: 42pt; height: 42pt; }
+.of-paper--legacy .of-sheet-header__t1,
+.of-paper--legacy .of-sheet-header__t2 {
+  font-family: "Tajawal", "Calibri", "Arial", sans-serif;
+  font-weight: 700;
+  font-size: 11pt;
+  color: #000;
+  line-height: 1.3;
+}
+.of-paper--legacy .of-tbl {
+  font-size: 10pt;
+  line-height: 1.3;
+  margin-bottom: 3pt;
+}
+.of-paper--legacy .of-tbl th,
+.of-paper--legacy .of-tbl td {
+  border: 0.75pt solid #000;
+  padding: 2pt 4pt;
+  vertical-align: middle;
+  min-height: 16pt;
+}
+.of-paper--legacy .of-tbl th {
+  background: #fff;
+  font-weight: 700;
+  font-size: 10pt;
+  color: #000;
+}
+.of-paper--legacy .of-title-main {
+  font-family: "Tajawal", "Calibri", "Arial", sans-serif;
+  font-size: 13pt;
+  font-weight: 700;
+  color: #000;
+  background: #fff;
+  padding: 5pt 8pt !important;
+}
+.of-paper--legacy .of-title-code {
+  font-family: "Tajawal", "Calibri", "Arial", sans-serif;
+  font-size: 11pt;
+  font-weight: 700;
+  background: #fff;
+  padding: 5pt 4pt !important;
+  text-align: center !important;
+}
+.of-paper--legacy .of-title-rcptL,
+.of-paper--legacy .of-title-rcptV {
+  font-size: 10pt;
+  background: #fff;
+}
+.of-paper--legacy .of-header th,
+.of-paper--legacy .of-address th,
+.of-paper--legacy .of-notes th,
+.of-paper--legacy .of-routing th { color: #c00000; font-weight: 700; }
+.of-paper--legacy .of-subhead {
+  background: #fff !important;
+  text-align: center !important;
+  font-weight: 700;
+  color: #000 !important;
+  font-size: 10pt !important;
+}
+.of-paper--legacy .of-heading {
+  font-family: "Tajawal", "Calibri", "Arial", sans-serif;
+  font-size: 11pt;
+  font-weight: 700;
+  color: #000;
+  border-bottom: 0.75pt solid #000;
+  margin: 6pt 0 3pt;
+  padding-bottom: 1pt;
+}
+.of-paper--legacy .of-docs__opt { color: #c00000; }
+.of-paper--legacy .of-bullet { color: #000; font-size: 12pt; line-height: 1; }
+.of-paper--legacy .of-mono {
+  font-family: "Calibri", "Arial", sans-serif;
+  font-size: 10pt;
+}
+.of-paper--legacy .of-serial {
+  font-family: "Calibri", "Arial", sans-serif;
+  font-size: 9pt;
+}
+.of-paper--legacy .of-signs thead th {
+  background: #fff;
+  border: 0.75pt solid #000;
+}
+.of-paper--legacy .of-signs tbody td { height: 36pt; }
+.of-paper--legacy .of-heading--decl {
+  font-size: 13pt;
+  margin: 12pt auto 14pt;
+  border-bottom: 0;
+  width: 50%;
+}
+.of-paper--legacy .of-decl__body { font-size: 10.5pt; line-height: 1.55; }
+.of-paper--legacy .of-decl__body p { margin: 3pt 0; }
+.of-paper--legacy .of-decl__line {
+  font-family: "Calibri", "Arial", sans-serif;
+  font-size: 10pt;
 }
 
 /* page-document table — wrapper that lets <thead> repeat on print */
