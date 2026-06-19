@@ -30,18 +30,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
   max-width: 794px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--f-surface);
   border: 1px solid var(--f-border);
   border-radius: var(--f-r-md);
   font-family: var(--f-arab);
   flex-wrap: wrap;
+  box-shadow: var(--f-shadow-xs);
 }
+.of-toolbar__lhs { flex: 1; min-width: 240px; }
 .of-toolbar__btns { display: inline-flex; gap: 8px; flex-wrap: wrap; }
 .of-toolbar__btns small { font-size: 0.72rem; }
+
+/* prominent CTA for downloading the actual Word file */
+.f-btn--lg {
+  padding: 10px 16px;
+  gap: 12px;
+}
+.f-btn--lg .material-symbols-outlined { font-size: 22px; }
+.f-btn--lg span {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.f-btn--lg strong { font-size: 0.95rem; font-weight: 700; }
+.f-btn--lg small { font-size: 0.74rem; opacity: 0.85; font-weight: 500; }
 
 /* Mode switcher — between "legacy" (Word-faithful) and "pro" (enhanced) */
 .of-modeswitch {
