@@ -48,6 +48,61 @@ function _PaperFooter() {
 }
 
 // =============================================================
+// LEGACY — renders the actual Word .docx (with form values
+// substituted via docxtemplater) using docx-preview. This IS
+// the original document, so layout/fonts/spacing match perfectly.
+// =============================================================
+function LegacyWordPaper({ svc, form, onError }) {
+  const ref = React.useRef(null);
+  const [state, setState] = React.useState('loading'); // loading | ready | error
+  const [errMsg, setErrMsg] = React.useState('');
+
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!ref.current) return;
+    if (!window.PizZip || !window.docxtemplater || !window.docx) {
+      setState('error');
+      setErrMsg('مكتبات معالجة Word لم تُحمَّل بعد');
+      return;
+    }
+    setState('loading');
+    window.renderFilledDocx(svc, form, ref.current)
+      .then(() => { if (!cancelled) setState('ready'); })
+      .catch(e => {
+        if (cancelled) return;
+        setState('error');
+        setErrMsg(e.message || 'فشل تحميل النموذج');
+        onError && onError(e);
+      });
+    return () => { cancelled = true; };
+  }, [svc.code, JSON.stringify(form)]);
+
+  return (
+    <div className="of-docx-wrap" id="of-print-root">
+      {state === 'loading' && (
+        <div className="of-docx-state">
+          <div className="of-docx-spinner" />
+          جاري تحميل النموذج الأصلي من Word…
+        </div>
+      )}
+      {state === 'error' && (
+        <div className="of-docx-state of-docx-state--err">
+          <Icon name="warning" />
+          <div>
+            <strong>تعذّر تحميل النسخة الأصلية</strong>
+            <div style={{ fontSize:'0.82rem', marginTop:4, opacity:0.85 }}>{errMsg}</div>
+            <div style={{ fontSize:'0.78rem', marginTop:8, opacity:0.7 }}>
+              قد لا يكون متاحاً نموذج Word لهذه الخدمة بعد. استخدم النسخة الاحترافية.
+            </div>
+          </div>
+        </div>
+      )}
+      <div ref={ref} className="of-docx-render" />
+    </div>
+  );
+}
+
+// =============================================================
 function OfficialPaper({ svc, schema, form, attachments, mode, setMode }) {
   const settings = (window.DB && window.DB.settings.get()) || {};
   const today = _fmtDate();
@@ -76,29 +131,42 @@ function OfficialPaper({ svc, schema, form, attachments, mode, setMode }) {
         <div className="of-modeswitch" role="tablist">
           <button className={`of-modeswitch__btn ${isLegacy ? 'is-on' : ''}`}
                   onClick={() => setMode && setMode('legacy')} role="tab" aria-selected={isLegacy}>
-            <Icon name="article" />
+            <Icon name="description" />
             <span>
-              <strong>النسخة الأصلية</strong>
-              <small>حرفياً مثل الوورد</small>
+              <strong>نسخة Word الأصلية</strong>
+              <small>الملف الرسمي + بياناتك</small>
             </span>
           </button>
           <button className={`of-modeswitch__btn ${!isLegacy ? 'is-on' : ''}`}
                   onClick={() => setMode && setMode('pro')} role="tab" aria-selected={!isLegacy}>
             <Icon name="auto_awesome" />
             <span>
-              <strong>النسخة الاحترافية</strong>
-              <small>تصميم محسّن</small>
+              <strong>نسخة محسّنة</strong>
+              <small>تصميم احترافي</small>
             </span>
           </button>
         </div>
         <div className="of-toolbar__btns">
-          <button className="f-btn" onClick={() => window.print()}>
-            <Icon name="print" /> طباعة
-          </button>
-          <button className="f-btn f-btn--primary" onClick={() => window.print()}>
-            <Icon name="picture_as_pdf" /> حفظ كـ PDF
-          </button>
-          {window.exportFormWithAttachments && (
+          {isLegacy ? (
+            <>
+              <button className="f-btn" onClick={() => window.printFilledDocx(svc, form)}>
+                <Icon name="print" /> طباعة
+              </button>
+              <button className="f-btn f-btn--primary" onClick={() => window.downloadFilledDocx(svc, form)}>
+                <Icon name="download" /> تنزيل Word
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="f-btn" onClick={() => window.print()}>
+                <Icon name="print" /> طباعة
+              </button>
+              <button className="f-btn f-btn--primary" onClick={() => window.print()}>
+                <Icon name="picture_as_pdf" /> حفظ كـ PDF
+              </button>
+            </>
+          )}
+          {window.exportFormWithAttachments && !isLegacy && (
             <button className="f-btn"
                     onClick={() => window.exportFormWithAttachments({ svc, schema, form, attachments: attachments || [], fileName })}>
               <Icon name="file_save" /> PDF موحّد {hasAttachments && <small style={{ opacity: 0.7 }}>(+ {attachments.length})</small>}
@@ -107,8 +175,18 @@ function OfficialPaper({ svc, schema, form, attachments, mode, setMode }) {
         </div>
       </div>
 
-      {/* PRINTABLE SHEET — wrapped in a table so <thead> repeats every page */}
-      <article className={`of-paper ${isLegacy ? 'of-paper--legacy' : 'of-paper--pro'}`} dir="rtl" id="of-print-root">
+      {isLegacy ? (
+        <LegacyWordPaper svc={svc} form={form} />
+      ) : (
+      <>
+        {/* repeating chrome — rendered fixed in print, hidden on screen */}
+        <_PaperHeader s={settings} />
+        <_PaperFooter />
+      </>
+      )}
+
+      {!isLegacy && (
+      <article className="of-paper of-paper--pro" dir="rtl" id="of-print-root">
         <table className="of-pagedoc">
           <thead>
             <tr><td>
@@ -370,6 +448,7 @@ function OfficialPaper({ svc, schema, form, attachments, mode, setMode }) {
           </td></tr></tbody>
         </table>
       </article>
+      )}
     </div>
   );
 }

@@ -491,6 +491,74 @@
   font-weight: 600;
 }
 
+/* ---------- Legacy (real Word) renderer ---------- */
+.of-docx-wrap {
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.of-docx-render {
+  width: 100%;
+  background: transparent;
+  direction: rtl;
+}
+.of-docx-render .docx-wrapper {
+  background: transparent !important;
+  padding: 0 !important;
+}
+.of-docx-render section.docx {
+  background: #fff;
+  margin: 12px auto;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.06),
+    0 24px 56px -20px rgba(0,0,0,0.18);
+  border-radius: 2px;
+  direction: rtl;
+}
+.of-docx-state {
+  padding: 40px 20px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  color: var(--f-ink-2);
+  font-family: var(--f-arab);
+}
+.of-docx-state--err {
+  background: color-mix(in srgb, var(--f-err) 6%, var(--f-surface));
+  border: 1px solid color-mix(in srgb, var(--f-err) 30%, var(--f-border));
+  border-radius: var(--f-r);
+  color: var(--f-ink);
+  text-align: start;
+}
+.of-docx-state--err .material-symbols-outlined {
+  color: var(--f-err);
+  font-size: 28px;
+}
+.of-docx-spinner {
+  width: 22px; height: 22px;
+  border: 2.5px solid var(--f-border);
+  border-top-color: var(--f-navy);
+  border-radius: 50%;
+  animation: of-spin 0.8s linear infinite;
+}
+.f-body.dark .of-docx-spinner { border-top-color: var(--f-cs); }
+@keyframes of-spin { to { transform: rotate(360deg); } }
+
+/* Print stage holds the Word-rendered output for printing */
+#docx-print-stage { display: none; }
+.printing-docx #docx-print-stage { display: block; }
+.printing-docx #docx-print-stage section.docx {
+  margin: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+@media print {
+  body.printing-docx > *:not(#docx-print-stage) { display: none !important; }
+  body.printing-docx #docx-print-stage { display: block !important; }
+  body.printing-docx #docx-print-stage * { visibility: visible !important; }
+}
+
 /* ============================================================
    PRINT — A4 portrait, repeating header via table thead trick
    ----------------------------------------------------
