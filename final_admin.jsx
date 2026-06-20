@@ -532,14 +532,34 @@ function TipsTab() {
 // 4) USERS
 // =============================================================
 function UserModal({ row, onSave, onClose, existingUsernames }) {
+  const roleOptions = window.DB ? window.DB.roles.list() : [];
+  const branchOptions = window.DB ? window.DB.branches.list() : [];
+  const deptOptions = window.DB ? window.DB.departments.list() : [];
+
   const [f, setF] = useState(() => row || {
-    name: '', username: '', email: '', role: 'employee', section: '*', active: true,
+    name: '', username: '', email: '',
+    roleId: (roleOptions.find(r => r.key === 'customer_service') || roleOptions[0] || {}).id || '',
+    branchId: '', departmentId: '',
+    active: true,
+    mustChangePassword: true,
   });
+  const [pwd, setPwd] = useState('');
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
-  const save = () => {
-    if (!f.name || !f.username) return;
+  const save = async () => {
+    if (!f.name || !f.username || !f.roleId) return;
     if (!row && existingUsernames.includes(f.username)) return;
-    onSave(f);
+    if (!row && !pwd) { alert('أدخل كلمة مرور ابتدائية'); return; }
+    const data = { ...f };
+    if (!row && pwd && window.DB) {
+      const h = await window.DB.hashPassword(pwd);
+      data.passwordHash = h.hash;
+      data.passwordSalt = h.salt;
+      data.passwordAlgo = h.algo;
+      data.failedLoginCount = 0;
+      data.lockedUntil = null;
+      data.mustChangePassword = true;
+    }
+    onSave(data);
   };
   const usernameTaken = !row && existingUsernames.includes(f.username);
 
@@ -573,22 +593,61 @@ function UserModal({ row, onSave, onClose, existingUsernames }) {
         <div className="adm-form__row adm-form__row--2">
           <div className="adm-field">
             <label>الدور</label>
-            <select value={f.role} onChange={e => set('role', e.target.value)}>
-              {ROLE_OPTS.map(r => <option key={r} value={r}>{window.Auth.ROLE_LABELS[r]}</option>)}
+            <select value={f.roleId || ''} onChange={e => set('roleId', e.target.value)}>
+              <option value="" disabled>اختر دوراً…</option>
+              {roleOptions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </div>
           <div className="adm-field">
-            <label>القسم</label>
-            <select value={f.section} onChange={e => set('section', e.target.value)}>
-              <option value="*">جميع الأقسام</option>
-              {SECTION_OPTS.map(s => <option key={s} value={s}>{window.SECTION_MAP[s] && window.SECTION_MAP[s].name}</option>)}
+            <label>الفرع</label>
+            <select value={f.branchId || ''} onChange={e => set('branchId', e.target.value || null)}>
+              <option value="">جميع الفروع</option>
+              {branchOptions.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
         </div>
+        <div className="adm-field">
+          <label>القسم</label>
+          <select value={f.departmentId || ''} onChange={e => set('departmentId', e.target.value || null)}>
+            <option value="">جميع الأقسام</option>
+            {deptOptions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+        {!row && (
+          <div className="adm-field">
+            <label>كلمة المرور الابتدائية</label>
+            <input type="text" value={pwd} onChange={e => setPwd(e.target.value)}
+                   placeholder="سيُطلب من المستخدم تغييرها فور الدخول" />
+          </div>
+        )}
         <Toggle on={!!f.active} onChange={(v) => set('active', v)} label={f.active ? 'الحساب نشط' : 'موقوف'} />
       </div>
     </Modal>
   );
+}
+
+// ─────────────────────────────────────────────────────────────
+//  USERS TAB — enterprise user management
+// ─────────────────────────────────────────────────────────────
+function _userStatus(u) {
+  if (!u.active) return { key: 'disabled', label: 'موقوف',  tone: 'off'  };
+  if (u.lockedUntil && u.lockedUntil > Date.now())
+                     return { key: 'locked',   label: 'مقفل',   tone: 'warn' };
+  if (u.mustChangePassword)
+                     return { key: 'pending',  label: 'بحاجة تغيير كلمة المرور', tone: 'info' };
+  return               { key: 'active',   label: 'نشط',    tone: 'ok'   };
+}
+function _timeAgo(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'الآن';
+  if (m < 60) return `قبل ${m} د`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `قبل ${h} س`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `قبل ${d} يوم`;
+  return new Date(ts).toLocaleDateString('ar-IQ-u-ca-gregory', { day:'2-digit', month:'short', year:'numeric' });
 }
 
 function UsersTab() {
@@ -596,26 +655,51 @@ function UsersTab() {
   const me = useAuthState();
   const can  = window.Auth.can;
   const toast = window.useToast();
+  const roleOptions   = window.DB.roles.list();
+  const branchOptions = window.DB.branches.list();
+  const deptOptions   = window.DB.departments.list();
+
   const [q, setQ] = useState('');
   const [roleF, setRoleF] = useState('');
+  const [statusF, setStatusF] = useState('');     // '' | 'active' | 'disabled' | 'locked' | 'pending'
+  const [branchF, setBranchF] = useState('');
+  const [selected, setSelected] = useState(new Set());
+  const [drawer, setDrawer] = useState(null);     // user object being viewed
   const [edit, setEdit] = useState(null);
   const [creating, setCreating] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [resetPwdFor, setResetPwdFor] = useState(null);
 
-  const filtered = rows.filter(r => {
-    if (roleF && r.role !== roleF) return false;
-    if (q && !(r.name + ' ' + r.username + ' ' + (r.email || '')).toLowerCase().includes(q.toLowerCase())) return false;
+  const filtered = useMemo(() => rows.filter(r => {
+    if (roleF && r.roleId !== roleF) return false;
+    if (branchF && r.branchId !== branchF) return false;
+    if (statusF && _userStatus(r).key !== statusF) return false;
+    if (q) {
+      const hay = (r.name + ' ' + r.username + ' ' + (r.email || '')).toLowerCase();
+      if (!hay.includes(q.toLowerCase())) return false;
+    }
     return true;
-  });
+  }), [rows, roleF, branchF, statusF, q]);
 
-  const onSave = (data) => {
+  const allSelected = filtered.length > 0 && filtered.every(r => selected.has(r.id));
+  const toggleSelectAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(filtered.map(r => r.id)));
+  };
+  const toggleOne = (id) => {
+    const next = new Set(selected);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelected(next);
+  };
+
+  const onSave = async (data) => {
     if (edit) {
       window.DB.users.update(edit.id, data);
-      window.DB.log('user.update', data.username, { role: data.role });
+      window.DB.log('user.update', data.username);
       toast.push({ kind:'success', title:'تم تحديث المستخدم' });
     } else {
       window.DB.users.create(data);
-      window.DB.log('user.create', data.username, { role: data.role });
+      window.DB.log('user.create', data.username);
       toast.push({ kind:'success', title:'تمت إضافة المستخدم', body: data.name });
     }
     setEdit(null); setCreating(false);
@@ -626,10 +710,44 @@ function UsersTab() {
     window.DB.log('user.delete', row.username);
     toast.push({ kind:'info', title:'تم حذف المستخدم' });
     setConfirmDel(null);
+    if (drawer && drawer.id === row.id) setDrawer(null);
   };
-  const switchTo = (row) => {
-    window.Auth.signInAs(row.id);
-    toast.push({ kind:'success', title:'تم التحويل', body: 'الجلسة الحالية: ' + row.name });
+  const toggleActive = (row) => {
+    if (me && row.id === me.id) { toast.push({ kind:'error', title:'لا يمكنك إيقاف حسابك' }); return; }
+    window.DB.users.update(row.id, { active: !row.active });
+    window.DB.log(row.active ? 'user.disable' : 'user.enable', row.username);
+    toast.push({ kind: row.active ? 'warn' : 'success', title: row.active ? 'تم إيقاف الحساب' : 'تم تفعيل الحساب' });
+  };
+  const unlockUser = (row) => {
+    window.DB.users.update(row.id, { lockedUntil: null, failedLoginCount: 0 });
+    window.DB.log('user.unlock', row.username);
+    toast.push({ kind:'success', title:'تم فك القفل' });
+  };
+  const forceLogout = (row) => {
+    const sessions = window.DB.sessions.list().filter(s => s.userId === row.id && !s.revoked);
+    sessions.forEach(s => window.DB.sessions.update(s.id, { revoked: true, revokedAt: Date.now(), revokedReason: 'admin_force' }));
+    window.DB.log('user.force_logout', row.username, { count: sessions.length });
+    toast.push({ kind:'success', title:`تم إنهاء ${sessions.length} جلسة` });
+  };
+
+  // bulk actions
+  const bulkEnable = () => {
+    selected.forEach(id => {
+      const u = window.DB.users.get(id);
+      if (u && !u.active) { window.DB.users.update(id, { active: true }); window.DB.log('user.enable', u.username); }
+    });
+    toast.push({ kind:'success', title:`تم تفعيل ${selected.size} حساب` });
+    setSelected(new Set());
+  };
+  const bulkDisable = () => {
+    let n = 0;
+    selected.forEach(id => {
+      if (me && id === me.id) return;
+      const u = window.DB.users.get(id);
+      if (u && u.active) { window.DB.users.update(id, { active: false }); window.DB.log('user.disable', u.username); n++; }
+    });
+    toast.push({ kind:'warn', title:`تم إيقاف ${n} حساب` });
+    setSelected(new Set());
   };
 
   return (
@@ -637,72 +755,125 @@ function UsersTab() {
       <div className="adm-toolbar">
         <div className="adm-search">
           <Icon name="search" />
-          <input placeholder="ابحث بالاسم أو البريد…" value={q} onChange={e => setQ(e.target.value)} />
+          <input placeholder="ابحث بالاسم، اسم المستخدم، البريد…" value={q} onChange={e => setQ(e.target.value)} />
         </div>
-        <div className="adm-toolbar__filter">
-          <button className={`adm-chip ${!roleF ? 'is-on' : ''}`} onClick={() => setRoleF('')}>الكل</button>
-          {ROLE_OPTS.map(r => (
-            <button key={r} className={`adm-chip ${roleF === r ? 'is-on' : ''}`} onClick={() => setRoleF(r)}>
-              {window.Auth.ROLE_LABELS[r]}
-            </button>
-          ))}
-        </div>
-        {can('users.write') && (
+        <select className="adm-select" value={roleF} onChange={e => setRoleF(e.target.value)}>
+          <option value="">كل الأدوار</option>
+          {roleOptions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+        <select className="adm-select" value={branchF} onChange={e => setBranchF(e.target.value)}>
+          <option value="">كل الفروع</option>
+          {branchOptions.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </select>
+        <select className="adm-select" value={statusF} onChange={e => setStatusF(e.target.value)}>
+          <option value="">كل الحالات</option>
+          <option value="active">نشط</option>
+          <option value="disabled">موقوف</option>
+          <option value="locked">مقفل</option>
+          <option value="pending">بحاجة تغيير كلمة المرور</option>
+        </select>
+        {can('user.create') && (
           <button className="f-btn f-btn--primary" onClick={() => setCreating(true)}>
             <Icon name="person_add" /> إضافة مستخدم
           </button>
         )}
       </div>
 
+      {selected.size > 0 && (
+        <div className="adm-bulk">
+          <span><Icon name="check_circle" /> تم تحديد <b>{selected.size}</b> مستخدم</span>
+          <div className="adm-bulk__actions">
+            {can('user.disable') && (
+              <>
+                <button className="f-btn" onClick={bulkEnable}><Icon name="check" /> تفعيل</button>
+                <button className="f-btn" onClick={bulkDisable}><Icon name="block" /> إيقاف</button>
+              </>
+            )}
+            <button className="f-btn" onClick={() => setSelected(new Set())}><Icon name="close" /> إلغاء</button>
+          </div>
+        </div>
+      )}
+
       <div className="adm-tbl-wrap">
         {filtered.length === 0 ? (
           <div className="adm-empty"><Icon name="group" /><div>لا توجد نتائج</div></div>
         ) : (
-          <table className="adm-tbl">
+          <table className="adm-tbl adm-tbl--users">
             <thead>
               <tr>
+                <th style={{ width: 36 }}>
+                  <label className="adm-checkbox">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} />
+                    <span /></label>
+                </th>
                 <th>المستخدم</th>
-                <th style={{ width: 120 }}>الدور</th>
-                <th style={{ width: 110 }}>القسم</th>
-                <th style={{ width: 90 }}>الحالة</th>
-                <th style={{ width: 130 }}></th>
+                <th style={{ width: 150 }}>الدور</th>
+                <th style={{ width: 160 }}>الفرع / القسم</th>
+                <th style={{ width: 130 }}>الحالة</th>
+                <th style={{ width: 110 }}>آخر دخول</th>
+                <th style={{ width: 140 }}></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(r => {
                 const isMe = me && r.id === me.id;
+                const status = _userStatus(r);
+                const role = window.DB.roles.get(r.roleId);
+                const branch = r.branchId ? window.DB.branches.get(r.branchId) : null;
+                const dept   = r.departmentId ? window.DB.departments.get(r.departmentId) : null;
                 return (
-                  <tr key={r.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span className="adm-side__user-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem' }}>
-                          {r.name.slice(0, 1)}
+                  <tr key={r.id} className={selected.has(r.id) ? 'is-sel' : ''}>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <label className="adm-checkbox">
+                        <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleOne(r.id)} />
+                        <span /></label>
+                    </td>
+                    <td className="adm-cell--user" onClick={() => setDrawer(r)}>
+                      <span className="adm-userav">{r.name.slice(0,1)}</span>
+                      <span className="adm-userinfo">
+                        <span className="adm-userinfo__name">
+                          {r.name}
+                          {isMe && <span className="adm-pill adm-pill--info" style={{ marginInlineStart:6 }}>أنت</span>}
                         </span>
-                        <div>
-                          <div style={{ fontWeight: 600 }}>
-                            {r.name} {isMe && <span className="adm-pill adm-pill--info" style={{ marginInlineStart: 6 }}>أنت</span>}
-                          </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--f-ink-3)' }}>@{r.username} · {r.email || '—'}</div>
-                        </div>
-                      </div>
+                        <span className="adm-userinfo__meta">@{r.username} · {r.email || '—'}</span>
+                      </span>
                     </td>
-                    <td><span className="adm-pill adm-pill--info">{window.Auth.ROLE_LABELS[r.role]}</span></td>
                     <td>
-                      {r.section === '*' ? <span style={{ color: 'var(--f-ink-3)' }}>الكل</span> : (
-                        <span className="adm-tbl__sec" style={{ '--sec-c': window.DEPT_COLORS[r.section] }}>{r.section}</span>
-                      )}
+                      {role ? (
+                        <span className="adm-pill adm-pill--info">{role.name}</span>
+                      ) : <span style={{ color:'var(--f-ink-3)' }}>—</span>}
                     </td>
-                    <td><span className={`adm-pill ${r.active ? 'adm-pill--ok' : 'adm-pill--off'}`}>{r.active ? 'نشط' : 'موقوف'}</span></td>
                     <td>
-                      <div className="adm-tbl__actions">
-                        {!isMe && (
-                          <button className="adm-tbl__btn" title="تحويل الجلسة" onClick={() => switchTo(r)}><Icon name="login" /></button>
+                      {branch || dept ? (
+                        <span className="adm-userscope">
+                          {branch && <span className="adm-userscope__b">{branch.name}</span>}
+                          {dept && <span className="adm-userscope__d">{dept.name}</span>}
+                        </span>
+                      ) : <span style={{ color:'var(--f-ink-3)' }}>الكل</span>}
+                    </td>
+                    <td>
+                      <span className={`adm-pill adm-pill--${status.tone}`}>{status.label}</span>
+                    </td>
+                    <td style={{ color:'var(--f-ink-2)', fontSize:'0.84rem' }}>{_timeAgo(r.lastLoginAt)}</td>
+                    <td>
+                      <div className="adm-tbl__actions" onClick={(e) => e.stopPropagation()}>
+                        <button className="adm-tbl__btn" title="عرض التفاصيل" onClick={() => setDrawer(r)}>
+                          <Icon name="visibility" />
+                        </button>
+                        {can('user.reset_password') && !isMe && (
+                          <button className="adm-tbl__btn" title="إعادة كلمة المرور" onClick={() => setResetPwdFor(r)}>
+                            <Icon name="key" />
+                          </button>
                         )}
-                        {can('users.write') && (
-                          <button className="adm-tbl__btn" title="تعديل" onClick={() => setEdit(r)}><Icon name="edit" /></button>
+                        {can('user.update') && (
+                          <button className="adm-tbl__btn" title="تعديل" onClick={() => setEdit(r)}>
+                            <Icon name="edit" />
+                          </button>
                         )}
-                        {can('users.delete') && !isMe && (
-                          <button className="adm-tbl__btn adm-tbl__btn--danger" title="حذف" onClick={() => setConfirmDel(r)}><Icon name="delete" /></button>
+                        {can('user.delete') && !isMe && (
+                          <button className="adm-tbl__btn adm-tbl__btn--danger" title="حذف" onClick={() => setConfirmDel(r)}>
+                            <Icon name="delete" />
+                          </button>
                         )}
                       </div>
                     </td>
@@ -720,16 +891,431 @@ function UsersTab() {
                    onSave={onSave}
                    onClose={() => { setEdit(null); setCreating(false); }} />
       )}
+      {drawer && (
+        <UserDrawer user={drawer} me={me}
+                    onClose={() => setDrawer(null)}
+                    onEdit={() => { setEdit(drawer); setDrawer(null); }}
+                    onResetPassword={() => setResetPwdFor(drawer)}
+                    onToggleActive={() => toggleActive(drawer)}
+                    onUnlock={() => unlockUser(drawer)}
+                    onForceLogout={() => forceLogout(drawer)}
+                    onDelete={() => { setConfirmDel(drawer); }}
+        />
+      )}
+      {resetPwdFor && (
+        <PasswordResetModal user={resetPwdFor}
+                            onClose={() => setResetPwdFor(null)}
+                            onDone={() => { setResetPwdFor(null); toast.push({ kind:'success', title:'تم تحديث كلمة المرور' }); }}
+        />
+      )}
       <window.ConfirmDialog
         open={!!confirmDel} danger icon="delete"
         title="حذف المستخدم؟"
-        description={confirmDel ? `سيتم حذف ${confirmDel.name} نهائياً.` : ''}
+        description={confirmDel ? `سيتم حذف ${confirmDel.name} نهائياً مع كل جلساته. هذا الإجراء لا يمكن التراجع عنه.` : ''}
         confirmLabel="نعم، احذف" cancelLabel="إلغاء"
         onConfirm={() => onDelete(confirmDel)} onCancel={() => setConfirmDel(null)}
       />
     </>
   );
 }
+
+// ─────────────────────────────────────────────────────────────
+//  USER DRAWER — side panel with full profile + actions + tabs
+// ─────────────────────────────────────────────────────────────
+function UserDrawer({ user, me, onClose, onEdit, onResetPassword, onToggleActive, onUnlock, onForceLogout, onDelete }) {
+  const [tab, setTab] = useState('profile');
+  const can = window.Auth.can;
+  const isMe = me && user.id === me.id;
+  const status = _userStatus(user);
+  const role = window.DB.roles.get(user.roleId);
+  const branch = user.branchId ? window.DB.branches.get(user.branchId) : null;
+  const dept   = user.departmentId ? window.DB.departments.get(user.departmentId) : null;
+
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const sessions = window.DB.sessions.list().filter(s => s.userId === user.id);
+  const activeSessions = sessions.filter(s => !s.revoked);
+  const myAudit = window.DB.audit.list().filter(a => a.byId === user.id || a.target === user.username).slice(0, 100);
+  const effectivePerms = role ? role.permissions || [] : [];
+  const permsByCat = effectivePerms.reduce((acc, k) => {
+    const p = window.DB.PERMISSION_BY_KEY[k];
+    if (!p) return acc;
+    (acc[p.category] = acc[p.category] || []).push(p);
+    return acc;
+  }, {});
+
+  return (
+    <div className="adm-drawer" onClick={onClose}>
+      <aside className="adm-drawer__sheet" onClick={(e) => e.stopPropagation()} dir="rtl">
+        <header className="adm-drawer__hdr">
+          <button className="adm-drawer__close" onClick={onClose} aria-label="إغلاق">
+            <Icon name="close" />
+          </button>
+          <div className="adm-drawer__id">
+            <span className="adm-drawer__av">{user.name.slice(0,1)}</span>
+            <div>
+              <div className="adm-drawer__name">
+                {user.name}
+                {isMe && <span className="adm-pill adm-pill--info" style={{ marginInlineStart:8 }}>أنت</span>}
+              </div>
+              <div className="adm-drawer__meta">
+                @{user.username}{user.email && <> · {user.email}</>}
+              </div>
+              <div className="adm-drawer__badges">
+                <span className={`adm-pill adm-pill--${status.tone}`}>{status.label}</span>
+                {role && <span className="adm-pill adm-pill--info">{role.name}</span>}
+                {branch && <span className="adm-pill adm-pill--off">{branch.name}</span>}
+                {dept && <span className="adm-pill adm-pill--off">{dept.name}</span>}
+              </div>
+            </div>
+          </div>
+          <div className="adm-drawer__actions">
+            {can('user.update') && (
+              <button className="f-btn" onClick={onEdit}><Icon name="edit" /> تعديل</button>
+            )}
+            {can('user.reset_password') && !isMe && (
+              <button className="f-btn" onClick={onResetPassword}><Icon name="key" /> كلمة مرور</button>
+            )}
+            {can('user.force_logout') && !isMe && activeSessions.length > 0 && (
+              <button className="f-btn" onClick={onForceLogout}>
+                <Icon name="logout" /> إنهاء الجلسات ({activeSessions.length})
+              </button>
+            )}
+            {status.key === 'locked' && can('user.update') && (
+              <button className="f-btn" onClick={onUnlock}><Icon name="lock_open" /> فك القفل</button>
+            )}
+            {can('user.disable') && !isMe && (
+              <button className={`f-btn ${user.active ? 'f-btn--warn' : ''}`} onClick={onToggleActive}>
+                <Icon name={user.active ? 'block' : 'check'} />
+                {user.active ? 'إيقاف الحساب' : 'تفعيل الحساب'}
+              </button>
+            )}
+            {can('user.delete') && !isMe && (
+              <button className="f-btn f-btn--danger" onClick={onDelete}><Icon name="delete" /> حذف</button>
+            )}
+          </div>
+        </header>
+
+        <nav className="adm-drawer__tabs">
+          {[
+            { k: 'profile',  l: 'الملف الشخصي', i: 'person' },
+            { k: 'perms',    l: 'الصلاحيات',    i: 'shield' },
+            { k: 'sessions', l: `الجلسات ${activeSessions.length > 0 ? `(${activeSessions.length})` : ''}`, i: 'devices' },
+            { k: 'audit',    l: 'النشاط',       i: 'history' },
+            { k: 'security', l: 'الأمان',       i: 'lock' },
+          ].map(t => (
+            <button key={t.k} className={`adm-drawer__tab ${tab === t.k ? 'is-on' : ''}`} onClick={() => setTab(t.k)}>
+              <Icon name={t.i} /> {t.l}
+            </button>
+          ))}
+        </nav>
+
+        <div className="adm-drawer__body">
+          {tab === 'profile' && (
+            <div className="adm-detail">
+              <div className="adm-detail__grid">
+                <Field label="الاسم الكامل" value={user.name} />
+                <Field label="اسم المستخدم" value={'@' + user.username} mono />
+                <Field label="البريد الإلكتروني" value={user.email || '—'} mono />
+                <Field label="الدور" value={role ? role.name : '—'} />
+                <Field label="الفرع" value={branch ? branch.name : 'كل الفروع'} />
+                <Field label="القسم" value={dept ? dept.name : 'كل الأقسام'} />
+                <Field label="تاريخ الإنشاء" value={new Date(user.createdAt).toLocaleString('ar-IQ-u-ca-gregory', { dateStyle:'medium', timeStyle:'short' })} />
+                <Field label="أنشئ بواسطة" value={user.createdBy || '—'} mono />
+                <Field label="آخر دخول" value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('ar-IQ-u-ca-gregory', { dateStyle:'medium', timeStyle:'short' }) : 'لم يدخل بعد'} />
+                <Field label="آخر IP" value={user.lastLoginIp || '—'} mono />
+              </div>
+            </div>
+          )}
+
+          {tab === 'perms' && (
+            <div className="adm-detail">
+              {Object.keys(permsByCat).length === 0 ? (
+                <div className="adm-empty"><Icon name="shield" /><div>لا توجد صلاحيات</div></div>
+              ) : (
+                <>
+                  <p className="adm-detail__note">
+                    الصلاحيات النافذة لهذا المستخدم — مستمدة من دور <b>{role.name}</b>.
+                    التعديل يتم من صفحة <b>الأدوار والصلاحيات</b>.
+                  </p>
+                  {['requests','payments','users','roles','system','reports','audit','content'].map(cat => {
+                    const items = permsByCat[cat];
+                    if (!items || !items.length) return null;
+                    return (
+                      <div key={cat} className="adm-permcat">
+                        <h4 className="adm-permcat__lbl">{_catLabel(cat)}</h4>
+                        <div className="adm-permcat__list">
+                          {items.map(p => (
+                            <span key={p.key} className="adm-permpill">
+                              <Icon name="check" /> {p.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          )}
+
+          {tab === 'sessions' && (
+            <div className="adm-detail">
+              {sessions.length === 0 ? (
+                <div className="adm-empty"><Icon name="devices" /><div>لم يسجّل دخوله بعد</div></div>
+              ) : (
+                <div className="adm-sessions">
+                  {sessions.slice().sort((a,b) => (b.signedAt||0) - (a.signedAt||0)).map(s => (
+                    <div key={s.id} className={`adm-session ${s.revoked ? 'is-revoked' : 'is-active'}`}>
+                      <span className="adm-session__ico">
+                        <Icon name={s.revoked ? 'logout' : 'check_circle'} />
+                      </span>
+                      <div className="adm-session__main">
+                        <div className="adm-session__line">
+                          <span className="adm-session__ua">{_parseUA(s.ua)}</span>
+                          {!s.revoked && <span className="adm-pill adm-pill--ok">نشطة</span>}
+                          {s.revoked && <span className="adm-pill adm-pill--off">منتهية</span>}
+                        </div>
+                        <div className="adm-session__meta">
+                          IP: <code>{s.ip || '—'}</code> · بدأت {_timeAgo(s.signedAt)}
+                          {s.revoked && s.revokedAt && <> · انتهت {_timeAgo(s.revokedAt)}</>}
+                          {s.revokedReason && <> · سبب: {s.revokedReason}</>}
+                        </div>
+                      </div>
+                      {!s.revoked && !isMe && can('user.force_logout') && (
+                        <button className="adm-tbl__btn" title="إنهاء" onClick={() => {
+                          window.DB.sessions.update(s.id, { revoked:true, revokedAt: Date.now(), revokedReason:'admin_force' });
+                          window.DB.log('user.force_logout', user.username, { sessionId: s.id });
+                        }}>
+                          <Icon name="logout" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'audit' && (
+            <div className="adm-detail">
+              {myAudit.length === 0 ? (
+                <div className="adm-empty"><Icon name="history" /><div>لا يوجد نشاط</div></div>
+              ) : (
+                <div className="adm-audit">
+                  {myAudit.map(a => (
+                    <div key={a.id} className="adm-audit__row">
+                      <span className="adm-audit__ts">
+                        {new Date(a.ts).toLocaleString('ar-IQ-u-ca-gregory', { dateStyle:'short', timeStyle:'short' })}
+                      </span>
+                      <div className="adm-audit__main">
+                        <span className="adm-audit__action">{a.action}</span>
+                        <span>{a.target}</span>
+                      </div>
+                      <span className="adm-audit__by">{a.ip || ''}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === 'security' && (
+            <div className="adm-detail">
+              <div className="adm-secrow">
+                <div>
+                  <strong>محاولات الدخول الفاشلة</strong>
+                  <small>عدد المحاولات المتتالية الفاشلة منذ آخر دخول ناجح</small>
+                </div>
+                <span className={`adm-pill adm-pill--${user.failedLoginCount > 0 ? 'warn' : 'ok'}`}>
+                  {user.failedLoginCount || 0}
+                </span>
+              </div>
+              <div className="adm-secrow">
+                <div>
+                  <strong>حالة القفل</strong>
+                  <small>الحساب يُقفل تلقائياً بعد ٥ محاولات فاشلة لمدة ١٥ دقيقة</small>
+                </div>
+                {user.lockedUntil && user.lockedUntil > Date.now() ? (
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <span className="adm-pill adm-pill--warn">
+                      مقفل حتى {new Date(user.lockedUntil).toLocaleTimeString('ar-IQ-u-ca-gregory', { hour:'2-digit', minute:'2-digit' })}
+                    </span>
+                    {can('user.update') && (
+                      <button className="f-btn" onClick={onUnlock}><Icon name="lock_open" /> فك القفل</button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="adm-pill adm-pill--ok">غير مقفل</span>
+                )}
+              </div>
+              <div className="adm-secrow">
+                <div>
+                  <strong>تغيير كلمة المرور</strong>
+                  <small>{user.mustChangePassword ? 'سيُطلب من المستخدم تغيير كلمة المرور عند الدخول التالي' : 'كلمة المرور محدّثة'}</small>
+                </div>
+                {user.mustChangePassword
+                  ? <span className="adm-pill adm-pill--warn">مطلوب</span>
+                  : <span className="adm-pill adm-pill--ok">مكتمل</span>}
+              </div>
+              <div className="adm-secrow">
+                <div>
+                  <strong>تاريخ آخر تغيير لكلمة المرور</strong>
+                  <small>{user.passwordChangedAt ? new Date(user.passwordChangedAt).toLocaleString('ar-IQ-u-ca-gregory', { dateStyle:'medium', timeStyle:'short' }) : 'غير معروف'}</small>
+                </div>
+              </div>
+              <div className="adm-secrow">
+                <div>
+                  <strong>خوارزمية كلمة المرور</strong>
+                  <small>الخوارزمية المستخدمة لتخزين الـ hash</small>
+                </div>
+                <code className="adm-pill adm-pill--off">{user.passwordAlgo || 'sha256-v1'}</code>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function Field({ label, value, mono }) {
+  return (
+    <div className="adm-field-ro">
+      <span className="adm-field-ro__lbl">{label}</span>
+      <span className={`adm-field-ro__val ${mono ? 'mono' : ''}`}>{value}</span>
+    </div>
+  );
+}
+
+function _catLabel(cat) {
+  const map = {
+    requests: 'الطلبات', payments: 'الدفعات', users: 'المستخدمون',
+    roles: 'الأدوار', system: 'النظام', reports: 'التقارير',
+    audit: 'سجل التدقيق', content: 'المحتوى',
+  };
+  return map[cat] || cat;
+}
+function _parseUA(ua) {
+  if (!ua) return 'جهاز غير معروف';
+  if (/iPhone/i.test(ua)) return 'iPhone';
+  if (/Android/i.test(ua)) return 'Android';
+  if (/iPad/i.test(ua)) return 'iPad';
+  if (/Chrome/i.test(ua) && /Mobile/i.test(ua)) return 'Chrome Mobile';
+  if (/Chrome/i.test(ua)) return 'Chrome';
+  if (/Firefox/i.test(ua)) return 'Firefox';
+  if (/Safari/i.test(ua)) return 'Safari';
+  if (/Edge/i.test(ua)) return 'Edge';
+  return 'متصفح ' + ua.split(' ')[0];
+}
+
+// ─────────────────────────────────────────────────────────────
+//  PASSWORD RESET MODAL — proper UI with strength meter + policy
+// ─────────────────────────────────────────────────────────────
+function PasswordResetModal({ user, onClose, onDone }) {
+  const [pwd, setPwd] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const toast = window.useToast();
+
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const generate = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+    let p = '';
+    for (let i = 0; i < 12; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    setPwd(p);
+    setConfirm(p);
+    setShow(true);
+  };
+
+  const submit = async (e) => {
+    e && e.preventDefault();
+    setError(null);
+    if (pwd !== confirm) { setError('كلمتا المرور غير متطابقتين'); return; }
+    setBusy(true);
+    const res = await window.Auth.adminResetPassword(user.id, pwd);
+    setBusy(false);
+    if (res.ok) {
+      window.DB.log('user.password.reset', user.username);
+      onDone && onDone();
+    } else {
+      setError(res.message || 'تعذّر إعادة التعيين');
+    }
+  };
+
+  return (
+    <Modal open onClose={onClose}
+           icon="key" title={`إعادة تعيين كلمة المرور — ${user.name}`}
+           sub="سيُطلب من المستخدم تغييرها فور الدخول التالي"
+           footer={<>
+             <button className="f-btn" onClick={onClose}>إلغاء</button>
+             <button className="f-btn f-btn--primary" onClick={submit} disabled={busy || !pwd}>
+               {busy ? 'جاري الحفظ…' : 'حفظ'}
+             </button>
+           </>}>
+      <div className="adm-form">
+        <div className="adm-field">
+          <label>كلمة المرور الجديدة</label>
+          <div style={{ display:'flex', gap:8 }}>
+            <input type={show ? 'text' : 'password'} value={pwd}
+                   onChange={e => setPwd(e.target.value)}
+                   placeholder="٨ أحرف على الأقل" autoFocus
+                   style={{ flex:1 }} />
+            <button type="button" className="f-btn" onClick={() => setShow(s => !s)} title={show ? 'إخفاء' : 'إظهار'}>
+              <Icon name={show ? 'visibility_off' : 'visibility'} />
+            </button>
+            <button type="button" className="f-btn" onClick={generate} title="توليد كلمة مرور قوية">
+              <Icon name="auto_fix_high" />
+            </button>
+          </div>
+        </div>
+        <div className="adm-field">
+          <label>تأكيد كلمة المرور</label>
+          <input type={show ? 'text' : 'password'} value={confirm}
+                 onChange={e => setConfirm(e.target.value)} />
+        </div>
+        {pwd && window.PasswordStrength && <window.PasswordStrength password={pwd} />}
+        {error && <div className="lg-alert lg-alert--err"><Icon name="error" /><span>{error}</span></div>}
+      </div>
+    </Modal>
+  );
+}
+
+// expose PasswordStrength inline for the modal (mirrors final_login.jsx)
+function PasswordStrength({ password }) {
+  const score = useMemo(() => {
+    if (!password) return 0;
+    let s = 0;
+    if (password.length >= 8) s++;
+    if (password.length >= 12) s++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) s++;
+    if (/\d/.test(password)) s++;
+    if (/[^A-Za-z0-9]/.test(password)) s++;
+    return Math.min(s, 4);
+  }, [password]);
+  if (!password) return null;
+  const labels = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'جيدة', 'قوية'];
+  return (
+    <div className="lg-strength" data-score={score}>
+      <div className="lg-strength__bar">
+        {[0,1,2,3].map(i => <span key={i} className={i < score ? 'on' : ''} />)}
+      </div>
+      <small>قوّة كلمة المرور: <b>{labels[score]}</b></small>
+    </div>
+  );
+}
+window.PasswordStrength = PasswordStrength;
 
 // =============================================================
 // 5) SETTINGS
@@ -895,6 +1481,392 @@ function AuditTab() {
 }
 
 // =============================================================
+// ROLES & PERMISSIONS — three-column layout: list / details / matrix
+// =============================================================
+
+const CATEGORY_LABEL = {
+  requests: 'الطلبات',
+  payments: 'الدفعات',
+  users:    'المستخدمون',
+  roles:    'الأدوار',
+  system:   'النظام',
+  reports:  'التقارير',
+  audit:    'سجل التدقيق',
+  content:  'المحتوى',
+};
+const CATEGORY_ICON = {
+  requests: 'description',
+  payments: 'payments',
+  users:    'group',
+  roles:    'badge',
+  system:   'tune',
+  reports:  'analytics',
+  audit:    'history',
+  content:  'edit_note',
+};
+const CATEGORY_ORDER = ['requests','payments','users','roles','system','reports','audit','content'];
+
+function RolesTab() {
+  const roles = useStore(window.DB.roles);
+  const users = useStore(window.DB.users);
+  const perms = useStore(window.DB.permissions);
+  const can = window.Auth.can;
+  const toast = window.useToast();
+
+  const [selected, setSelected] = useState(null);     // role id
+  const [creating, setCreating] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null);
+
+  // Default selection: first role
+  React.useEffect(() => {
+    if (!selected && roles.length > 0) setSelected(roles[0].id);
+  }, [roles, selected]);
+
+  const current = roles.find(r => r.id === selected);
+  const usersInRole = users.filter(u => u.roleId === selected);
+
+  // Permission matrix toggling
+  const togglePerm = (key) => {
+    if (!current || !can('role.manage')) return;
+    const has = (current.permissions || []).includes(key);
+    const next = has
+      ? (current.permissions || []).filter(k => k !== key)
+      : [...(current.permissions || []), key];
+    window.DB.roles.update(current.id, { permissions: next });
+    window.DB.log('role.permission.toggle', current.key, { permission: key, granted: !has });
+  };
+  const toggleCategory = (cat, grant) => {
+    if (!current || !can('role.manage')) return;
+    const catKeys = perms.filter(p => p.category === cat).map(p => p.key);
+    const set = new Set(current.permissions || []);
+    if (grant) catKeys.forEach(k => set.add(k));
+    else       catKeys.forEach(k => set.delete(k));
+    window.DB.roles.update(current.id, { permissions: [...set] });
+    window.DB.log('role.permission.bulk', current.key, { category: cat, granted: grant });
+  };
+  const grantAll = () => {
+    if (!current || !can('role.manage')) return;
+    window.DB.roles.update(current.id, { permissions: perms.map(p => p.key) });
+    window.DB.log('role.permission.bulk', current.key, { all: true });
+  };
+  const revokeAll = () => {
+    if (!current || !can('role.manage')) return;
+    window.DB.roles.update(current.id, { permissions: [] });
+    window.DB.log('role.permission.bulk', current.key, { all: false });
+  };
+
+  const onCreate = (data) => {
+    const exists = roles.some(r => r.key === data.key);
+    if (exists) { toast.push({ kind:'error', title:'الـ key مستخدم بالفعل' }); return; }
+    const created = window.DB.roles.create({ ...data, isSystem: false, permissions: data.permissions || [] });
+    window.DB.log('role.create', data.key);
+    toast.push({ kind:'success', title:'تم إنشاء الدور', body: data.name });
+    setSelected(created.id);
+    setCreating(false);
+  };
+  const onDelete = () => {
+    if (!current) return;
+    if (current.isSystem) {
+      toast.push({ kind:'error', title:'لا يمكن حذف دور نظامي' });
+      setConfirmDel(null);
+      return;
+    }
+    if (usersInRole.length > 0) {
+      toast.push({ kind:'error', title:`لا يمكن الحذف: ${usersInRole.length} مستخدم يستخدم هذا الدور` });
+      setConfirmDel(null);
+      return;
+    }
+    window.DB.roles.remove(current.id);
+    window.DB.log('role.delete', current.key);
+    toast.push({ kind:'info', title:'تم حذف الدور' });
+    setSelected(roles[0]?.id || null);
+    setConfirmDel(null);
+  };
+  const onClone = () => {
+    if (!current) return;
+    const newKey = current.key + '_copy_' + Date.now().toString(36).slice(-4);
+    const created = window.DB.roles.create({
+      key: newKey,
+      name: current.name + ' (نسخة)',
+      description: current.description || '',
+      isSystem: false,
+      permissions: [...(current.permissions || [])],
+    });
+    window.DB.log('role.clone', current.key, { newKey });
+    toast.push({ kind:'success', title:'تم نسخ الدور', body: created.name });
+    setSelected(created.id);
+  };
+  const renameRole = (patch) => {
+    if (!current) return;
+    window.DB.roles.update(current.id, patch);
+    window.DB.log('role.update', current.key, patch);
+  };
+
+  // Permissions grouped by category
+  const permsByCat = perms.reduce((acc, p) => {
+    (acc[p.category] = acc[p.category] || []).push(p);
+    return acc;
+  }, {});
+
+  return (
+    <div className="adm-roles">
+      {/* ----- LEFT: list of roles ----- */}
+      <aside className="adm-roles__list">
+        <div className="adm-roles__list-hdr">
+          <span>الأدوار</span>
+          {can('role.manage') && (
+            <button className="adm-roles__add" onClick={() => setCreating(true)} title="إنشاء دور جديد">
+              <Icon name="add" />
+            </button>
+          )}
+        </div>
+        <div className="adm-roles__list-body">
+          {roles.map(r => {
+            const count = users.filter(u => u.roleId === r.id).length;
+            return (
+              <button key={r.id}
+                      className={`adm-rolerow ${selected === r.id ? 'is-on' : ''}`}
+                      onClick={() => setSelected(r.id)}>
+                <span className="adm-rolerow__main">
+                  <span className="adm-rolerow__name">
+                    {r.name}
+                    {r.isSystem && (
+                      <span className="adm-rolerow__sys" title="دور نظامي — لا يمكن حذفه">
+                        <Icon name="lock" />
+                      </span>
+                    )}
+                  </span>
+                  <span className="adm-rolerow__meta">
+                    <code>{r.key}</code> · {(r.permissions||[]).length} صلاحية · {count} مستخدم
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {/* ----- RIGHT: editor for selected role ----- */}
+      {!current ? (
+        <div className="adm-roles__editor adm-empty">
+          <Icon name="badge" />
+          <div>اختر دوراً لعرض الصلاحيات</div>
+        </div>
+      ) : (
+        <div className="adm-roles__editor">
+          {/* Header */}
+          <header className="adm-roleed__hdr">
+            <div className="adm-roleed__id">
+              <span className="adm-roleed__icon"><Icon name="badge" /></span>
+              <div>
+                {can('role.manage') ? (
+                  <input className="adm-roleed__name"
+                         value={current.name}
+                         onChange={e => renameRole({ name: e.target.value })}
+                         spellCheck={false} />
+                ) : (
+                  <h2 className="adm-roleed__name as-text">{current.name}</h2>
+                )}
+                <div className="adm-roleed__sub">
+                  <code>{current.key}</code>
+                  {current.isSystem && <span className="adm-pill adm-pill--info">نظامي</span>}
+                  <span className="adm-roleed__count">
+                    {(current.permissions||[]).length} / {perms.length} صلاحية
+                  </span>
+                  <span className="adm-roleed__users">
+                    <Icon name="group" /> {usersInRole.length} مستخدم
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="adm-roleed__actions">
+              {can('role.manage') && (
+                <>
+                  <button className="f-btn" onClick={grantAll}>
+                    <Icon name="done_all" /> منح الكل
+                  </button>
+                  <button className="f-btn" onClick={revokeAll}>
+                    <Icon name="remove_done" /> سحب الكل
+                  </button>
+                  <button className="f-btn" onClick={onClone}>
+                    <Icon name="content_copy" /> نسخ كقالب
+                  </button>
+                  {!current.isSystem && (
+                    <button className="f-btn f-btn--danger" onClick={() => setConfirmDel(current)}>
+                      <Icon name="delete" /> حذف
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </header>
+
+          {can('role.manage') && (
+            <div className="adm-roleed__desc">
+              <label className="adm-roleed__desc-lbl">الوصف</label>
+              <input className="adm-roleed__desc-in"
+                     value={current.description || ''}
+                     onChange={e => renameRole({ description: e.target.value })}
+                     placeholder="وصف موجز للدور وكيف يُستخدم…" />
+            </div>
+          )}
+
+          {/* Permission matrix by category */}
+          <div className="adm-roleed__matrix">
+            {CATEGORY_ORDER.map(cat => {
+              const items = permsByCat[cat];
+              if (!items || items.length === 0) return null;
+              const granted = items.filter(p => (current.permissions||[]).includes(p.key)).length;
+              const allOn = granted === items.length;
+              const someOn = granted > 0 && !allOn;
+              return (
+                <div key={cat} className="adm-permblock">
+                  <header className="adm-permblock__hdr">
+                    <span className="adm-permblock__title">
+                      <Icon name={CATEGORY_ICON[cat] || 'lock'} />
+                      {CATEGORY_LABEL[cat] || cat}
+                    </span>
+                    <span className="adm-permblock__count">
+                      <span className={`adm-permblock__dot ${allOn ? 'all' : someOn ? 'some' : ''}`} />
+                      {granted} / {items.length}
+                    </span>
+                    {can('role.manage') && (
+                      <div className="adm-permblock__bulk">
+                        <button onClick={() => toggleCategory(cat, true)} disabled={allOn}>منح الكل</button>
+                        <button onClick={() => toggleCategory(cat, false)} disabled={granted === 0}>سحب الكل</button>
+                      </div>
+                    )}
+                  </header>
+                  <ul className="adm-permblock__list">
+                    {items.map(p => {
+                      const checked = (current.permissions||[]).includes(p.key);
+                      return (
+                        <li key={p.key}>
+                          <label className={`adm-permitem ${checked ? 'is-on' : ''}`}>
+                            <input type="checkbox"
+                                   checked={checked}
+                                   disabled={!can('role.manage')}
+                                   onChange={() => togglePerm(p.key)} />
+                            <span className="adm-permitem__check">
+                              {checked && <Icon name="check" />}
+                            </span>
+                            <span className="adm-permitem__main">
+                              <span className="adm-permitem__lbl">{p.label}</span>
+                              <code className="adm-permitem__key">{p.key}</code>
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Users using this role */}
+          {usersInRole.length > 0 && (
+            <div className="adm-roleed__users-list">
+              <header>
+                <Icon name="group" /> المستخدمون في هذا الدور ({usersInRole.length})
+              </header>
+              <div className="adm-roleed__users-grid">
+                {usersInRole.map(u => (
+                  <div key={u.id} className="adm-roleed__user">
+                    <span className="adm-userav" style={{ width:30, height:30, fontSize:'0.78rem' }}>
+                      {u.name.slice(0,1)}
+                    </span>
+                    <span>
+                      <div style={{ fontWeight:600, fontSize:'0.86rem' }}>{u.name}</div>
+                      <div style={{ fontSize:'0.74rem', color:'var(--f-ink-3)', fontFamily:'var(--f-mono)' }}>@{u.username}</div>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {creating && (
+        <RoleCreateModal
+          onClose={() => setCreating(false)}
+          onCreate={onCreate}
+          existingKeys={roles.map(r => r.key)}
+        />
+      )}
+      <window.ConfirmDialog
+        open={!!confirmDel} danger icon="delete"
+        title="حذف الدور؟"
+        description={confirmDel ? `سيتم حذف الدور "${confirmDel.name}" نهائياً. هذا الإجراء لا يمكن التراجع عنه.` : ''}
+        confirmLabel="نعم، احذف" cancelLabel="إلغاء"
+        onConfirm={onDelete} onCancel={() => setConfirmDel(null)}
+      />
+    </div>
+  );
+}
+
+function RoleCreateModal({ onClose, onCreate, existingKeys }) {
+  const [name, setName] = useState('');
+  const [key, setKey]   = useState('');
+  const [description, setDescription] = useState('');
+  const [autoKey, setAutoKey] = useState(true);
+
+  // auto-derive key from name (latin-friendly slug); user can override
+  React.useEffect(() => {
+    if (!autoKey) return;
+    const slug = name.trim().toLowerCase()
+      .replace(/[^a-z0-9؀-ۿ]+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 32);
+    setKey(slug);
+  }, [name, autoKey]);
+
+  const taken = key && existingKeys.includes(key);
+  const valid = name.trim() && key.trim() && !taken;
+
+  return (
+    <Modal open onClose={onClose}
+           icon="badge"
+           title="إنشاء دور جديد"
+           sub="يمكنك بعد الإنشاء تخصيص الصلاحيات بدقة"
+           footer={<>
+             <button className="f-btn" onClick={onClose}>إلغاء</button>
+             <button className="f-btn f-btn--primary" disabled={!valid}
+                     onClick={() => onCreate({ name: name.trim(), key: key.trim(), description: description.trim() })}>
+               <Icon name="check" /> إنشاء
+             </button>
+           </>}>
+      <div className="adm-form">
+        <div className="adm-field">
+          <label>اسم الدور</label>
+          <input value={name} onChange={e => setName(e.target.value)}
+                 placeholder="مثلاً: محاسب أول" autoFocus />
+        </div>
+        <div className="adm-field">
+          <label>
+            معرّف الدور (key)
+            <button type="button" className="adm-roleed__autokey"
+                    onClick={() => setAutoKey(a => !a)}>
+              {autoKey ? 'تعديل يدوي' : 'توليد تلقائي'}
+            </button>
+          </label>
+          <input value={key} onChange={e => { setAutoKey(false); setKey(e.target.value); }}
+                 placeholder="senior_accountant" />
+          {taken && <small style={{ color:'var(--f-err)' }}>هذا المعرّف مستخدم بالفعل</small>}
+        </div>
+        <div className="adm-field">
+          <label>الوصف</label>
+          <textarea value={description} onChange={e => setDescription(e.target.value)}
+                    rows={3}
+                    placeholder="ما الذي يفعله هذا الدور؟ من يستخدمه؟" />
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// =============================================================
 // MAIN ADMIN PAGE
 // =============================================================
 function AdminPage({ nav, initialTab }) {
@@ -916,21 +1888,23 @@ function AdminPage({ nav, initialTab }) {
   }
 
   const tabs = [
-    { k: 'overview', l: 'نظرة عامة',     ico: 'space_dashboard', count: null },
-    { k: 'services', l: 'الخدمات',       ico: 'apps',            count: services.length },
-    { k: 'tips',     l: 'النصائح',       ico: 'tips_and_updates',count: tips.length },
-    { k: 'users',    l: 'المستخدمون',    ico: 'group',           count: users.length, perm: 'users.read' },
-    { k: 'settings', l: 'إعدادات المركز',ico: 'tune',            count: null },
-    { k: 'audit',    l: 'سجل التدقيق',   ico: 'history',         count: audit.length,  perm: 'audit.read' },
+    { k: 'overview', l: 'نظرة عامة',         ico: 'space_dashboard', count: null },
+    { k: 'services', l: 'الخدمات',           ico: 'apps',            count: services.length },
+    { k: 'tips',     l: 'النصائح',           ico: 'tips_and_updates',count: tips.length },
+    { k: 'users',    l: 'المستخدمون',        ico: 'group',           count: users.length, perm: 'user.read' },
+    { k: 'roles',    l: 'الأدوار والصلاحيات', ico: 'badge',           count: (window.DB.roles.list() || []).length, perm: 'role.read' },
+    { k: 'settings', l: 'إعدادات المركز',    ico: 'tune',            count: null },
+    { k: 'audit',    l: 'سجل التدقيق',       ico: 'history',         count: audit.length,  perm: 'audit.read' },
   ].filter(t => !t.perm || window.Auth.can(t.perm));
 
   const titles = {
-    overview: { l: 'لوحة الأدمن',        s: 'نظرة عامة على إعدادات وبيانات النظام', ico: 'admin_panel_settings' },
-    services: { l: 'إدارة الخدمات',      s: 'إضافة وتعديل وحذف خدمات المركز',       ico: 'apps' },
-    tips:     { l: 'إدارة النصائح',      s: 'تحكم بالنصائح والإرشادات المعروضة',    ico: 'tips_and_updates' },
-    users:    { l: 'إدارة المستخدمين',    s: 'إضافة المستخدمين وتحديد صلاحياتهم',     ico: 'group' },
-    settings: { l: 'إعدادات المركز',      s: 'بيانات المركز والترويسة والنسخ الاحتياطي', ico: 'tune' },
-    audit:    { l: 'سجل التدقيق',         s: 'كل ما تم في النظام مع وقت ومنفّذ',     ico: 'history' },
+    overview: { l: 'لوحة الأدمن',         s: 'نظرة عامة على إعدادات وبيانات النظام', ico: 'admin_panel_settings' },
+    services: { l: 'إدارة الخدمات',       s: 'إضافة وتعديل وحذف خدمات المركز',       ico: 'apps' },
+    tips:     { l: 'إدارة النصائح',       s: 'تحكم بالنصائح والإرشادات المعروضة',    ico: 'tips_and_updates' },
+    users:    { l: 'إدارة المستخدمين',     s: 'إضافة المستخدمين وتحديد صلاحياتهم',     ico: 'group' },
+    roles:    { l: 'الأدوار والصلاحيات',   s: 'إدارة الأدوار وتخصيص الصلاحيات بدقة',  ico: 'badge' },
+    settings: { l: 'إعدادات المركز',       s: 'بيانات المركز والترويسة والنسخ الاحتياطي', ico: 'tune' },
+    audit:    { l: 'سجل التدقيق',          s: 'كل ما تم في النظام مع وقت ومنفّذ',     ico: 'history' },
   };
 
   let body;
@@ -938,6 +1912,7 @@ function AdminPage({ nav, initialTab }) {
   else if (tab === 'services') body = <ServicesTab />;
   else if (tab === 'tips')     body = <TipsTab />;
   else if (tab === 'users')    body = <UsersTab />;
+  else if (tab === 'roles')    body = <RolesTab />;
   else if (tab === 'settings') body = <SettingsTab />;
   else if (tab === 'audit')    body = <AuditTab />;
 
@@ -956,7 +1931,7 @@ function AdminPage({ nav, initialTab }) {
           <span className="adm-side__user-avatar">{me.name.slice(0,1)}</span>
           <div className="adm-side__user-main">
             <span className="adm-side__user-name">{me.name}</span>
-            <span className="adm-side__user-role">{window.Auth.ROLE_LABELS[me.role]}</span>
+            <span className="adm-side__user-role">{window.Auth.roleLabel(me)}</span>
           </div>
         </div>
       </aside>
