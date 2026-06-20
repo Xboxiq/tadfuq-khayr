@@ -1481,6 +1481,392 @@ function AuditTab() {
 }
 
 // =============================================================
+// ROLES & PERMISSIONS — three-column layout: list / details / matrix
+// =============================================================
+
+const CATEGORY_LABEL = {
+  requests: 'الطلبات',
+  payments: 'الدفعات',
+  users:    'المستخدمون',
+  roles:    'الأدوار',
+  system:   'النظام',
+  reports:  'التقارير',
+  audit:    'سجل التدقيق',
+  content:  'المحتوى',
+};
+const CATEGORY_ICON = {
+  requests: 'description',
+  payments: 'payments',
+  users:    'group',
+  roles:    'badge',
+  system:   'tune',
+  reports:  'analytics',
+  audit:    'history',
+  content:  'edit_note',
+};
+const CATEGORY_ORDER = ['requests','payments','users','roles','system','reports','audit','content'];
+
+function RolesTab() {
+  const roles = useStore(window.DB.roles);
+  const users = useStore(window.DB.users);
+  const perms = useStore(window.DB.permissions);
+  const can = window.Auth.can;
+  const toast = window.useToast();
+
+  const [selected, setSelected] = useState(null);     // role id
+  const [creating, setCreating] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null);
+
+  // Default selection: first role
+  React.useEffect(() => {
+    if (!selected && roles.length > 0) setSelected(roles[0].id);
+  }, [roles, selected]);
+
+  const current = roles.find(r => r.id === selected);
+  const usersInRole = users.filter(u => u.roleId === selected);
+
+  // Permission matrix toggling
+  const togglePerm = (key) => {
+    if (!current || !can('role.manage')) return;
+    const has = (current.permissions || []).includes(key);
+    const next = has
+      ? (current.permissions || []).filter(k => k !== key)
+      : [...(current.permissions || []), key];
+    window.DB.roles.update(current.id, { permissions: next });
+    window.DB.log('role.permission.toggle', current.key, { permission: key, granted: !has });
+  };
+  const toggleCategory = (cat, grant) => {
+    if (!current || !can('role.manage')) return;
+    const catKeys = perms.filter(p => p.category === cat).map(p => p.key);
+    const set = new Set(current.permissions || []);
+    if (grant) catKeys.forEach(k => set.add(k));
+    else       catKeys.forEach(k => set.delete(k));
+    window.DB.roles.update(current.id, { permissions: [...set] });
+    window.DB.log('role.permission.bulk', current.key, { category: cat, granted: grant });
+  };
+  const grantAll = () => {
+    if (!current || !can('role.manage')) return;
+    window.DB.roles.update(current.id, { permissions: perms.map(p => p.key) });
+    window.DB.log('role.permission.bulk', current.key, { all: true });
+  };
+  const revokeAll = () => {
+    if (!current || !can('role.manage')) return;
+    window.DB.roles.update(current.id, { permissions: [] });
+    window.DB.log('role.permission.bulk', current.key, { all: false });
+  };
+
+  const onCreate = (data) => {
+    const exists = roles.some(r => r.key === data.key);
+    if (exists) { toast.push({ kind:'error', title:'الـ key مستخدم بالفعل' }); return; }
+    const created = window.DB.roles.create({ ...data, isSystem: false, permissions: data.permissions || [] });
+    window.DB.log('role.create', data.key);
+    toast.push({ kind:'success', title:'تم إنشاء الدور', body: data.name });
+    setSelected(created.id);
+    setCreating(false);
+  };
+  const onDelete = () => {
+    if (!current) return;
+    if (current.isSystem) {
+      toast.push({ kind:'error', title:'لا يمكن حذف دور نظامي' });
+      setConfirmDel(null);
+      return;
+    }
+    if (usersInRole.length > 0) {
+      toast.push({ kind:'error', title:`لا يمكن الحذف: ${usersInRole.length} مستخدم يستخدم هذا الدور` });
+      setConfirmDel(null);
+      return;
+    }
+    window.DB.roles.remove(current.id);
+    window.DB.log('role.delete', current.key);
+    toast.push({ kind:'info', title:'تم حذف الدور' });
+    setSelected(roles[0]?.id || null);
+    setConfirmDel(null);
+  };
+  const onClone = () => {
+    if (!current) return;
+    const newKey = current.key + '_copy_' + Date.now().toString(36).slice(-4);
+    const created = window.DB.roles.create({
+      key: newKey,
+      name: current.name + ' (نسخة)',
+      description: current.description || '',
+      isSystem: false,
+      permissions: [...(current.permissions || [])],
+    });
+    window.DB.log('role.clone', current.key, { newKey });
+    toast.push({ kind:'success', title:'تم نسخ الدور', body: created.name });
+    setSelected(created.id);
+  };
+  const renameRole = (patch) => {
+    if (!current) return;
+    window.DB.roles.update(current.id, patch);
+    window.DB.log('role.update', current.key, patch);
+  };
+
+  // Permissions grouped by category
+  const permsByCat = perms.reduce((acc, p) => {
+    (acc[p.category] = acc[p.category] || []).push(p);
+    return acc;
+  }, {});
+
+  return (
+    <div className="adm-roles">
+      {/* ----- LEFT: list of roles ----- */}
+      <aside className="adm-roles__list">
+        <div className="adm-roles__list-hdr">
+          <span>الأدوار</span>
+          {can('role.manage') && (
+            <button className="adm-roles__add" onClick={() => setCreating(true)} title="إنشاء دور جديد">
+              <Icon name="add" />
+            </button>
+          )}
+        </div>
+        <div className="adm-roles__list-body">
+          {roles.map(r => {
+            const count = users.filter(u => u.roleId === r.id).length;
+            return (
+              <button key={r.id}
+                      className={`adm-rolerow ${selected === r.id ? 'is-on' : ''}`}
+                      onClick={() => setSelected(r.id)}>
+                <span className="adm-rolerow__main">
+                  <span className="adm-rolerow__name">
+                    {r.name}
+                    {r.isSystem && (
+                      <span className="adm-rolerow__sys" title="دور نظامي — لا يمكن حذفه">
+                        <Icon name="lock" />
+                      </span>
+                    )}
+                  </span>
+                  <span className="adm-rolerow__meta">
+                    <code>{r.key}</code> · {(r.permissions||[]).length} صلاحية · {count} مستخدم
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {/* ----- RIGHT: editor for selected role ----- */}
+      {!current ? (
+        <div className="adm-roles__editor adm-empty">
+          <Icon name="badge" />
+          <div>اختر دوراً لعرض الصلاحيات</div>
+        </div>
+      ) : (
+        <div className="adm-roles__editor">
+          {/* Header */}
+          <header className="adm-roleed__hdr">
+            <div className="adm-roleed__id">
+              <span className="adm-roleed__icon"><Icon name="badge" /></span>
+              <div>
+                {can('role.manage') ? (
+                  <input className="adm-roleed__name"
+                         value={current.name}
+                         onChange={e => renameRole({ name: e.target.value })}
+                         spellCheck={false} />
+                ) : (
+                  <h2 className="adm-roleed__name as-text">{current.name}</h2>
+                )}
+                <div className="adm-roleed__sub">
+                  <code>{current.key}</code>
+                  {current.isSystem && <span className="adm-pill adm-pill--info">نظامي</span>}
+                  <span className="adm-roleed__count">
+                    {(current.permissions||[]).length} / {perms.length} صلاحية
+                  </span>
+                  <span className="adm-roleed__users">
+                    <Icon name="group" /> {usersInRole.length} مستخدم
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="adm-roleed__actions">
+              {can('role.manage') && (
+                <>
+                  <button className="f-btn" onClick={grantAll}>
+                    <Icon name="done_all" /> منح الكل
+                  </button>
+                  <button className="f-btn" onClick={revokeAll}>
+                    <Icon name="remove_done" /> سحب الكل
+                  </button>
+                  <button className="f-btn" onClick={onClone}>
+                    <Icon name="content_copy" /> نسخ كقالب
+                  </button>
+                  {!current.isSystem && (
+                    <button className="f-btn f-btn--danger" onClick={() => setConfirmDel(current)}>
+                      <Icon name="delete" /> حذف
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </header>
+
+          {can('role.manage') && (
+            <div className="adm-roleed__desc">
+              <label className="adm-roleed__desc-lbl">الوصف</label>
+              <input className="adm-roleed__desc-in"
+                     value={current.description || ''}
+                     onChange={e => renameRole({ description: e.target.value })}
+                     placeholder="وصف موجز للدور وكيف يُستخدم…" />
+            </div>
+          )}
+
+          {/* Permission matrix by category */}
+          <div className="adm-roleed__matrix">
+            {CATEGORY_ORDER.map(cat => {
+              const items = permsByCat[cat];
+              if (!items || items.length === 0) return null;
+              const granted = items.filter(p => (current.permissions||[]).includes(p.key)).length;
+              const allOn = granted === items.length;
+              const someOn = granted > 0 && !allOn;
+              return (
+                <div key={cat} className="adm-permblock">
+                  <header className="adm-permblock__hdr">
+                    <span className="adm-permblock__title">
+                      <Icon name={CATEGORY_ICON[cat] || 'lock'} />
+                      {CATEGORY_LABEL[cat] || cat}
+                    </span>
+                    <span className="adm-permblock__count">
+                      <span className={`adm-permblock__dot ${allOn ? 'all' : someOn ? 'some' : ''}`} />
+                      {granted} / {items.length}
+                    </span>
+                    {can('role.manage') && (
+                      <div className="adm-permblock__bulk">
+                        <button onClick={() => toggleCategory(cat, true)} disabled={allOn}>منح الكل</button>
+                        <button onClick={() => toggleCategory(cat, false)} disabled={granted === 0}>سحب الكل</button>
+                      </div>
+                    )}
+                  </header>
+                  <ul className="adm-permblock__list">
+                    {items.map(p => {
+                      const checked = (current.permissions||[]).includes(p.key);
+                      return (
+                        <li key={p.key}>
+                          <label className={`adm-permitem ${checked ? 'is-on' : ''}`}>
+                            <input type="checkbox"
+                                   checked={checked}
+                                   disabled={!can('role.manage')}
+                                   onChange={() => togglePerm(p.key)} />
+                            <span className="adm-permitem__check">
+                              {checked && <Icon name="check" />}
+                            </span>
+                            <span className="adm-permitem__main">
+                              <span className="adm-permitem__lbl">{p.label}</span>
+                              <code className="adm-permitem__key">{p.key}</code>
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Users using this role */}
+          {usersInRole.length > 0 && (
+            <div className="adm-roleed__users-list">
+              <header>
+                <Icon name="group" /> المستخدمون في هذا الدور ({usersInRole.length})
+              </header>
+              <div className="adm-roleed__users-grid">
+                {usersInRole.map(u => (
+                  <div key={u.id} className="adm-roleed__user">
+                    <span className="adm-userav" style={{ width:30, height:30, fontSize:'0.78rem' }}>
+                      {u.name.slice(0,1)}
+                    </span>
+                    <span>
+                      <div style={{ fontWeight:600, fontSize:'0.86rem' }}>{u.name}</div>
+                      <div style={{ fontSize:'0.74rem', color:'var(--f-ink-3)', fontFamily:'var(--f-mono)' }}>@{u.username}</div>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {creating && (
+        <RoleCreateModal
+          onClose={() => setCreating(false)}
+          onCreate={onCreate}
+          existingKeys={roles.map(r => r.key)}
+        />
+      )}
+      <window.ConfirmDialog
+        open={!!confirmDel} danger icon="delete"
+        title="حذف الدور؟"
+        description={confirmDel ? `سيتم حذف الدور "${confirmDel.name}" نهائياً. هذا الإجراء لا يمكن التراجع عنه.` : ''}
+        confirmLabel="نعم، احذف" cancelLabel="إلغاء"
+        onConfirm={onDelete} onCancel={() => setConfirmDel(null)}
+      />
+    </div>
+  );
+}
+
+function RoleCreateModal({ onClose, onCreate, existingKeys }) {
+  const [name, setName] = useState('');
+  const [key, setKey]   = useState('');
+  const [description, setDescription] = useState('');
+  const [autoKey, setAutoKey] = useState(true);
+
+  // auto-derive key from name (latin-friendly slug); user can override
+  React.useEffect(() => {
+    if (!autoKey) return;
+    const slug = name.trim().toLowerCase()
+      .replace(/[^a-z0-9؀-ۿ]+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 32);
+    setKey(slug);
+  }, [name, autoKey]);
+
+  const taken = key && existingKeys.includes(key);
+  const valid = name.trim() && key.trim() && !taken;
+
+  return (
+    <Modal open onClose={onClose}
+           icon="badge"
+           title="إنشاء دور جديد"
+           sub="يمكنك بعد الإنشاء تخصيص الصلاحيات بدقة"
+           footer={<>
+             <button className="f-btn" onClick={onClose}>إلغاء</button>
+             <button className="f-btn f-btn--primary" disabled={!valid}
+                     onClick={() => onCreate({ name: name.trim(), key: key.trim(), description: description.trim() })}>
+               <Icon name="check" /> إنشاء
+             </button>
+           </>}>
+      <div className="adm-form">
+        <div className="adm-field">
+          <label>اسم الدور</label>
+          <input value={name} onChange={e => setName(e.target.value)}
+                 placeholder="مثلاً: محاسب أول" autoFocus />
+        </div>
+        <div className="adm-field">
+          <label>
+            معرّف الدور (key)
+            <button type="button" className="adm-roleed__autokey"
+                    onClick={() => setAutoKey(a => !a)}>
+              {autoKey ? 'تعديل يدوي' : 'توليد تلقائي'}
+            </button>
+          </label>
+          <input value={key} onChange={e => { setAutoKey(false); setKey(e.target.value); }}
+                 placeholder="senior_accountant" />
+          {taken && <small style={{ color:'var(--f-err)' }}>هذا المعرّف مستخدم بالفعل</small>}
+        </div>
+        <div className="adm-field">
+          <label>الوصف</label>
+          <textarea value={description} onChange={e => setDescription(e.target.value)}
+                    rows={3}
+                    placeholder="ما الذي يفعله هذا الدور؟ من يستخدمه؟" />
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// =============================================================
 // MAIN ADMIN PAGE
 // =============================================================
 function AdminPage({ nav, initialTab }) {
@@ -1502,21 +1888,23 @@ function AdminPage({ nav, initialTab }) {
   }
 
   const tabs = [
-    { k: 'overview', l: 'نظرة عامة',     ico: 'space_dashboard', count: null },
-    { k: 'services', l: 'الخدمات',       ico: 'apps',            count: services.length },
-    { k: 'tips',     l: 'النصائح',       ico: 'tips_and_updates',count: tips.length },
-    { k: 'users',    l: 'المستخدمون',    ico: 'group',           count: users.length, perm: 'users.read' },
-    { k: 'settings', l: 'إعدادات المركز',ico: 'tune',            count: null },
-    { k: 'audit',    l: 'سجل التدقيق',   ico: 'history',         count: audit.length,  perm: 'audit.read' },
+    { k: 'overview', l: 'نظرة عامة',         ico: 'space_dashboard', count: null },
+    { k: 'services', l: 'الخدمات',           ico: 'apps',            count: services.length },
+    { k: 'tips',     l: 'النصائح',           ico: 'tips_and_updates',count: tips.length },
+    { k: 'users',    l: 'المستخدمون',        ico: 'group',           count: users.length, perm: 'user.read' },
+    { k: 'roles',    l: 'الأدوار والصلاحيات', ico: 'badge',           count: (window.DB.roles.list() || []).length, perm: 'role.read' },
+    { k: 'settings', l: 'إعدادات المركز',    ico: 'tune',            count: null },
+    { k: 'audit',    l: 'سجل التدقيق',       ico: 'history',         count: audit.length,  perm: 'audit.read' },
   ].filter(t => !t.perm || window.Auth.can(t.perm));
 
   const titles = {
-    overview: { l: 'لوحة الأدمن',        s: 'نظرة عامة على إعدادات وبيانات النظام', ico: 'admin_panel_settings' },
-    services: { l: 'إدارة الخدمات',      s: 'إضافة وتعديل وحذف خدمات المركز',       ico: 'apps' },
-    tips:     { l: 'إدارة النصائح',      s: 'تحكم بالنصائح والإرشادات المعروضة',    ico: 'tips_and_updates' },
-    users:    { l: 'إدارة المستخدمين',    s: 'إضافة المستخدمين وتحديد صلاحياتهم',     ico: 'group' },
-    settings: { l: 'إعدادات المركز',      s: 'بيانات المركز والترويسة والنسخ الاحتياطي', ico: 'tune' },
-    audit:    { l: 'سجل التدقيق',         s: 'كل ما تم في النظام مع وقت ومنفّذ',     ico: 'history' },
+    overview: { l: 'لوحة الأدمن',         s: 'نظرة عامة على إعدادات وبيانات النظام', ico: 'admin_panel_settings' },
+    services: { l: 'إدارة الخدمات',       s: 'إضافة وتعديل وحذف خدمات المركز',       ico: 'apps' },
+    tips:     { l: 'إدارة النصائح',       s: 'تحكم بالنصائح والإرشادات المعروضة',    ico: 'tips_and_updates' },
+    users:    { l: 'إدارة المستخدمين',     s: 'إضافة المستخدمين وتحديد صلاحياتهم',     ico: 'group' },
+    roles:    { l: 'الأدوار والصلاحيات',   s: 'إدارة الأدوار وتخصيص الصلاحيات بدقة',  ico: 'badge' },
+    settings: { l: 'إعدادات المركز',       s: 'بيانات المركز والترويسة والنسخ الاحتياطي', ico: 'tune' },
+    audit:    { l: 'سجل التدقيق',          s: 'كل ما تم في النظام مع وقت ومنفّذ',     ico: 'history' },
   };
 
   let body;
@@ -1524,6 +1912,7 @@ function AdminPage({ nav, initialTab }) {
   else if (tab === 'services') body = <ServicesTab />;
   else if (tab === 'tips')     body = <TipsTab />;
   else if (tab === 'users')    body = <UsersTab />;
+  else if (tab === 'roles')    body = <RolesTab />;
   else if (tab === 'settings') body = <SettingsTab />;
   else if (tab === 'audit')    body = <AuditTab />;
 
