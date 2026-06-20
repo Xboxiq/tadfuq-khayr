@@ -150,17 +150,34 @@
 /* ========================================================
    PRINT — show only the rendered pages
    ======================================================== */
-#pdf-print-stage { display: none; }
-.printing-pdf #pdf-print-stage {
+#pdf-print-stage,
+#docx-print-stage { display: none; }
+.printing-pdf #pdf-print-stage,
+.printing-docx #docx-print-stage {
   display: block;
   position: relative;
 }
 
+/* Word preview stage (docx-preview) — screen is hidden, print-only */
+#docx-print-stage {
+  background: #fff;
+}
+#docx-print-stage .docx-wrapper {
+  background: #fff;
+  padding: 0;
+  margin: 0 auto;
+}
+#docx-print-stage .docx-wrapper > section.docx {
+  background: #fff;
+  box-shadow: none;
+  margin: 0 auto;
+}
+
 @media print {
-  @page { size: A4 portrait; margin: 0; }
+  @page { size: auto; margin: 0; }
   body * { visibility: hidden !important; }
 
-  /* When user triggered print on our pages */
+  /* PDF overlay print path */
   body.printing-pdf #pdf-print-stage,
   body.printing-pdf #pdf-print-stage * { visibility: visible !important; }
   body.printing-pdf #pdf-print-stage {
@@ -176,10 +193,34 @@
   }
   body.printing-pdf .pdf-page:last-child { page-break-after: auto; }
 
-  /* Default: print the on-screen preview when triggered from browser print */
-  body:not(.printing-pdf) .pdf-page,
-  body:not(.printing-pdf) .pdf-page * { visibility: visible !important; }
-  body:not(.printing-pdf) .pdf-page {
+  /* Word-faithful print path (filled .docx via docx-preview) */
+  body.printing-docx #docx-print-stage,
+  body.printing-docx #docx-print-stage * { visibility: visible !important; }
+  body.printing-docx #docx-print-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+  }
+  body.printing-docx .docx-wrapper {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  body.printing-docx .docx-wrapper > section.docx {
+    box-shadow: none !important;
+    margin: 0 !important;
+    page-break-after: always;
+  }
+  body.printing-docx .docx-wrapper > section.docx:last-child {
+    page-break-after: auto;
+  }
+
+  /* Fallback: browser print on the on-screen PDF preview */
+  body:not(.printing-pdf):not(.printing-docx) .pdf-page,
+  body:not(.printing-pdf):not(.printing-docx) .pdf-page * { visibility: visible !important; }
+  body:not(.printing-pdf):not(.printing-docx) .pdf-page {
     position: relative;
     box-shadow: none !important;
     border-radius: 0 !important;

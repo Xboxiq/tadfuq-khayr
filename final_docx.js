@@ -5,8 +5,8 @@
 //     and substitutes {{placeholders}} with form values.
 //   * Word download: loads forms_word/<CODE>.docx, runs the same
 //     substitution via docxtemplater, downloads.
-//   * PDF: uses the HTML preview (window.print) — identical to
-//     the screen render.
+//   * Print: fills forms_word/<CODE>.docx via docxtemplater, renders
+//     with docx-preview, and prints — identical to the downloaded Word.
 // =============================================================
 
 (function () {
@@ -124,28 +124,65 @@
     container.appendChild(wrap);
   }
 
-  // Print using a temporary print stage with the HTML preview
-  async function printHtmlForm(svc, form) {
-    const stageId = 'lo-print-stage';
+  // Print the filled Word document (same bytes as download) via docx-preview
+  async function printFilledDocx(svc, form) {
+    const renderAsync = window.docx && window.docx.renderAsync;
+    if (!renderAsync) throw new Error('معاينة Word غير متاحة — أعد تحميل الصفحة');
+
+    const buf = await fillTemplate(svc, form);
+
+    const stageId = 'docx-print-stage';
     let stage = document.getElementById(stageId);
     if (!stage) {
       stage = document.createElement('div');
       stage.id = stageId;
       document.body.appendChild(stage);
     }
-    await renderHtmlInto(svc, form, stage);
-    document.body.classList.add('printing-lo');
+    stage.innerHTML = '';
+
+    let styleHost = document.getElementById('docx-print-styles');
+    if (!styleHost) {
+      styleHost = document.createElement('div');
+      styleHost.id = 'docx-print-styles';
+      document.head.appendChild(styleHost);
+    }
+    styleHost.innerHTML = '';
+
+    await renderAsync(buf, stage, styleHost, {
+      className: 'docx',
+      inWrapper: true,
+      hideWrapperOnPrint: true,
+      ignoreWidth: false,
+      ignoreHeight: false,
+      renderHeaders: true,
+      renderFooters: true,
+      breakPages: true,
+    });
+
+    document.body.classList.add('printing-docx');
     const cleanup = () => {
-      document.body.classList.remove('printing-lo');
+      document.body.classList.remove('printing-docx');
+      stage.innerHTML = '';
+      styleHost.innerHTML = '';
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
+
+    // Allow fonts and page layout to settle before opening the dialog
+    await new Promise(r => setTimeout(r, 400));
     window.print();
+    window.DB && window.DB.log('form.print', svc.code);
+  }
+
+  // Legacy alias — routes to the Word-faithful print path
+  async function printHtmlForm(svc, form) {
+    return printFilledDocx(svc, form);
   }
 
   window.fillDocxTemplate = fillTemplate;
   window.downloadFilledDocx = downloadDocx;
   window.renderHtmlForm = renderHtmlInto;
+  window.printFilledDocx = printFilledDocx;
   window.printHtmlForm = printHtmlForm;
   window.docxFileNameFor = fileNameFor;
 })();

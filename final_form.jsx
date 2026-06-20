@@ -658,7 +658,10 @@ function FormPage({ nav, code }) {
               <button className="f-btn" onClick={() => setTab('orig')}>
                 <Icon name="description" /> عرض الأصلية
               </button>
-              <button className="f-btn" onClick={() => { setTab('orig'); setTimeout(() => window.print(), 350); }}>
+              <button className="f-btn" onClick={async () => {
+                try { await window.printFilledDocx(svc, form); }
+                catch (e) { alert('تعذّر الطباعة: ' + e.message); }
+              }}>
                 <Icon name="print" /> طباعة
               </button>
               <button className="f-btn" onClick={exportUnified} disabled={exporting}>

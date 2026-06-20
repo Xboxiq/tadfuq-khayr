@@ -55,7 +55,7 @@ function OfficialPaper({ svc, schema, form, attachments }) {
     catch (e) { alert('تعذّر تنزيل PDF: ' + e.message); }
   };
   const onPrint = async () => {
-    try { await window.printFilledPdf(ref.current); }
+    try { await window.printFilledDocx(svc, form); }
     catch (e) { alert('تعذّر الطباعة: ' + e.message); }
   };
   const onPdfWithAttach = () => {
