@@ -33,30 +33,33 @@ function OfficialPaper({ svc, form, attachments }) {
     return () => { cancelled = true; clearTimeout(t); };
   }, [svc.code, formKey]);
 
+  const [printing, setPrinting] = React.useState(false);
+  const onPrint = async () => {
+    setPrinting(true);
+    try { await window.printFilledDocx(svc, form); }
+    catch (e) { alert('تعذّر الطباعة: ' + e.message); }
+    finally { setTimeout(() => setPrinting(false), 1000); }
+  };
   const onDownloadWord = async () => {
     try { await window.downloadFilledDocx(svc, form); }
     catch (e) { alert('تعذّر تنزيل ملف Word: ' + e.message); }
-  };
-  const onPrint = () => {
-    try { window.printFilledDocx(); }
-    catch (e) { alert('تعذّر الطباعة: ' + e.message); }
   };
 
   return (
     <div className="of-wrap">
       <div className="of-toolbar no-print">
-        <button className="f-btn f-btn--primary f-btn--lg" onClick={onDownloadWord}>
+        <button className="f-btn f-btn--primary f-btn--lg" onClick={onPrint} disabled={printing}>
+          <Icon name={printing ? 'hourglass_top' : 'print'} />
+          <span>
+            <strong>{printing ? 'جاري التجهيز…' : 'طباعة'}</strong>
+            <small>نفس ملف Word الرسمي</small>
+          </span>
+        </button>
+        <button className="f-btn f-btn--lg" onClick={onDownloadWord}>
           <Icon name="description" />
           <span>
             <strong>تنزيل ملف Word</strong>
-            <small>النموذج الرسمي + بياناتك</small>
-          </span>
-        </button>
-        <button className="f-btn f-btn--lg" onClick={onPrint}>
-          <Icon name="print" />
-          <span>
-            <strong>طباعة</strong>
-            <small>النسخة الأصلية</small>
+            <small>للأرشفة أو التعديل</small>
           </span>
         </button>
       </div>

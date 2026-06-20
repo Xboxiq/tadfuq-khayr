@@ -1,14 +1,15 @@
 // =============================================================
-// FINAL — Simple Word-only flow
-//
-// 1. Fill the template .docx with the form values (docxtemplater)
-// 2. Render the filled .docx inline (docx-preview) for preview
-// 3. Two actions: تنزيل Word + طباعة
-//    "Print" uses window.print on the rendered preview.
+// FINAL — Word-only flow
+// 1. Fill template .docx with form values (docxtemplater)
+// 2. Preview via docx-preview
+// 3. Print: render docx into a dedicated print iframe and call
+//    contentWindow.print() — the iframe is isolated from the
+//    page's CSS, so the printed output matches what docx-preview
+//    renders (a faithful representation of the Word document).
+// 4. Download: the filled .docx as-is (Word opens it perfectly).
 // =============================================================
 
 (function () {
-  let _renderedFor = null;
 
   function _today() {
     return new Date().toLocaleDateString('ar-IQ-u-ca-gregory',
@@ -45,7 +46,7 @@
     };
   }
 
-  // Fill the .docx template with the form values; returns ArrayBuffer.
+  // Fill the template; returns ArrayBuffer of the new .docx
   async function fillTemplate(svc, form) {
     const res = await fetch(`forms_word/${svc.code}.docx`);
     if (!res.ok) throw new Error(`نموذج Word غير موجود لـ ${svc.code}`);
@@ -67,7 +68,7 @@
     return `${svc.code}_${safe}_${new Date().toISOString().slice(0,10)}`;
   }
 
-  // ----- Download as .docx -----
+  // ----- Download -----
   async function downloadDocx(svc, form) {
     const buf = await fillTemplate(svc, form);
     const blob = new Blob([buf], { type:
@@ -81,7 +82,7 @@
     window.DB && window.DB.log('form.docx', svc.code);
   }
 
-  // ----- Render preview into a DOM container -----
+  // ----- Preview (on-screen) -----
   async function renderPreview(svc, form, container) {
     const buf = await fillTemplate(svc, form);
     container.innerHTML = '';
@@ -97,25 +98,85 @@
       renderFooters: true,
       renderFootnotes: false,
     });
-    _renderedFor = svc.code;
   }
 
-  // ----- Print: prints the preview container directly -----
-  function printPreview() {
-    // window.print prints the whole document. Our @media print rules
-    // hide everything except the docx-rendered container.
-    document.body.classList.add('printing-docx');
-    const cleanup = () => {
-      document.body.classList.remove('printing-docx');
-      window.removeEventListener('afterprint', cleanup);
-    };
-    window.addEventListener('afterprint', cleanup);
-    setTimeout(() => window.print(), 50);
+  // ----- Print via isolated iframe (cleanest possible output) -----
+  async function printDocx(svc, form) {
+    const buf = await fillTemplate(svc, form);
+
+    // Build an isolated iframe so page CSS can't interfere
+    const oldFrame = document.getElementById('docx-print-frame');
+    if (oldFrame) oldFrame.remove();
+
+    const frame = document.createElement('iframe');
+    frame.id = 'docx-print-frame';
+    frame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:850px;height:1200px;border:0;visibility:hidden;';
+    document.body.appendChild(frame);
+
+    const doc = frame.contentDocument;
+    doc.open();
+    doc.write(`<!doctype html>
+<html dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>طباعة</title>
+<style>
+  @page { size: A4 portrait; margin: 10mm; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { direction: rtl; font-family: "Tajawal", "Arial", sans-serif; }
+  .docx-wrapper { background: transparent !important; padding: 0 !important; }
+  section.docx { margin: 0 !important; box-shadow: none !important; }
+  @media print {
+    section.docx { page-break-after: always; }
+    section.docx:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body><div id="root"></div></body>
+</html>`);
+    doc.close();
+
+    const root = doc.getElementById('root');
+    // Render docx-preview INTO the iframe (using the parent window's lib)
+    await window.docx.renderAsync(buf, root, null, {
+      className: 'docx-rendered',
+      inWrapper: true,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: true,
+      experimental: false,
+      trimXmlDeclaration: true,
+      useBase64URL: true,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: false,
+    });
+
+    // Give the layout a beat to settle, then print the iframe's window
+    await new Promise(r => setTimeout(r, 150));
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (e) {
+      // Fallback: open in a new tab
+      const blob = new Blob([buf], { type:
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
+
+    // Clean up after the print dialog closes (or a long timeout)
+    const remove = () => { frame.remove(); };
+    if (frame.contentWindow) {
+      try { frame.contentWindow.addEventListener('afterprint', remove); } catch {}
+    }
+    setTimeout(remove, 60000);
+
+    window.DB && window.DB.log('form.print', svc.code);
   }
 
   window.fillFilledDocx     = fillTemplate;
   window.downloadFilledDocx = downloadDocx;
   window.renderFilledDocx   = renderPreview;
-  window.printFilledDocx    = printPreview;
+  window.printFilledDocx    = printDocx;
   window.docxFileNameFor    = fileNameFor;
 })();
