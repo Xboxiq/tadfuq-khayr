@@ -1,12 +1,12 @@
 // =============================================================
-// FINAL — Form rendering & export
-//   * HTML preview: loads forms_html/<CODE>.html (LibreOffice
-//     conversion of the official Word — pixel-perfect layout)
-//     and substitutes {{placeholders}} with form values.
-//   * Word download: loads forms_word/<CODE>.docx, runs the same
-//     substitution via docxtemplater, downloads.
-//   * PDF: uses the HTML preview (window.print) — identical to
-//     the screen render.
+// FINAL — Word-only flow
+// 1. Fill template .docx with form values (docxtemplater)
+// 2. Preview via docx-preview
+// 3. Print: render docx into a dedicated print iframe and call
+//    contentWindow.print() — the iframe is isolated from the
+//    page's CSS, so the printed output matches what docx-preview
+//    renders (a faithful representation of the Word document).
+// 4. Download: the filled .docx as-is (Word opens it perfectly).
 // =============================================================
 
 (function () {
@@ -18,7 +18,6 @@
   function _serial(svc, settings) {
     return `${svc.code}-${(settings.centerCode || 'RS-014')}-${String(Math.floor(Math.random()*9000)+1000)}`;
   }
-
   function _buildData(svc, form) {
     const settings = (window.DB && window.DB.settings.get()) || {};
     return {
@@ -47,12 +46,7 @@
     };
   }
 
-  function _substitute(str, data) {
-    return str.replace(/\{\{(\w+)\}\}/g, (_, k) =>
-      data[k] != null ? String(data[k]) : '');
-  }
-
-  // ---------- Word download (via docxtemplater) ----------
+  // Fill the template; returns ArrayBuffer of the new .docx
   async function fillTemplate(svc, form) {
     const res = await fetch(`forms_word/${svc.code}.docx`);
     if (!res.ok) throw new Error(`نموذج Word غير موجود لـ ${svc.code}`);
@@ -74,6 +68,7 @@
     return `${svc.code}_${safe}_${new Date().toISOString().slice(0,10)}`;
   }
 
+  // ----- Download -----
   async function downloadDocx(svc, form) {
     const buf = await fillTemplate(svc, form);
     const blob = new Blob([buf], { type:
@@ -83,69 +78,105 @@
       href: url, download: fileNameFor(svc, form) + '.docx',
     });
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
     window.DB && window.DB.log('form.docx', svc.code);
   }
 
-  // ---------- HTML preview (pixel-perfect from LibreOffice) ----------
-  const _htmlCache = new Map();
-
-  async function loadHtmlTemplate(svc) {
-    if (_htmlCache.has(svc.code)) return _htmlCache.get(svc.code);
-    const res = await fetch(`forms_html/${svc.code}.html`);
-    if (!res.ok) throw new Error(`HTML template not found: ${svc.code}`);
-    const raw = await res.text();
-    // Extract the inner <body> markup only (we'll inject into our own container)
-    const m = raw.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-    const body = (m ? m[1] : raw);
-    // Extract <style> blocks from <head> so we can inject them once
-    const styles = [];
-    raw.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_, css) => { styles.push(css); return ''; });
-    const cached = { body, styles };
-    _htmlCache.set(svc.code, cached);
-    return cached;
-  }
-
-  async function renderHtmlInto(svc, form, container) {
-    const tpl = await loadHtmlTemplate(svc);
-    const data = _buildData(svc, form);
+  // ----- Preview (on-screen) -----
+  async function renderPreview(svc, form, container) {
+    const buf = await fillTemplate(svc, form);
     container.innerHTML = '';
-    // Inject style once per container
-    if (tpl.styles.length) {
-      const styleEl = document.createElement('style');
-      styleEl.textContent = tpl.styles.join('\n');
-      container.appendChild(styleEl);
-    }
-    // Inject body with placeholder substitution
-    const wrap = document.createElement('div');
-    wrap.className = 'lo-doc';
-    wrap.setAttribute('dir', 'rtl');
-    wrap.innerHTML = _substitute(tpl.body, data);
-    container.appendChild(wrap);
+    await window.docx.renderAsync(buf, container, null, {
+      className: 'docx-rendered',
+      inWrapper: true,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: true,
+      experimental: false,
+      trimXmlDeclaration: true,
+      useBase64URL: true,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: false,
+    });
   }
 
-  // Print using a temporary print stage with the HTML preview
-  async function printHtmlForm(svc, form) {
-    const stageId = 'lo-print-stage';
-    let stage = document.getElementById(stageId);
-    if (!stage) {
-      stage = document.createElement('div');
-      stage.id = stageId;
-      document.body.appendChild(stage);
+  // ----- Print via isolated iframe (cleanest possible output) -----
+  async function printDocx(svc, form) {
+    const buf = await fillTemplate(svc, form);
+
+    // Build an isolated iframe so page CSS can't interfere
+    const oldFrame = document.getElementById('docx-print-frame');
+    if (oldFrame) oldFrame.remove();
+
+    const frame = document.createElement('iframe');
+    frame.id = 'docx-print-frame';
+    frame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:850px;height:1200px;border:0;visibility:hidden;';
+    document.body.appendChild(frame);
+
+    const doc = frame.contentDocument;
+    doc.open();
+    doc.write(`<!doctype html>
+<html dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>طباعة</title>
+<style>
+  @page { size: A4 portrait; margin: 10mm; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { direction: rtl; font-family: "Tajawal", "Arial", sans-serif; }
+  .docx-wrapper { background: transparent !important; padding: 0 !important; }
+  section.docx { margin: 0 !important; box-shadow: none !important; }
+  @media print {
+    section.docx { page-break-after: always; }
+    section.docx:last-child { page-break-after: auto; }
+  }
+</style>
+</head>
+<body><div id="root"></div></body>
+</html>`);
+    doc.close();
+
+    const root = doc.getElementById('root');
+    // Render docx-preview INTO the iframe (using the parent window's lib)
+    await window.docx.renderAsync(buf, root, null, {
+      className: 'docx-rendered',
+      inWrapper: true,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: true,
+      experimental: false,
+      trimXmlDeclaration: true,
+      useBase64URL: true,
+      renderHeaders: true,
+      renderFooters: true,
+      renderFootnotes: false,
+    });
+
+    // Give the layout a beat to settle, then print the iframe's window
+    await new Promise(r => setTimeout(r, 150));
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (e) {
+      // Fallback: open in a new tab
+      const blob = new Blob([buf], { type:
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
     }
-    await renderHtmlInto(svc, form, stage);
-    document.body.classList.add('printing-lo');
-    const cleanup = () => {
-      document.body.classList.remove('printing-lo');
-      window.removeEventListener('afterprint', cleanup);
-    };
-    window.addEventListener('afterprint', cleanup);
-    window.print();
+
+    // Clean up after the print dialog closes (or a long timeout)
+    const remove = () => { frame.remove(); };
+    if (frame.contentWindow) {
+      try { frame.contentWindow.addEventListener('afterprint', remove); } catch {}
+    }
+    setTimeout(remove, 60000);
+
+    window.DB && window.DB.log('form.print', svc.code);
   }
 
-  window.fillDocxTemplate = fillTemplate;
+  window.fillFilledDocx     = fillTemplate;
   window.downloadFilledDocx = downloadDocx;
-  window.renderHtmlForm = renderHtmlInto;
-  window.printHtmlForm = printHtmlForm;
-  window.docxFileNameFor = fileNameFor;
+  window.renderFilledDocx   = renderPreview;
+  window.printFilledDocx    = printDocx;
+  window.docxFileNameFor    = fileNameFor;
 })();
