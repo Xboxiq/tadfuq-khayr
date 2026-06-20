@@ -1,0 +1,202 @@
+// Tadfuq — Backend Database Schema (foundation)
+//
+// This schema is the planned PostgreSQL model. The frontend currently
+// stores everything in localStorage; when the backend is built, it'll
+// mirror this schema 1:1 and existing data can be migrated via a
+// one-time JSON export → SQL import.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================
+// IDENTITY
+// =============================================================
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  username            String    @unique
+  fullName            String
+  passwordHash        String    // Argon2id
+  passwordChangedAt   DateTime  @default(now())
+  mustChangePassword  Boolean   @default(true)
+  active              Boolean   @default(true)
+  failedLoginCount    Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+
+  roleId              String
+  role                Role      @relation(fields: [roleId], references: [id])
+  branchId            String?
+  branch              Branch?   @relation(fields: [branchId], references: [id])
+  departmentId        String?
+  department          Department? @relation(fields: [departmentId], references: [id])
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+
+  sessions            Session[]
+  auditLogs           AuditLog[]
+  passwordResets      PasswordReset[]
+
+  @@index([email])
+  @@index([username])
+  @@index([branchId, active])
+}
+
+model Role {
+  id           String    @id @default(cuid())
+  key          String    @unique  // e.g. 'system_admin', 'cashier'
+  name         String
+  description  String?
+  isSystem     Boolean   @default(false)  // system roles cannot be deleted
+
+  permissions  RolePermission[]
+  users        User[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Permission {
+  id           String    @id @default(cuid())
+  key          String    @unique  // e.g. 'request.create'
+  label        String
+  category     String    // 'requests' | 'payments' | 'users' | ...
+
+  roles        RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+// =============================================================
+// SESSIONS / TOKENS
+// =============================================================
+
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash  String    @unique          // sha256(refresh_token)
+  ip                String
+  userAgent         String
+  issuedAt          DateTime  @default(now())
+  lastUsedAt        DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  revokedReason     String?
+
+  @@index([userId, revokedAt])
+}
+
+model PasswordReset {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  requestedIp String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+// =============================================================
+// ORG STRUCTURE
+// =============================================================
+
+model Branch {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  region      String?
+  active      Boolean      @default(true)
+
+  users       User[]
+  requests    Request[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Department {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  active      Boolean      @default(true)
+
+  users       User[]
+  requests    Request[]
+  createdAt   DateTime     @default(now())
+}
+
+// =============================================================
+// REQUESTS (service requests / forms)
+// =============================================================
+
+model Request {
+  id            String    @id @default(cuid())
+  code          String                       // service code, e.g. 'CS0001'
+  serial        String    @unique            // e.g. 'CS0001-RS014-1234'
+  status        String                       // 'new' | 'in_progress' | 'approved' | 'rejected' | 'closed'
+  data          Json                         // form values (json)
+  branchId      String?
+  branch        Branch?   @relation(fields: [branchId], references: [id])
+  departmentId  String?
+  department    Department? @relation(fields: [departmentId], references: [id])
+
+  createdById   String
+  assignedToId  String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  closedAt      DateTime?
+
+  @@index([branchId, status])
+  @@index([code, createdAt])
+}
+
+// =============================================================
+// AUDIT LOG
+// =============================================================
+
+model AuditLog {
+  id           String    @id @default(cuid())
+  userId       String?
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String                       // e.g. 'auth.login.success', 'user.update'
+  resourceType String?                      // 'user' | 'role' | 'request' | ...
+  resourceId   String?
+  payload      Json?                        // before/after diff
+  ip           String
+  userAgent    String
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([resourceType, resourceId])
+}
+
+// =============================================================
+// SYSTEM SETTINGS
+// =============================================================
+
+model Setting {
+  key         String    @id
+  value       Json
+  updatedAt   DateTime  @updatedAt
+  updatedBy   String?
+}

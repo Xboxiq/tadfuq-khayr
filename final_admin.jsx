@@ -532,14 +532,34 @@ function TipsTab() {
 // 4) USERS
 // =============================================================
 function UserModal({ row, onSave, onClose, existingUsernames }) {
+  const roleOptions = window.DB ? window.DB.roles.list() : [];
+  const branchOptions = window.DB ? window.DB.branches.list() : [];
+  const deptOptions = window.DB ? window.DB.departments.list() : [];
+
   const [f, setF] = useState(() => row || {
-    name: '', username: '', email: '', role: 'employee', section: '*', active: true,
+    name: '', username: '', email: '',
+    roleId: (roleOptions.find(r => r.key === 'customer_service') || roleOptions[0] || {}).id || '',
+    branchId: '', departmentId: '',
+    active: true,
+    mustChangePassword: true,
   });
+  const [pwd, setPwd] = useState('');
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
-  const save = () => {
-    if (!f.name || !f.username) return;
+  const save = async () => {
+    if (!f.name || !f.username || !f.roleId) return;
     if (!row && existingUsernames.includes(f.username)) return;
-    onSave(f);
+    if (!row && !pwd) { alert('أدخل كلمة مرور ابتدائية'); return; }
+    const data = { ...f };
+    if (!row && pwd && window.DB) {
+      const h = await window.DB.hashPassword(pwd);
+      data.passwordHash = h.hash;
+      data.passwordSalt = h.salt;
+      data.passwordAlgo = h.algo;
+      data.failedLoginCount = 0;
+      data.lockedUntil = null;
+      data.mustChangePassword = true;
+    }
+    onSave(data);
   };
   const usernameTaken = !row && existingUsernames.includes(f.username);
 
@@ -573,18 +593,33 @@ function UserModal({ row, onSave, onClose, existingUsernames }) {
         <div className="adm-form__row adm-form__row--2">
           <div className="adm-field">
             <label>الدور</label>
-            <select value={f.role} onChange={e => set('role', e.target.value)}>
-              {ROLE_OPTS.map(r => <option key={r} value={r}>{window.Auth.ROLE_LABELS[r]}</option>)}
+            <select value={f.roleId || ''} onChange={e => set('roleId', e.target.value)}>
+              <option value="" disabled>اختر دوراً…</option>
+              {roleOptions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
           </div>
           <div className="adm-field">
-            <label>القسم</label>
-            <select value={f.section} onChange={e => set('section', e.target.value)}>
-              <option value="*">جميع الأقسام</option>
-              {SECTION_OPTS.map(s => <option key={s} value={s}>{window.SECTION_MAP[s] && window.SECTION_MAP[s].name}</option>)}
+            <label>الفرع</label>
+            <select value={f.branchId || ''} onChange={e => set('branchId', e.target.value || null)}>
+              <option value="">جميع الفروع</option>
+              {branchOptions.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
         </div>
+        <div className="adm-field">
+          <label>القسم</label>
+          <select value={f.departmentId || ''} onChange={e => set('departmentId', e.target.value || null)}>
+            <option value="">جميع الأقسام</option>
+            {deptOptions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+        {!row && (
+          <div className="adm-field">
+            <label>كلمة المرور الابتدائية</label>
+            <input type="text" value={pwd} onChange={e => setPwd(e.target.value)}
+                   placeholder="سيُطلب من المستخدم تغييرها فور الدخول" />
+          </div>
+        )}
         <Toggle on={!!f.active} onChange={(v) => set('active', v)} label={f.active ? 'الحساب نشط' : 'موقوف'} />
       </div>
     </Modal>
@@ -603,10 +638,11 @@ function UsersTab() {
   const [confirmDel, setConfirmDel] = useState(null);
 
   const filtered = rows.filter(r => {
-    if (roleF && r.role !== roleF) return false;
+    if (roleF && r.roleId !== roleF && r.role !== roleF) return false;
     if (q && !(r.name + ' ' + r.username + ' ' + (r.email || '')).toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+  const roleOptions = window.DB ? window.DB.roles.list() : [];
 
   const onSave = (data) => {
     if (edit) {
@@ -627,9 +663,12 @@ function UsersTab() {
     toast.push({ kind:'info', title:'تم حذف المستخدم' });
     setConfirmDel(null);
   };
-  const switchTo = (row) => {
-    window.Auth.signInAs(row.id);
-    toast.push({ kind:'success', title:'تم التحويل', body: 'الجلسة الحالية: ' + row.name });
+  const onResetPassword = async (row) => {
+    const newPwd = prompt(`كلمة مرور جديدة لـ ${row.name}؟ (سيُطلب من المستخدم تغييرها عند الدخول التالي)`);
+    if (!newPwd) return;
+    const res = await window.Auth.adminResetPassword(row.id, newPwd);
+    if (res.ok) toast.push({ kind:'success', title:'تم إعادة تعيين كلمة المرور', body: row.name });
+    else toast.push({ kind:'error', title: res.message || 'فشل إعادة التعيين' });
   };
 
   return (
@@ -641,9 +680,9 @@ function UsersTab() {
         </div>
         <div className="adm-toolbar__filter">
           <button className={`adm-chip ${!roleF ? 'is-on' : ''}`} onClick={() => setRoleF('')}>الكل</button>
-          {ROLE_OPTS.map(r => (
-            <button key={r} className={`adm-chip ${roleF === r ? 'is-on' : ''}`} onClick={() => setRoleF(r)}>
-              {window.Auth.ROLE_LABELS[r]}
+          {roleOptions.map(r => (
+            <button key={r.id} className={`adm-chip ${roleF === r.id ? 'is-on' : ''}`} onClick={() => setRoleF(r.id)}>
+              {r.name}
             </button>
           ))}
         </div>
@@ -686,17 +725,28 @@ function UsersTab() {
                         </div>
                       </div>
                     </td>
-                    <td><span className="adm-pill adm-pill--info">{window.Auth.ROLE_LABELS[r.role]}</span></td>
+                    <td><span className="adm-pill adm-pill--info">{window.Auth.roleLabel(r)}</span></td>
                     <td>
-                      {r.section === '*' ? <span style={{ color: 'var(--f-ink-3)' }}>الكل</span> : (
-                        <span className="adm-tbl__sec" style={{ '--sec-c': window.DEPT_COLORS[r.section] }}>{r.section}</span>
-                      )}
+                      {(() => {
+                        const dept = r.departmentId && window.DB ? window.DB.departments.get(r.departmentId) : null;
+                        const branch = r.branchId && window.DB ? window.DB.branches.get(r.branchId) : null;
+                        if (!dept && !branch) return <span style={{ color: 'var(--f-ink-3)' }}>الكل</span>;
+                        const code = dept ? dept.code : (branch ? branch.code : '');
+                        return (
+                          <span className="adm-tbl__sec"
+                                style={{ '--sec-c': dept && window.DEPT_COLORS ? window.DEPT_COLORS[code] : 'var(--f-navy)' }}>
+                            {dept ? dept.code : (branch ? branch.code : '')}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td><span className={`adm-pill ${r.active ? 'adm-pill--ok' : 'adm-pill--off'}`}>{r.active ? 'نشط' : 'موقوف'}</span></td>
                     <td>
                       <div className="adm-tbl__actions">
-                        {!isMe && (
-                          <button className="adm-tbl__btn" title="تحويل الجلسة" onClick={() => switchTo(r)}><Icon name="login" /></button>
+                        {can('user.reset_password') && !isMe && (
+                          <button className="adm-tbl__btn" title="إعادة تعيين كلمة المرور" onClick={() => onResetPassword(r)}>
+                            <Icon name="key" />
+                          </button>
                         )}
                         {can('users.write') && (
                           <button className="adm-tbl__btn" title="تعديل" onClick={() => setEdit(r)}><Icon name="edit" /></button>
@@ -956,7 +1006,7 @@ function AdminPage({ nav, initialTab }) {
           <span className="adm-side__user-avatar">{me.name.slice(0,1)}</span>
           <div className="adm-side__user-main">
             <span className="adm-side__user-name">{me.name}</span>
-            <span className="adm-side__user-role">{window.Auth.ROLE_LABELS[me.role]}</span>
+            <span className="adm-side__user-role">{window.Auth.roleLabel(me)}</span>
           </div>
         </div>
       </aside>

@@ -34,13 +34,17 @@ function UserMenu({ nav }) {
     return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
   }, [open]);
 
-  if (!me) return <button className="f-avatar">?</button>;
+  if (!me) return null;  // login gate handles unauthenticated state
 
+  const role = window.DB && window.DB.roles.get(me.roleId);
   const initial = (me.name || '?').trim().slice(0, 1);
-  const roleLbl = window.Auth.ROLE_LABELS[me.role] || me.role;
+  const roleLbl = role ? role.name : me.role || '—';
+  const branch = me.branchId && window.DB ? window.DB.branches.get(me.branchId) : null;
+  const dept   = me.departmentId && window.DB ? window.DB.departments.get(me.departmentId) : null;
+
   const goAdmin = (tab) => { setOpen(false); nav && nav('admin', { tab }); };
-  const switchTo = (id) => { window.Auth.signInAs(id); setOpen(false); };
-  const otherUsers = window.DB ? window.DB.users.list().filter(u => u.active && u.id !== me.id).slice(0, 4) : [];
+  const isSysAdmin = can('role.manage') && can('user.create');
+  const showAdminEntry = can('user.read') || can('role.read') || can('settings.read') || can('audit.read');
 
   return (
     <div className="f-usermenu" ref={ref}>
@@ -49,7 +53,7 @@ function UserMenu({ nav }) {
               aria-haspopup="menu" aria-expanded={open}
               title={`${me.name} — ${roleLbl}`}>
         <span className="f-avatar__txt">{initial}</span>
-        {can('admin.access') && <span className="f-avatar__badge" title="مسؤول"><Icon name="shield_person" /></span>}
+        {isSysAdmin && <span className="f-avatar__badge" title="مسؤول النظام"><Icon name="shield_person" /></span>}
       </button>
 
       {open && (
@@ -59,14 +63,16 @@ function UserMenu({ nav }) {
             <div className="f-umenu__head-main">
               <div className="f-umenu__name">{me.name}</div>
               <div className="f-umenu__role">
-                {can('admin.access') && <Icon name="shield_person" />}
-                {roleLbl} {me.section && me.section !== '*' && <span className="f-umenu__sec">· {me.section}</span>}
+                {isSysAdmin && <Icon name="shield_person" />}
+                {roleLbl}
+                {branch && <span className="f-umenu__sec">· {branch.name}</span>}
+                {dept && <span className="f-umenu__sec">· {dept.name}</span>}
               </div>
               {me.email && <div className="f-umenu__email">{me.email}</div>}
             </div>
           </div>
 
-          {can('admin.access') && (
+          {showAdminEntry && (
             <>
               <div className="f-umenu__sep" />
               <div className="f-umenu__sect-lbl">
@@ -75,20 +81,31 @@ function UserMenu({ nav }) {
               <button className="f-umenu__item" onClick={() => goAdmin('overview')}>
                 <Icon name="space_dashboard" /><span>نظرة عامة</span>
               </button>
-              <button className="f-umenu__item" onClick={() => goAdmin('services')}>
-                <Icon name="apps" /><span>إدارة الخدمات</span>
-              </button>
-              <button className="f-umenu__item" onClick={() => goAdmin('tips')}>
-                <Icon name="tips_and_updates" /><span>إدارة النصائح</span>
-              </button>
-              {can('users.read') && (
+              {can('services.manage') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('services')}>
+                  <Icon name="apps" /><span>إدارة الخدمات</span>
+                </button>
+              )}
+              {can('tips.manage') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('tips')}>
+                  <Icon name="tips_and_updates" /><span>إدارة النصائح</span>
+                </button>
+              )}
+              {can('user.read') && (
                 <button className="f-umenu__item" onClick={() => goAdmin('users')}>
                   <Icon name="group" /><span>المستخدمون</span>
                 </button>
               )}
-              <button className="f-umenu__item" onClick={() => goAdmin('settings')}>
-                <Icon name="tune" /><span>إعدادات المركز</span>
-              </button>
+              {can('role.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('roles')}>
+                  <Icon name="badge" /><span>الأدوار والصلاحيات</span>
+                </button>
+              )}
+              {can('settings.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('settings')}>
+                  <Icon name="tune" /><span>إعدادات المركز</span>
+                </button>
+              )}
               {can('audit.read') && (
                 <button className="f-umenu__item" onClick={() => goAdmin('audit')}>
                   <Icon name="history" /><span>سجل التدقيق</span>
@@ -97,26 +114,14 @@ function UserMenu({ nav }) {
             </>
           )}
 
-          {otherUsers.length > 0 && (
-            <>
-              <div className="f-umenu__sep" />
-              <div className="f-umenu__sect-lbl">
-                <Icon name="switch_account" /> تبديل الحساب
-              </div>
-              {otherUsers.map(u => (
-                <button key={u.id} className="f-umenu__item f-umenu__item--user" onClick={() => switchTo(u.id)}>
-                  <span className="f-umenu__avatar f-umenu__avatar--sm">{u.name.slice(0,1)}</span>
-                  <span className="f-umenu__item-main">
-                    <span>{u.name}</span>
-                    <small>{window.Auth.ROLE_LABELS[u.role]}</small>
-                  </span>
-                </button>
-              ))}
-            </>
-          )}
-
           <div className="f-umenu__sep" />
-          <button className="f-umenu__item f-umenu__item--danger" onClick={() => { window.Auth.signOut(); setOpen(false); }}>
+          <button className="f-umenu__item"
+                  onClick={() => { setOpen(false); /* TODO: open change-password modal */
+                                   alert('غيّر كلمة المرور من قائمة "المستخدمون" بإعادة تعيين ذاتي قريباً.'); }}>
+            <Icon name="key" /><span>تغيير كلمة المرور</span>
+          </button>
+          <button className="f-umenu__item f-umenu__item--danger"
+                  onClick={() => { window.Auth.signOut(); setOpen(false); }}>
             <Icon name="logout" /><span>تسجيل الخروج</span>
           </button>
         </div>
@@ -656,20 +661,25 @@ function Sidebar() {
 // APP
 // =============================================================
 function App() {
+  // -----------------------------------------------------------------
+  // All hooks first (Rules of Hooks) — conditional returns later.
+  // -----------------------------------------------------------------
+  const [dark, setDark] = useState(() => localStorage.getItem('tq-final-dark') === '1');
+  useEffect(() => {
+    document.body.classList.toggle('dark', dark);
+    localStorage.setItem('tq-final-dark', dark ? '1' : '0');
+  }, [dark]);
+
+  // Auth state: re-render whenever Auth changes (login, logout, role change…)
+  const [, setAuthTick] = useState(0);
+  useEffect(() => window.Auth && window.Auth.subscribe(() => setAuthTick(t => t + 1)), []);
+
   const [route, setRoute] = useState(() => {
     try { return JSON.parse(localStorage.getItem('tq-f-route') || '{"name":"overview"}'); }
     catch { return { name: 'overview' }; }
   });
   useEffect(() => { localStorage.setItem('tq-f-route', JSON.stringify(route)); }, [route]);
   useEffect(() => { window.scrollTo(0, 0); }, [route.name, route.code, route.section]);
-
-  const nav = (name, params = {}) => setRoute({ name, ...params });
-
-  const [dark, setDark] = useState(() => localStorage.getItem('tq-final-dark') === '1');
-  useEffect(() => {
-    document.body.classList.toggle('dark', dark);
-    localStorage.setItem('tq-final-dark', dark ? '1' : '0');
-  }, [dark]);
 
   const [spot, setSpot] = useState(false);
   useEffect(() => {
@@ -679,6 +689,28 @@ function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // -----------------------------------------------------------------
+  // Auth gate (after all hooks have been called)
+  // -----------------------------------------------------------------
+  const me = window.Auth && window.Auth.currentUser();
+  if (!me) {
+    return <window.LoginPage onSuccess={() => setAuthTick(t => t + 1)} />;
+  }
+  if (me.mustChangePassword) {
+    return <window.ForceChangePassword onDone={() => setAuthTick(t => t + 1)} />;
+  }
+  // -----------------------------------------------------------------
+
+  const nav = (name, params = {}) => {
+    // Guard: admin routes require admin permission.
+    if (name === 'admin' && !window.Auth.can('role.manage')
+        && !window.Auth.can('user.read') && !window.Auth.can('settings.manage')) {
+      setRoute({ name: 'overview' });
+      return;
+    }
+    setRoute({ name, ...params });
+  };
   const noop = () => setSpot(true);
 
   // top tabs map to routes
