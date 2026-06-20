@@ -90,7 +90,8 @@
       disableFontFace: false,
     }).promise;
 
-    const SCALE = 1.5;
+    // 96 CSS px per PDF point → rendered width matches A4 on screen & in print
+    const SCALE = 96 / 72;
     // Shared canvas for text measurement (reused for every field)
     const measureCtx = document.createElement('canvas').getContext('2d');
 
@@ -198,28 +199,39 @@
     return `${svc.code}_${safe}_${new Date().toISOString().slice(0,10)}`;
   }
 
-  // ---------- Print/PDF export: use browser's native print on the rendered pages ----------
+  // Wait until pdf.js has painted at least one page into the container
+  function waitForPages(container, timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+      const deadline = Date.now() + timeoutMs;
+      const tick = () => {
+        const pages = container.querySelectorAll('.pdf-page canvas');
+        if (pages.length > 0) return resolve();
+        if (Date.now() > deadline) {
+          return reject(new Error('النموذج ما زال يُجهَّز — انتظر لحظة ثم أعد المحاولة'));
+        }
+        setTimeout(tick, 80);
+      };
+      tick();
+    });
+  }
+
+  // ---------- Print: WYSIWYG — same pixels as on-screen preview ----------
   async function printRendered(container) {
-    if (!container) return;
-    // Mark document as in print-render mode so our @media print rules show only the rendered pages
-    const stage = document.getElementById('pdf-print-stage') || (() => {
-      const d = document.createElement('div');
-      d.id = 'pdf-print-stage';
-      document.body.appendChild(d);
-      return d;
-    })();
-    stage.innerHTML = '';
-    // Clone the container into the print stage
-    const clone = container.cloneNode(true);
-    stage.appendChild(clone);
+    if (!container) throw new Error('لا يوجد نموذج للطباعة');
+    await waitForPages(container);
+
     document.body.classList.add('printing-pdf');
+    container.setAttribute('data-print-source', '');
+
     const cleanup = () => {
       document.body.classList.remove('printing-pdf');
-      stage.innerHTML = '';
+      container.removeAttribute('data-print-source');
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-    setTimeout(() => window.print(), 100);
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    window.print();
   }
 
   // ---------- Download as PDF (composite canvas + overlay → PDF) ----------
@@ -269,8 +281,9 @@
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  window.renderFilledPdf   = renderInto;
-  window.printFilledPdf    = printRendered;
-  window.downloadFilledPdf = downloadAsPdf;
-  window.pdfFileNameFor    = fileNameFor;
+  window.renderFilledPdf    = renderInto;
+  window.printFilledPdf     = printRendered;
+  window.waitForRenderedPdf = waitForPages;
+  window.downloadFilledPdf  = downloadAsPdf;
+  window.pdfFileNameFor     = fileNameFor;
 })();

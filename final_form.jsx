@@ -466,6 +466,30 @@ function FormPage({ nav, code }) {
   };
   const removeAttachment = (i) => setAttachments(a => a.filter((_, j) => j !== i));
 
+  const printOfficial = async () => {
+    if (!window.printFilledPdf) {
+      toast && toast.push({ kind:'error', title:'وحدة الطباعة غير متوفرة' });
+      return;
+    }
+    setTab('orig');
+    try {
+      const host = await new Promise((resolve, reject) => {
+        const deadline = Date.now() + 15000;
+        const tick = () => {
+          const el = document.querySelector('.of-pdf-host');
+          if (el) return resolve(el);
+          if (Date.now() > deadline) return reject(new Error('تعذّر فتح النموذج الأصلي'));
+          setTimeout(tick, 80);
+        };
+        tick();
+      });
+      if (window.waitForRenderedPdf) await window.waitForRenderedPdf(host);
+      await window.printFilledPdf(host);
+    } catch (err) {
+      toast && toast.push({ kind:'error', title:'تعذّر الطباعة', body: err.message });
+    }
+  };
+
   const exportUnified = async () => {
     if (!window.exportFormWithAttachments) {
       toast && toast.push({ kind:'error', title:'وحدة التصدير غير متوفرة' });
@@ -658,7 +682,7 @@ function FormPage({ nav, code }) {
               <button className="f-btn" onClick={() => setTab('orig')}>
                 <Icon name="description" /> عرض الأصلية
               </button>
-              <button className="f-btn" onClick={() => { setTab('orig'); setTimeout(() => window.print(), 350); }}>
+              <button className="f-btn" onClick={printOfficial}>
                 <Icon name="print" /> طباعة
               </button>
               <button className="f-btn" onClick={exportUnified} disabled={exporting}>

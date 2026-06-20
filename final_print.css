@@ -148,43 +148,84 @@
 @keyframes of-spin { to { transform: rotate(360deg); } }
 
 /* ========================================================
-   PRINT — show only the rendered pages
+   PRINT — WYSIWYG: print the on-screen PDF pages as-is
+   (rendered at 96/72 scale = exact A4 width)
    ======================================================== */
-#pdf-print-stage { display: none; }
-.printing-pdf #pdf-print-stage {
-  display: block;
-  position: relative;
-}
-
 @media print {
   @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide the whole app, then reveal only the official pages */
   body * { visibility: hidden !important; }
 
-  /* When user triggered print on our pages */
-  body.printing-pdf #pdf-print-stage,
-  body.printing-pdf #pdf-print-stage * { visibility: visible !important; }
-  body.printing-pdf #pdf-print-stage {
-    position: absolute; top: 0; left: 0; right: 0;
+  body.printing-pdf .of-pdf-host,
+  body.printing-pdf .of-pdf-host *,
+  body.printing-pdf .pdf-page,
+  body.printing-pdf .pdf-page * {
+    visibility: visible !important;
   }
-  body.printing-pdf .pdf-page {
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    page-break-after: always;
-    margin: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-  body.printing-pdf .pdf-page:last-child { page-break-after: auto; }
 
-  /* Default: print the on-screen preview when triggered from browser print */
-  body:not(.printing-pdf) .pdf-page,
-  body:not(.printing-pdf) .pdf-page * { visibility: visible !important; }
-  body:not(.printing-pdf) .pdf-page {
+  body.printing-pdf .of-wrap {
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  body.printing-pdf .of-pdf-shell {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-pdf .of-pdf-host,
+  body.printing-pdf .pdf-doc {
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-pdf .pdf-page {
     position: relative;
     box-shadow: none !important;
     border-radius: 0 !important;
     page-break-after: always;
+    page-break-inside: avoid;
+    margin: 0 auto !important;
+    overflow: hidden;
+    background: #fff !important;
+    /* inline px size from renderer ≈ A4 at 96dpi — do not override */
   }
 
-  .of-toolbar { display: none !important; }
+  body.printing-pdf .pdf-page:last-child {
+    page-break-after: auto;
+  }
+
+  body.printing-pdf .pdf-canvas {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  body.printing-pdf .pdf-overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  .of-toolbar,
+  .no-print,
+  .of-pdf-loading,
+  .of-docx-state {
+    display: none !important;
+  }
 }
