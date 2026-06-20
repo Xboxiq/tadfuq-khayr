@@ -201,7 +201,6 @@
   // ---------- Print/PDF export: use browser's native print on the rendered pages ----------
   async function printRendered(container) {
     if (!container) return;
-    // Mark document as in print-render mode so our @media print rules show only the rendered pages
     const stage = document.getElementById('pdf-print-stage') || (() => {
       const d = document.createElement('div');
       d.id = 'pdf-print-stage';
@@ -209,8 +208,24 @@
       return d;
     })();
     stage.innerHTML = '';
-    // Clone the container into the print stage
     const clone = container.cloneNode(true);
+
+    // canvas.cloneNode() does NOT copy pixel data — swap each canvas for its bitmap
+    const origPages = container.querySelectorAll('.pdf-page');
+    clone.querySelectorAll('.pdf-page').forEach((pageEl, i) => {
+      const origCanvas = origPages[i]?.querySelector('canvas');
+      const cloneCanvas = pageEl.querySelector('canvas');
+      if (!origCanvas || !cloneCanvas) return;
+      const img = document.createElement('img');
+      img.src = origCanvas.toDataURL('image/png');
+      img.className = cloneCanvas.className;
+      img.style.cssText = cloneCanvas.style.cssText;
+      img.style.width = '100%';
+      img.style.height = 'auto';
+      img.style.display = 'block';
+      cloneCanvas.replaceWith(img);
+    });
+
     stage.appendChild(clone);
     document.body.classList.add('printing-pdf');
     const cleanup = () => {
@@ -219,7 +234,8 @@
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-    setTimeout(() => window.print(), 100);
+    await new Promise(r => setTimeout(r, 100));
+    window.print();
   }
 
   // ---------- Download as PDF (composite canvas + overlay → PDF) ----------

@@ -125,6 +125,7 @@
   }
 
   // Print using a temporary print stage with the HTML preview
+  // (LibreOffice export of the official Word — same layout as .docx)
   async function printHtmlForm(svc, form) {
     const stageId = 'lo-print-stage';
     let stage = document.getElementById(stageId);
@@ -137,9 +138,12 @@
     document.body.classList.add('printing-lo');
     const cleanup = () => {
       document.body.classList.remove('printing-lo');
+      stage.innerHTML = '';
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
+    // Allow layout + webfonts to settle before opening the dialog
+    await new Promise(r => setTimeout(r, 150));
     window.print();
   }
 

@@ -55,7 +55,12 @@ function OfficialPaper({ svc, schema, form, attachments }) {
     catch (e) { alert('تعذّر تنزيل PDF: ' + e.message); }
   };
   const onPrint = async () => {
-    try { await window.printFilledPdf(ref.current); }
+    // Print via the LibreOffice HTML export of the official Word file —
+    // identical layout, tables, fonts and RTL flow to the .docx original.
+    try {
+      if (window.printHtmlForm) await window.printHtmlForm(svc, form);
+      else await window.printFilledPdf(ref.current);
+    }
     catch (e) { alert('تعذّر الطباعة: ' + e.message); }
   };
   const onPdfWithAttach = () => {
@@ -78,6 +83,7 @@ function OfficialPaper({ svc, schema, form, attachments }) {
         <div className="of-toolbar__btns">
           <button className="f-btn" onClick={onPrint}>
             <Icon name="print" /> طباعة
+            <small style={{ opacity: 0.7 }}>مطابقة لملف Word</small>
           </button>
           <button className="f-btn" onClick={onDownloadWord}>
             <Icon name="description" /> تنزيل Word
