@@ -1,5 +1,5 @@
 /* =============================================================
-   OFFICIAL PAPER — PDF.js canvas + HTML overlay (Word-faithful)
+   OFFICIAL PAPER — Word preview (docx-preview) + print
    ============================================================= */
 
 .of-wrap {
@@ -36,83 +36,40 @@
 .f-btn--lg strong { font-size: 0.95rem; font-weight: 700; }
 .f-btn--lg small { font-size: 0.74rem; opacity: 0.85; font-weight: 500; }
 
-/* PDF viewer shell */
-.of-pdf-shell {
-  width: auto;
-  max-width: 100%;
+/* Word viewer shell */
+.of-docx-shell {
+  width: 100%;
+  max-width: 920px;
   background: transparent;
   border-radius: var(--f-r);
   position: relative;
 }
-.of-pdf-host {
+.of-docx-host {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
 }
-
-.pdf-doc {
+.of-docx-host .docx-view-host {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
 }
-.pdf-page {
-  position: relative;
+.of-docx-host .docx-wrapper {
   background: #fff;
   box-shadow:
     0 1px 2px rgba(0,0,0,0.06),
     0 24px 56px -20px rgba(0,0,0,0.18);
   border-radius: 2px;
-  overflow: hidden;
 }
-.pdf-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.pdf-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.pdf-field {
-  position: absolute;
-  font-family: "Tajawal", "Arial", "Helvetica Neue", sans-serif;
-  color: #000;
-  white-space: nowrap;
-  overflow: hidden;
-  display: block;
-  padding: 0 2px;
-  box-sizing: border-box;
-  font-weight: 500;
-  letter-spacing: 0;
+.of-docx-host .docx-wrapper > section.docx {
+  background: #fff;
+  margin: 0;
 }
 
-/* Tajawal (matches Word's Arial CS for Arabic; bundled locally) */
-@font-face {
-  font-family: 'Tajawal';
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: url('assets/fonts/Tajawal-Regular.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Tajawal';
-  font-style: normal;
-  font-weight: 500;
-  font-display: block;
-  src: url('assets/fonts/Tajawal-Medium.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Tajawal';
-  font-style: normal;
-  font-weight: 700;
-  font-display: block;
-  src: url('assets/fonts/Tajawal-Bold.ttf') format('truetype');
-}
-
-.of-pdf-loading {
+.of-docx-loading {
   display: flex; align-items: center; justify-content: center;
   gap: 12px;
   padding: 60px 20px;
@@ -148,85 +105,41 @@
 @keyframes of-spin { to { transform: rotate(360deg); } }
 
 /* ========================================================
-   PRINT — show only the rendered pages
+   PRINT — show only the Word document
    ======================================================== */
-#pdf-print-stage,
-#lo-print-stage { display: none; }
+#docx-print-stage { display: none; }
 
-body.printing-pdf #pdf-print-stage {
+body.printing-docx #docx-print-stage {
   display: block;
   position: relative;
 }
-
-/* LibreOffice HTML (Word-faithful) print stage */
-body.printing-lo #lo-print-stage {
-  display: block;
-  position: relative;
-}
-.lo-doc {
-  background: #fff;
-  color: #000;
-  font-family: "Arial", "Traditional Arabic", "Simplified Arabic", "Tajawal", sans-serif;
-  font-size: 12pt;
-  line-height: 1.2;
-}
-.lo-doc table { border-collapse: collapse; }
-.lo-doc p { margin: 0; }
 
 @media print {
   @page { size: A4 portrait; margin: 10mm; }
 
   body * { visibility: hidden !important; }
 
-  /* PDF-overlay print path */
-  body.printing-pdf #pdf-print-stage,
-  body.printing-pdf #pdf-print-stage * { visibility: visible !important; }
-  body.printing-pdf #pdf-print-stage {
+  body.printing-docx #docx-print-stage,
+  body.printing-docx #docx-print-stage * { visibility: visible !important; }
+  body.printing-docx #docx-print-stage {
     position: absolute; top: 0; left: 0; right: 0;
     display: block !important;
+    background: #fff;
   }
-  body.printing-pdf .pdf-page {
+  body.printing-docx .docx-wrapper {
     box-shadow: none !important;
     border-radius: 0 !important;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body.printing-docx .docx-wrapper > section.docx {
     page-break-after: always;
     margin: 0 auto !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  body.printing-pdf .pdf-page:last-child { page-break-after: auto; }
-  body.printing-pdf .pdf-canvas {
-    display: block;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Word-faithful HTML print path (LibreOffice export) */
-  body.printing-lo #lo-print-stage,
-  body.printing-lo #lo-print-stage * { visibility: visible !important; }
-  body.printing-lo #lo-print-stage {
-    position: absolute; top: 0; left: 0; right: 0;
-    display: block !important;
-    background: #fff;
-  }
-  body.printing-lo .lo-doc {
-    width: 100%;
-    max-width: 190mm;
-    margin: 0 auto;
-    background: #fff;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  body.printing-lo .lo-doc table { page-break-inside: avoid; }
-
-  /* Fallback when triggered from browser print without our class */
-  body:not(.printing-pdf):not(.printing-lo) .pdf-page,
-  body:not(.printing-pdf):not(.printing-lo) .pdf-page * { visibility: visible !important; }
-  body:not(.printing-pdf):not(.printing-lo) .pdf-page {
-    position: relative;
     box-shadow: none !important;
-    border-radius: 0 !important;
-    page-break-after: always;
+  }
+  body.printing-docx .docx-wrapper > section.docx:last-child {
+    page-break-after: auto;
   }
 
   .of-toolbar, .no-print { display: none !important; }

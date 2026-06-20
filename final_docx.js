@@ -1,12 +1,9 @@
 // =============================================================
-// FINAL — Form rendering & export
-//   * HTML preview: loads forms_html/<CODE>.html (LibreOffice
-//     conversion of the official Word — pixel-perfect layout)
-//     and substitutes {{placeholders}} with form values.
-//   * Word download: loads forms_word/<CODE>.docx, runs the same
-//     substitution via docxtemplater, downloads.
-//   * PDF: uses the HTML preview (window.print) — identical to
-//     the screen render.
+// FINAL — Word-based form rendering & export
+//   * Preview: fills forms_word/<CODE>.docx via docxtemplater,
+//     renders in-browser with docx-preview.
+//   * Print: same filled Word document — what you see is what prints.
+//   * Download: same filled .docx file.
 // =============================================================
 
 (function () {
@@ -47,12 +44,22 @@
     };
   }
 
-  function _substitute(str, data) {
-    return str.replace(/\{\{(\w+)\}\}/g, (_, k) =>
-      data[k] != null ? String(data[k]) : '');
-  }
+  const _DOCX_OPTS = {
+    className: 'docx',
+    inWrapper: true,
+    ignoreWidth: false,
+    ignoreHeight: false,
+    ignoreFonts: false,
+    breakPages: true,
+    ignoreLastRenderedPageBreak: true,
+    renderHeaders: true,
+    renderFooters: true,
+    renderFootnotes: true,
+    renderEndnotes: true,
+    useBase64URL: true,
+  };
 
-  // ---------- Word download (via docxtemplater) ----------
+  // ---------- Word fill (via docxtemplater) ----------
   async function fillTemplate(svc, form) {
     const res = await fetch(`forms_word/${svc.code}.docx`);
     if (!res.ok) throw new Error(`نموذج Word غير موجود لـ ${svc.code}`);
@@ -87,69 +94,51 @@
     window.DB && window.DB.log('form.docx', svc.code);
   }
 
-  // ---------- HTML preview (pixel-perfect from LibreOffice) ----------
-  const _htmlCache = new Map();
-
-  async function loadHtmlTemplate(svc) {
-    if (_htmlCache.has(svc.code)) return _htmlCache.get(svc.code);
-    const res = await fetch(`forms_html/${svc.code}.html`);
-    if (!res.ok) throw new Error(`HTML template not found: ${svc.code}`);
-    const raw = await res.text();
-    // Extract the inner <body> markup only (we'll inject into our own container)
-    const m = raw.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-    const body = (m ? m[1] : raw);
-    // Extract <style> blocks from <head> so we can inject them once
-    const styles = [];
-    raw.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_, css) => { styles.push(css); return ''; });
-    const cached = { body, styles };
-    _htmlCache.set(svc.code, cached);
-    return cached;
-  }
-
-  async function renderHtmlInto(svc, form, container) {
-    const tpl = await loadHtmlTemplate(svc);
-    const data = _buildData(svc, form);
-    container.innerHTML = '';
-    // Inject style once per container
-    if (tpl.styles.length) {
-      const styleEl = document.createElement('style');
-      styleEl.textContent = tpl.styles.join('\n');
-      container.appendChild(styleEl);
+  // ---------- In-browser Word preview (docx-preview) ----------
+  async function renderDocxInto(svc, form, container) {
+    if (!window.docx || !window.docx.renderAsync) {
+      throw new Error('مكتبة معاينة Word غير محمّلة');
     }
-    // Inject body with placeholder substitution
-    const wrap = document.createElement('div');
-    wrap.className = 'lo-doc';
-    wrap.setAttribute('dir', 'rtl');
-    wrap.innerHTML = _substitute(tpl.body, data);
-    container.appendChild(wrap);
+    const buf = await fillTemplate(svc, form);
+    const blob = new Blob([buf], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    container.innerHTML = '';
+    const styleHost = document.createElement('div');
+    styleHost.className = 'docx-style-host';
+    const viewHost = document.createElement('div');
+    viewHost.className = 'docx-view-host';
+    container.appendChild(styleHost);
+    container.appendChild(viewHost);
+    await window.docx.renderAsync(blob, viewHost, styleHost, _DOCX_OPTS);
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (_) { /* ignore */ }
+    }
   }
 
-  // Print using a temporary print stage with the HTML preview
-  async function printHtmlForm(svc, form) {
-    const stageId = 'lo-print-stage';
+  // Print the filled Word document (same render as preview)
+  async function printDocxForm(svc, form) {
+    const stageId = 'docx-print-stage';
     let stage = document.getElementById(stageId);
     if (!stage) {
       stage = document.createElement('div');
       stage.id = stageId;
       document.body.appendChild(stage);
     }
-    await renderHtmlInto(svc, form, stage);
-    if (document.fonts && document.fonts.ready) {
-      try { await document.fonts.ready; } catch (_) { /* ignore */ }
-    }
-    document.body.classList.add('printing-lo');
+    await renderDocxInto(svc, form, stage);
+    document.body.classList.add('printing-docx');
     const cleanup = () => {
-      document.body.classList.remove('printing-lo');
+      document.body.classList.remove('printing-docx');
       stage.innerHTML = '';
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-    setTimeout(() => window.print(), 150);
+    setTimeout(() => window.print(), 200);
   }
 
   window.fillDocxTemplate = fillTemplate;
   window.downloadFilledDocx = downloadDocx;
-  window.renderHtmlForm = renderHtmlInto;
-  window.printHtmlForm = printHtmlForm;
+  window.renderFilledDocx = renderDocxInto;
+  window.printDocxForm = printDocxForm;
   window.docxFileNameFor = fileNameFor;
 })();

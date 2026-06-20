@@ -1,15 +1,9 @@
 // =============================================================
-// FINAL — Official paper: PDF-overlay rendering
+// FINAL — Official paper: Word-based preview & print
 //
-// We ship one pre-rendered PDF per form (forms_pdf/<CODE>.pdf) that
-// was produced by LibreOffice from the official Word file. The PDF
-// preserves the layout, fonts, RTL flow, checkbox positions, table
-// borders and page-numbers exactly as Word.
-//
-// At runtime, pdf-lib draws the user's data on top of the PDF at
-// the exact field coordinates stored in forms_pdf/<CODE>.json. The
-// resulting PDF is byte-identical to Word in layout — the only
-// difference is that the empty cells now contain the form values.
+// Fills the official Word template (forms_word/<CODE>.docx) with
+// the user's data via docxtemplater, then renders it in-browser
+// with docx-preview. Print outputs the same document.
 // =============================================================
 
 function OfficialPaper({ svc, schema, form, attachments }) {
@@ -17,20 +11,19 @@ function OfficialPaper({ svc, schema, form, attachments }) {
   const [state, setState] = React.useState('loading');
   const [errMsg, setErrMsg] = React.useState('');
 
-  // Re-render when svc or form values change, debounced
   const formKey = React.useMemo(() => JSON.stringify(form), [form]);
   React.useEffect(() => {
     if (!ref.current) return;
-    if (!window.renderFilledPdf) {
+    if (!window.renderFilledDocx) {
       setState('error');
-      setErrMsg('وحدة PDF غير محمّلة');
+      setErrMsg('وحدة Word غير محمّلة');
       return;
     }
     setState('loading');
     let cancelled = false;
     const t = setTimeout(() => {
       if (cancelled) return;
-      window.renderFilledPdf(svc, form, ref.current)
+      window.renderFilledDocx(svc, form, ref.current)
         .then(() => { if (!cancelled) setState('ready'); })
         .catch(e => {
           if (cancelled) return;
@@ -42,24 +35,18 @@ function OfficialPaper({ svc, schema, form, attachments }) {
   }, [svc.code, formKey]);
 
   const hasAttachments = attachments && attachments.length > 0;
-  const fileName = window.pdfFileNameFor
-    ? window.pdfFileNameFor(svc, form)
+  const fileName = window.docxFileNameFor
+    ? window.docxFileNameFor(svc, form)
     : `${svc.code}_${(form.name || 'بدون-اسم').replace(/\s/g,'-')}`;
 
   const onDownloadWord = async () => {
     try { await window.downloadFilledDocx(svc, form); }
     catch (e) { alert('تعذّر تنزيل ملف Word: ' + e.message); }
   };
-  const onDownloadPdf = async () => {
-    try { await window.downloadFilledPdf(svc, form, ref.current); }
-    catch (e) { alert('تعذّر تنزيل PDF: ' + e.message); }
-  };
   const onPrint = async () => {
     try {
-      // HTML preview is LibreOffice's conversion of the official Word file —
-      // printing it gives output identical to the Word template with filled data.
-      if (window.printHtmlForm) await window.printHtmlForm(svc, form);
-      else await window.printFilledPdf(ref.current);
+      if (window.printDocxForm) await window.printDocxForm(svc, form);
+      else alert('وحدة الطباعة غير متاحة');
     }
     catch (e) { alert('تعذّر الطباعة: ' + e.message); }
   };
@@ -72,20 +59,17 @@ function OfficialPaper({ svc, schema, form, attachments }) {
     <div className="of-wrap">
       <div className="of-toolbar no-print">
         <div className="of-toolbar__lhs">
-          <button className="f-btn f-btn--primary f-btn--lg" onClick={onDownloadPdf}>
-            <Icon name="picture_as_pdf" />
+          <button className="f-btn f-btn--primary f-btn--lg" onClick={onDownloadWord}>
+            <Icon name="description" />
             <span>
-              <strong>تنزيل PDF الرسمي</strong>
-              <small>مطابق ١٠٠٪ للنموذج المعتمد + بياناتك</small>
+              <strong>تنزيل Word</strong>
+              <small>النموذج الرسمي المعبّأ ببياناتك</small>
             </span>
           </button>
         </div>
         <div className="of-toolbar__btns">
-          <button className="f-btn" onClick={onPrint}>
+          <button className="f-btn f-btn--primary" onClick={onPrint}>
             <Icon name="print" /> طباعة
-          </button>
-          <button className="f-btn" onClick={onDownloadWord}>
-            <Icon name="description" /> تنزيل Word
           </button>
           {window.exportFormWithAttachments && (
             <button className="f-btn" onClick={onPdfWithAttach}>
@@ -96,9 +80,9 @@ function OfficialPaper({ svc, schema, form, attachments }) {
         </div>
       </div>
 
-      <div className="of-pdf-shell" id="of-print-root">
+      <div className="of-docx-shell" id="of-print-root">
         {state === 'loading' && (
-          <div className="of-pdf-loading">
+          <div className="of-docx-loading">
             <div className="of-docx-spinner" />
             جاري تجهيز النموذج…
           </div>
@@ -112,7 +96,7 @@ function OfficialPaper({ svc, schema, form, attachments }) {
             </div>
           </div>
         )}
-        <div ref={ref} className="of-pdf-host" />
+        <div ref={ref} className="of-docx-host" />
       </div>
     </div>
   );

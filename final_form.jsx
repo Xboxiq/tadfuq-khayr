@@ -359,7 +359,6 @@ function FormPage({ nav, code }) {
   const [attachments, setAttachments] = useState([]);
   const [docFiles, setDocFiles] = useState({});
   const [exporting, setExporting] = useState(false);
-  const [printMode, setPrintMode] = useState('legacy');  // 'legacy' = حرفية Word, 'pro' = احترافية
 
   const initial = () => ({ docs: {}, cls:'منزلي', phase:'أحادي الطور' });
   const [form, setForm] = useState(() => {
@@ -660,11 +659,19 @@ function FormPage({ nav, code }) {
               </button>
               <button className="f-btn" onClick={async () => {
                 try {
-                  if (window.printHtmlForm) await window.printHtmlForm(svc, form);
-                  else { setTab('orig'); setTimeout(() => window.printFilledPdf && window.printFilledPdf(document.querySelector('.of-pdf-host')), 800); }
+                  if (window.printDocxForm) await window.printDocxForm(svc, form);
+                  else alert('وحدة الطباعة غير متاحة');
                 } catch (e) { alert('تعذّر الطباعة: ' + e.message); }
               }}>
                 <Icon name="print" /> طباعة
+              </button>
+              <button className="f-btn" onClick={async () => {
+                try {
+                  if (window.downloadFilledDocx) await window.downloadFilledDocx(svc, form);
+                  else alert('وحدة Word غير متاحة');
+                } catch (e) { alert('تعذّر تنزيل ملف Word: ' + e.message); }
+              }}>
+                <Icon name="description" /> تنزيل Word
               </button>
               <button className="f-btn" onClick={exportUnified} disabled={exporting}>
                 <Icon name={exporting ? 'hourglass_top' : 'file_save'} />
@@ -677,8 +684,7 @@ function FormPage({ nav, code }) {
           </aside>
         </div>
       ) : (
-        <window.OfficialPaper svc={svc} schema={schema} form={form} attachments={allAttachments()}
-                              mode={printMode} setMode={setPrintMode} />
+        <window.OfficialPaper svc={svc} schema={schema} form={form} attachments={allAttachments()} />
       )}
 
       {showErrors && Object.keys(errors).length > 0 && tab === 'pro' && (
