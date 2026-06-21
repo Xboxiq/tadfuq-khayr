@@ -40,16 +40,19 @@ function OfficialPaper({ svc, form, attachments }) {
     try {
       const res = await window.printFilledDocx(svc, form);
       if (!toast) return;
-      if (res.mode === 'server') {
+      if (res.mode === 'pdf') {
+        toast.push({ kind: 'success', title: 'جاهز للطباعة',
+                     body: 'اختر الطابعة من نافذة المتصفّح واضغط طباعة' });
+      } else if (res.mode === 'silent') {
         toast.push({ kind: 'success', title: 'تم الإرسال للطابعة',
                      body: res.printer && res.printer !== '(system default)'
                        ? `الطابعة: ${res.printer}` : 'الطابعة الافتراضية' });
-      } else if (res.mode === 'server-failed') {
-        toast.push({ kind: 'warn', title: 'فشل أمر الطباعة — تم تنزيل الملف',
+      } else if (res.mode === 'pdf-failed' || res.mode === 'silent-failed') {
+        toast.push({ kind: 'warn', title: 'فشل الطباعة — تم تنزيل الملف',
                      body: res.error || 'افتح الملف يدوياً واطبعه (Ctrl+P)' });
       } else {
-        toast.push({ kind: 'info', title: 'تم تنزيل الملف',
-                     body: 'خادم الطباعة غير شغّال — افتح الملف واطبعه (Ctrl+P)' });
+        toast.push({ kind: 'info', title: 'خادم الطباعة غير شغّال',
+                     body: 'تم تنزيل الملف — افتحه واطبعه (Ctrl+P)' });
       }
     } catch (e) {
       if (toast) toast.push({ kind: 'error', title: 'تعذّر الطباعة', body: e.message });

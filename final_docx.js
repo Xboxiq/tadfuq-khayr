@@ -104,18 +104,28 @@
   }
 
   // =============================================================
-  // PRINT — send the same .docx file directly to the printer via
-  // the local Print Server (print-server/server.js). If the server
-  // isn't running, we fall back to a regular download so nothing
-  // breaks. The mode used is returned so the caller can toast
-  // the right message.
+  // PRINT — recommended path:
+  //   1. Send the docx to the central Convert Server.
+  //   2. Receive a PDF back.
+  //   3. Embed the PDF in a hidden iframe and call iframe.print().
+  //   4. The browser's print dialog appears on the EMPLOYEE'S machine
+  //      → goes to the EMPLOYEE'S local printer.
+  //
+  // Server runs ONCE somewhere (your PC, a Raspberry Pi, a free cloud
+  // host). Every employee uses it with zero install.
   // =============================================================
 
-  const PRINT_SERVER = () =>
-    (window.localStorage.getItem('tq-print-server') || 'http://localhost:9876')
-      .replace(/\/+$/, '');
+  const PRINT_SERVER = () => {
+    // 1) explicit override in localStorage
+    let url = window.localStorage.getItem('tq-print-server');
+    // 2) admin-configured global setting
+    if (!url && window.DB && window.DB.settings) {
+      try { url = (window.DB.settings.get() || {}).printServerUrl; } catch {}
+    }
+    return (url || 'http://localhost:9876').replace(/\/+$/, '');
+  };
 
-  async function pingPrintServer(timeoutMs = 1200) {
+  async function pingPrintServer(timeoutMs = 1500) {
     try {
       const ac = new AbortController();
       const t  = setTimeout(() => ac.abort(), timeoutMs);
@@ -127,7 +137,28 @@
     } catch { return null; }
   }
 
-  async function printViaServer(buf, name) {
+  // POST docx → receive PDF Blob
+  async function convertToPdf(buf, name) {
+    const res = await fetch(
+      `${PRINT_SERVER()}/convert?name=${encodeURIComponent(name)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+        body: buf,
+      }
+    );
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); msg = j.message || j.error || msg; } catch {}
+      throw new Error(msg);
+    }
+    return await res.blob();
+  }
+
+  // Direct-print mode (server prints to its own printer). Used only when
+  // the user explicitly enables silent mode in settings.
+  async function directPrint(buf, name) {
     const res = await fetch(
       `${PRINT_SERVER()}/print?name=${encodeURIComponent(name)}`,
       {
@@ -140,13 +171,60 @@
     let info = null;
     try { info = await res.json(); } catch {}
     if (!res.ok || !info || !info.ok) {
-      const msg = (info && (info.message || info.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
+      throw new Error((info && (info.message || info.error)) || `HTTP ${res.status}`);
     }
     return info;
   }
 
-  function downloadAndOpen(buf, fileName) {
+  // Embed PDF in a hidden iframe and call its print(); the browser handles
+  // the actual printing to the user's local printer.
+  function printPdfBlob(pdfBlob) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(pdfBlob);
+
+      // remove any previous print iframe
+      const old = document.getElementById('tq-pdf-print-frame');
+      if (old) old.remove();
+
+      const frame = document.createElement('iframe');
+      frame.id    = 'tq-pdf-print-frame';
+      frame.src   = url;
+      frame.style.cssText =
+        'position:fixed;right:-10000px;top:-10000px;width:900px;height:1200px;border:0;visibility:hidden;';
+      document.body.appendChild(frame);
+
+      const cleanup = () => {
+        setTimeout(() => {
+          try { frame.remove(); } catch {}
+          URL.revokeObjectURL(url);
+        }, 2000);
+      };
+
+      let printed = false;
+      const doPrint = () => {
+        if (printed) return; printed = true;
+        // small delay so the PDF viewer has the doc fully laid out
+        setTimeout(() => {
+          try {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+            try { frame.contentWindow.addEventListener('afterprint', cleanup); } catch {}
+            setTimeout(cleanup, 90000);   // long safety cleanup
+            resolve();
+          } catch (e) {
+            cleanup();
+            reject(e);
+          }
+        }, 350);
+      };
+
+      frame.addEventListener('load', doPrint);
+      // safety: if onload doesn't fire (some PDF viewers), force after 2.5s
+      setTimeout(doPrint, 2500);
+    });
+  }
+
+  function downloadDocxFallback(buf, fileName) {
     const blob = new Blob([buf], { type:
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
     const url  = URL.createObjectURL(blob);
@@ -161,24 +239,39 @@
     const buf      = await fillTemplate(svc, form);
     const fileName = fileNameFor(svc, form);
 
-    // 1) Try the local Print Server (single-click direct print).
+    const settings = (window.DB && window.DB.settings && window.DB.settings.get()) || {};
+    const silent   = !!settings.printSilent;
+
     const info = await pingPrintServer();
     if (info) {
+      // ---------- A. Silent direct print (single-machine setup) ----------
+      if (silent) {
+        try {
+          const r = await directPrint(buf, fileName);
+          window.DB && window.DB.log('form.print', svc.code, { via: 'silent', platform: info.platform });
+          return { mode: 'silent', platform: info.platform, printer: r && r.printer };
+        } catch (e) {
+          downloadDocxFallback(buf, fileName);
+          window.DB && window.DB.log('form.print', svc.code, { via: 'silent-fail', error: e.message });
+          return { mode: 'silent-failed', error: e.message };
+        }
+      }
+
+      // ---------- B. Default — convert to PDF and print via browser ----------
       try {
-        await printViaServer(buf, fileName);
-        window.DB && window.DB.log('form.print', svc.code, { via: 'server', platform: info.platform });
-        return { mode: 'server', platform: info.platform, printer: info.printer };
+        const pdf = await convertToPdf(buf, fileName);
+        await printPdfBlob(pdf);
+        window.DB && window.DB.log('form.print', svc.code, { via: 'pdf', platform: info.platform });
+        return { mode: 'pdf', platform: info.platform };
       } catch (e) {
-        // Server is up but the print command failed (no printer, Word not
-        // installed, etc.) — fall through to download with a hint.
-        downloadAndOpen(buf, fileName);
-        window.DB && window.DB.log('form.print', svc.code, { via: 'server-fail-fallback', error: e.message });
-        return { mode: 'server-failed', error: e.message };
+        downloadDocxFallback(buf, fileName);
+        window.DB && window.DB.log('form.print', svc.code, { via: 'pdf-fail', error: e.message });
+        return { mode: 'pdf-failed', error: e.message };
       }
     }
 
-    // 2) Fallback: download the docx so the user opens & prints it manually.
-    downloadAndOpen(buf, fileName);
+    // ---------- C. Server unreachable: download the docx ----------
+    downloadDocxFallback(buf, fileName);
     window.DB && window.DB.log('form.print', svc.code, { via: 'download' });
     return { mode: 'download' };
   }
