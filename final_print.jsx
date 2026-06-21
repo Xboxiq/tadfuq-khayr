@@ -33,16 +33,39 @@ function OfficialPaper({ svc, form, attachments }) {
     return () => { cancelled = true; clearTimeout(t); };
   }, [svc.code, formKey]);
 
+  const toast = window.useToast && window.useToast();
   const [printing, setPrinting] = React.useState(false);
   const onPrint = async () => {
     setPrinting(true);
-    try { await window.printFilledDocx(svc, form); }
-    catch (e) { alert('تعذّر الطباعة: ' + e.message); }
-    finally { setTimeout(() => setPrinting(false), 1000); }
+    try {
+      const res = await window.printFilledDocx(svc, form);
+      if (!toast) return;
+      if (res.mode === 'server') {
+        toast.push({ kind: 'success', title: 'تم الإرسال للطابعة',
+                     body: res.printer && res.printer !== '(system default)'
+                       ? `الطابعة: ${res.printer}` : 'الطابعة الافتراضية' });
+      } else if (res.mode === 'server-failed') {
+        toast.push({ kind: 'warn', title: 'فشل أمر الطباعة — تم تنزيل الملف',
+                     body: res.error || 'افتح الملف يدوياً واطبعه (Ctrl+P)' });
+      } else {
+        toast.push({ kind: 'info', title: 'تم تنزيل الملف',
+                     body: 'خادم الطباعة غير شغّال — افتح الملف واطبعه (Ctrl+P)' });
+      }
+    } catch (e) {
+      if (toast) toast.push({ kind: 'error', title: 'تعذّر الطباعة', body: e.message });
+      else alert('تعذّر الطباعة: ' + e.message);
+    } finally {
+      setTimeout(() => setPrinting(false), 800);
+    }
   };
   const onDownloadWord = async () => {
-    try { await window.downloadFilledDocx(svc, form); }
-    catch (e) { alert('تعذّر تنزيل ملف Word: ' + e.message); }
+    try {
+      await window.downloadFilledDocx(svc, form);
+      if (toast) toast.push({ kind: 'success', title: 'تم تنزيل ملف Word' });
+    } catch (e) {
+      if (toast) toast.push({ kind: 'error', title: 'تعذّر تنزيل ملف Word', body: e.message });
+      else alert('تعذّر تنزيل ملف Word: ' + e.message);
+    }
   };
 
   return (

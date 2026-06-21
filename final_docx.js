@@ -103,105 +103,84 @@
     });
   }
 
-  // ----- Print via isolated iframe (cleanest possible output) -----
-  async function printDocx(svc, form) {
-    const buf = await fillTemplate(svc, form);
+  // =============================================================
+  // PRINT — send the same .docx file directly to the printer via
+  // the local Print Server (print-server/server.js). If the server
+  // isn't running, we fall back to a regular download so nothing
+  // breaks. The mode used is returned so the caller can toast
+  // the right message.
+  // =============================================================
 
-    // Build an isolated iframe so page CSS can't interfere
-    const oldFrame = document.getElementById('docx-print-frame');
-    if (oldFrame) oldFrame.remove();
+  const PRINT_SERVER = () =>
+    (window.localStorage.getItem('tq-print-server') || 'http://localhost:9876')
+      .replace(/\/+$/, '');
 
-    const frame = document.createElement('iframe');
-    frame.id = 'docx-print-frame';
-    frame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:850px;height:1200px;border:0;visibility:hidden;';
-    document.body.appendChild(frame);
-
-    const doc = frame.contentDocument;
-    doc.open();
-    doc.write(`<!doctype html>
-<html dir="rtl" lang="ar">
-<head>
-<meta charset="utf-8">
-<title>طباعة</title>
-<style>
-  /* Important: docx-preview already injects the Word section's
-     margins as PADDING on section.docx. So @page margin must be
-     ZERO, otherwise margins are applied twice and the whole layout
-     shifts. We only set the page SIZE here (US Letter from sectPr). */
-  @page {
-    size: 8.5in 11in;
-    margin: 0;
-  }
-  html, body { margin: 0; padding: 0; background: #fff; }
-  body { direction: rtl; font-family: "Tajawal", "Arial", "Helvetica Neue", sans-serif; }
-  /* Force RTL on every node — overrides docx-preview inline styles */
-  .docx-wrapper, .docx-wrapper *,
-  section.docx, section.docx * {
-    direction: rtl !important;
-    unicode-bidi: embed !important;
-  }
-  .docx-wrapper { background: transparent !important; padding: 0 !important; }
-  section.docx {
-    margin: 0 auto !important;
-    box-shadow: none !important;
-    /* docx-preview sets the section size to the docx pgSz; leave it alone */
-  }
-  table { margin-left: 0 !important; margin-right: 0 !important; }
-  td, th { text-align: right !important; }
-  /* Latin/digit runs stay LTR */
-  *[lang="en-US"], *[lang="en"] {
-    direction: ltr !important;
-    unicode-bidi: embed !important;
-  }
-  @media print {
-    section.docx { page-break-after: always; }
-    section.docx:last-child { page-break-after: auto; }
-  }
-</style>
-</head>
-<body><div id="root" dir="rtl"></div></body>
-</html>`);
-    doc.close();
-
-    const root = doc.getElementById('root');
-    // Render docx-preview INTO the iframe (using the parent window's lib)
-    await window.docx.renderAsync(buf, root, null, {
-      className: 'docx-rendered',
-      inWrapper: true,
-      breakPages: true,
-      ignoreLastRenderedPageBreak: false,  // respect Word page breaks
-      experimental: true,
-      trimXmlDeclaration: true,
-      useBase64URL: true,
-      renderHeaders: true,
-      renderFooters: true,
-      renderFootnotes: false,
-      ignoreWidth: false,
-      ignoreHeight: false,
-      defaultFont: { family: 'Arial', size: 22 },
-    });
-
-    // Give the layout a beat to settle, then print the iframe's window
-    await new Promise(r => setTimeout(r, 150));
+  async function pingPrintServer(timeoutMs = 1200) {
     try {
-      frame.contentWindow.focus();
-      frame.contentWindow.print();
-    } catch (e) {
-      // Fallback: open in a new tab
-      const blob = new Blob([buf], { type:
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      const ac = new AbortController();
+      const t  = setTimeout(() => ac.abort(), timeoutMs);
+      const res = await fetch(PRINT_SERVER() + '/ping', { signal: ac.signal, cache: 'no-store' });
+      clearTimeout(t);
+      if (!res.ok) return null;
+      const info = await res.json();
+      return info && info.ok ? info : null;
+    } catch { return null; }
+  }
+
+  async function printViaServer(buf, name) {
+    const res = await fetch(
+      `${PRINT_SERVER()}/print?name=${encodeURIComponent(name)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+        body: buf,
+      }
+    );
+    let info = null;
+    try { info = await res.json(); } catch {}
+    if (!res.ok || !info || !info.ok) {
+      const msg = (info && (info.message || info.error)) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    return info;
+  }
+
+  function downloadAndOpen(buf, fileName) {
+    const blob = new Blob([buf], { type:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url  = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), {
+      href: url, download: fileName + '.docx',
+    });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  async function printDocx(svc, form) {
+    const buf      = await fillTemplate(svc, form);
+    const fileName = fileNameFor(svc, form);
+
+    // 1) Try the local Print Server (single-click direct print).
+    const info = await pingPrintServer();
+    if (info) {
+      try {
+        await printViaServer(buf, fileName);
+        window.DB && window.DB.log('form.print', svc.code, { via: 'server', platform: info.platform });
+        return { mode: 'server', platform: info.platform, printer: info.printer };
+      } catch (e) {
+        // Server is up but the print command failed (no printer, Word not
+        // installed, etc.) — fall through to download with a hint.
+        downloadAndOpen(buf, fileName);
+        window.DB && window.DB.log('form.print', svc.code, { via: 'server-fail-fallback', error: e.message });
+        return { mode: 'server-failed', error: e.message };
+      }
     }
 
-    // Clean up after the print dialog closes (or a long timeout)
-    const remove = () => { frame.remove(); };
-    if (frame.contentWindow) {
-      try { frame.contentWindow.addEventListener('afterprint', remove); } catch {}
-    }
-    setTimeout(remove, 60000);
-
-    window.DB && window.DB.log('form.print', svc.code);
+    // 2) Fallback: download the docx so the user opens & prints it manually.
+    downloadAndOpen(buf, fileName);
+    window.DB && window.DB.log('form.print', svc.code, { via: 'download' });
+    return { mode: 'download' };
   }
 
   window.fillFilledDocx     = fillTemplate;
