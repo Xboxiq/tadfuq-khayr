@@ -40,7 +40,10 @@ function OfficialPaper({ svc, form, attachments }) {
     try {
       const res = await window.printFilledDocx(svc, form);
       if (!toast) return;
-      if (res.mode === 'pdf') {
+      if (res.mode === 'browser-pdf') {
+        toast.push({ kind: 'success', title: 'جاهز للطباعة',
+                     body: 'تم التحضير داخل المتصفّح — اختر الطابعة من النافذة' });
+      } else if (res.mode === 'pdf') {
         toast.push({ kind: 'success', title: 'جاهز للطباعة',
                      body: 'اختر الطابعة من نافذة المتصفّح واضغط طباعة' });
       } else if (res.mode === 'silent') {

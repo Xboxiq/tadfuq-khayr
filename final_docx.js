@@ -236,11 +236,28 @@
   }
 
   async function printDocx(svc, form) {
-    const buf      = await fillTemplate(svc, form);
     const fileName = fileNameFor(svc, form);
-
     const settings = (window.DB && window.DB.settings && window.DB.settings.get()) || {};
     const silent   = !!settings.printSilent;
+
+    // ---------- 0. In-browser PDF fill (zero server, zero install) ----------
+    // Try this FIRST. Works for any template that has a matching
+    // forms_pdf/<code>.pdf next to forms_word/<code>.docx.
+    if (window.TadfuqPdfFill) {
+      try {
+        const values = _buildData(svc, form);
+        const pdfBlob = await window.TadfuqPdfFill.buildFilledPdf(svc, values);
+        await window.TadfuqPdfFill.printPdfBlob(pdfBlob);
+        window.DB && window.DB.log('form.print', svc.code, { via: 'browser-pdf' });
+        return { mode: 'browser-pdf' };
+      } catch (e) {
+        // PDF template missing or fill failed → fall through to server path
+        console.warn('[print] browser-pdf failed:', e.message);
+      }
+    }
+
+    // Build the docx for the server path / download fallback
+    const buf = await fillTemplate(svc, form);
 
     const info = await pingPrintServer();
     if (info) {
