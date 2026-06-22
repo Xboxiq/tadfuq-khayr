@@ -46,6 +46,38 @@ rgba. Always honor both Light and Dark modes (`body.dark` flips every
 token cleanly). Never use emoji as icons. Never swap the four
 department colors.
 
+## Installed Skills & Reference Library
+
+Six external skill sources are now installed in `skills/`. Read them before designing.
+
+### Fundamentals (TypeUI — bergside/typeui)
+Applied as a reasoning layer on top of the brand tokens:
+- `skills/fundamentals/ui-principles.md` — hierarchy, layout, color, depth, 9 core principles
+- `skills/fundamentals/ux-principles.md` — 30 UX laws, control state contract, form rules, RTL interaction
+- `skills/fundamentals/typography.md` — 6 pillars: foundations, scale, readability, a11y, responsive, brand
+- `skills/fundamentals/accessibility.md` — WCAG 2.2 ruleset; access wins every conflict
+- `skills/fundamentals/spacing.md` — 4pt grid, inner-outer rule, relationship spacing, anti-patterns
+
+### Brand Reference DESIGN.md Files (awesome-design-md — VoltAgent)
+73 brands available upstream; 5 installed locally for this project's reference aesthetics:
+- `skills/references/apple.DESIGN.md` — photography-first, single Action Blue, SF Pro tight tracking
+- `skills/references/linear.DESIGN.md` — dark precision, four-surface hierarchy, single lavender accent
+- `skills/references/vercel.DESIGN.md` — stark b&w, Geist+Geist Mono, mesh gradient hero only
+- `skills/references/notion.DESIGN.md` — illustration-rich, purple CTA, pastel card tints, 8px radius
+- `skills/references/stripe.DESIGN.md` — weight-300 display, indigo pill CTA, tabular-nums everywhere
+
+### Operating Skills (open-design — nexu-io)
+- `skills/frontend-design.md` — 6-step workflow for building production-grade UI
+- `skills/impeccable-polish.md` — audit/critique/polish/animate/harden any existing artifact
+- `skills/design-md.md` — create/update DESIGN.md files in the 9-section standard format
+
+### Additional Sources (check directly)
+- **designmd-supply** (context-dot-dev) — auto-converts any live site to DESIGN.md via Context.dev API
+- **neuform.ai** — form & input design system
+- **mydesignmd.com** — DESIGN.md catalog & generator
+
+---
+
 ## Anti-slop & pre-delivery checklist
 
 Taste rules to keep output premium, not generic. Apply to every screen
