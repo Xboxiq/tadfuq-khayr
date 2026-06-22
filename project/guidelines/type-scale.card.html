@@ -1,0 +1,28 @@
+<!-- @dsCard group="Type" viewport="700x300" name="Type scale — Apple HIG" subtitle="caption / footnote / body / title / large-title" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-primary); color: var(--text-primary); }
+  .row { display: flex; align-items: baseline; gap: 18px; padding: 6px 0; border-bottom: 1px solid var(--separator-fine); }
+  .row:last-child { border-bottom: none; }
+  .row .tok { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-tertiary); width: 96px; flex: none; direction: ltr; text-transform: uppercase; letter-spacing: var(--tracking-caps); }
+  .row .spec { font-family: var(--font-display); font-weight: 600; letter-spacing: var(--tracking-tight); white-space: nowrap; line-height: 1.1; }
+  .row .ar { font-family: var(--font-cmd); }
+</style>
+</head>
+<body>
+  <div class="row"><span class="tok">large-title</span><span class="spec ar" style="font-size:var(--fs-large-title)">عنوان كبير</span></div>
+  <div class="row"><span class="tok">title 1</span><span class="spec ar" style="font-size:var(--fs-title1)">عنوان الصفحة</span></div>
+  <div class="row"><span class="tok">title 2</span><span class="spec ar" style="font-size:var(--fs-title2)">عنوان قسم</span></div>
+  <div class="row"><span class="tok">title 3</span><span class="spec ar" style="font-size:var(--fs-title3)">عنوان بطاقة</span></div>
+  <div class="row"><span class="tok">headline</span><span class="spec ar" style="font-size:var(--fs-headline);font-weight:600">سطر عنوان</span></div>
+  <div class="row"><span class="tok">body</span><span class="spec ar" style="font-size:var(--fs-body);font-weight:400">نص الجسم الاعتيادي</span></div>
+  <div class="row"><span class="tok">callout</span><span class="spec ar" style="font-size:var(--fs-callout);font-weight:400">سطر تنبيه أو زر</span></div>
+  <div class="row"><span class="tok">subheadline</span><span class="spec ar" style="font-size:var(--fs-subheadline);font-weight:500">عنوان فرعي</span></div>
+  <div class="row"><span class="tok">footnote</span><span class="spec ar" style="font-size:var(--fs-footnote);font-weight:400;color:var(--text-secondary)">سطر هامش وتوضيح</span></div>
+  <div class="row"><span class="tok">caption 1</span><span class="spec ar" style="font-size:var(--fs-caption1);font-weight:500;color:var(--text-secondary)">تسمية أو حقل</span></div>
+</body>
+</html>

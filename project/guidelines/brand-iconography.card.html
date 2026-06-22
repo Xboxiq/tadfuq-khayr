@@ -1,0 +1,35 @@
+<!-- @dsCard group="Brand" viewport="700x240" name="Iconography" subtitle="Custom tdq-* line set + Material Symbols" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface); color: var(--text); }
+  h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-soft); margin: 0 0 12px; direction: ltr; }
+  .set { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 22px; }
+  .ico { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 64px; }
+  .ico .ds-ico { color: var(--brand-navy); }
+  .ico .material-symbols-outlined { font-size: 30px; color: var(--brand-navy); }
+  .ico small { font-family: var(--font-mono); font-size: 9px; color: var(--text-soft); text-align: center; direction: ltr; }
+</style>
+</head>
+<body>
+  <h4>Custom — tdq-* (24px · stroke 1.75 · round)</h4>
+  <div class="set" id="custom"></div>
+  <h4>Material Symbols Outlined — service language</h4>
+  <div class="set" id="material"></div>
+
+  <script src="../ds_icons.js"></script>
+  <script>
+    const custom = ['tdq-subscriptions','tdq-technical','tdq-billing','tdq-reports','tdq-meter','tdq-pole','tdq-cable','tdq-plug','tdq-tower','tdq-fees','tdq-stamp','tdq-form'];
+    document.getElementById('custom').innerHTML = custom.map(n =>
+      `<span class="ico"><svg class="ds-ico" width="30" height="30"><use href="#${n}"/></svg><small>${n.replace('tdq-','')}</small></span>`
+    ).join('');
+    const mat = ['bolt','receipt_long','electrical_services','report','payments','speed','fact_check','warning','schedule','swap_horiz','request_quote','support_agent'];
+    document.getElementById('material').innerHTML = mat.map(n =>
+      `<span class="ico"><span class="material-symbols-outlined">${n}</span><small>${n}</small></span>`
+    ).join('');
+  </script>
+</body>
+</html>

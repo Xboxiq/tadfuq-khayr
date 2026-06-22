@@ -1,0 +1,33 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="iOS System palette" subtitle="Semantic accents — never identity" -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface-primary); }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--separator); box-shadow: var(--elevation-1); }
+  .sw__chip { height: 56px; }
+  .sw__meta { padding: 7px 10px; font-family: var(--font-mono); font-size: 10.5px; line-height: 1.4; }
+  .sw__name { font-family: var(--font-display); font-weight: 600; font-size: 11px; color: var(--text-primary); }
+  .sw__hex { color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-blue)"></div><div class="sw__meta"><div class="sw__name">blue</div><div class="sw__hex">#007AFF</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-green)"></div><div class="sw__meta"><div class="sw__name">green</div><div class="sw__hex">#34C759</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-red)"></div><div class="sw__meta"><div class="sw__name">red</div><div class="sw__hex">#FF3B30</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-orange)"></div><div class="sw__meta"><div class="sw__name">orange</div><div class="sw__hex">#FF9500</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-yellow)"></div><div class="sw__meta"><div class="sw__name">yellow</div><div class="sw__hex">#FFCC00</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-indigo)"></div><div class="sw__meta"><div class="sw__name">indigo</div><div class="sw__hex">#5856D6</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-purple)"></div><div class="sw__meta"><div class="sw__name">purple</div><div class="sw__hex">#AF52DE</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-pink)"></div><div class="sw__meta"><div class="sw__name">pink</div><div class="sw__hex">#FF2D55</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-teal)"></div><div class="sw__meta"><div class="sw__name">teal</div><div class="sw__hex">#5AC8FA</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-mint)"></div><div class="sw__meta"><div class="sw__name">mint</div><div class="sw__hex">#00C7BE</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:var(--sys-brown)"></div><div class="sw__meta"><div class="sw__name">brown</div><div class="sw__hex">#A2845E</div></div></div>
+  <div class="sw"><div class="sw__chip" style="background:#000"></div><div class="sw__meta"><div class="sw__name">black</div><div class="sw__hex">#000000</div></div></div>
+</div>
+</body>
+</html>

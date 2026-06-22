@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Department colors" subtitle="CS / CB / CT / CA — fixed per section" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface); }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .dep { border-radius: var(--radius-lg); padding: 16px; color: #fff; box-shadow: var(--shadow-sm); }
+  .dep__code { font-family: var(--font-mono); font-weight: 800; font-size: 20px; letter-spacing: .06em; }
+  .dep__name { font-family: var(--font-cmd); font-weight: 700; font-size: 15px; margin-top: 6px; }
+  .dep__hex { font-family: var(--font-mono); font-size: 11px; opacity: .85; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="dep" style="background:var(--c-CS)"><div class="dep__code">CS</div><div class="dep__name">الاشتراكات</div><div class="dep__hex">#1d4ed8</div></div>
+  <div class="dep" style="background:var(--c-CB)"><div class="dep__code">CB</div><div class="dep__name">الفواتير</div><div class="dep__hex">#0e7490</div></div>
+  <div class="dep" style="background:var(--c-CT)"><div class="dep__code">CT</div><div class="dep__name">الفنية</div><div class="dep__hex">#b45309</div></div>
+  <div class="dep" style="background:var(--c-CA)"><div class="dep__code">CA</div><div class="dep__name">الشكاوى</div><div class="dep__hex">#b91c1c</div></div>
+</div>
+</body>
+</html>

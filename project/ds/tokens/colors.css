@@ -1,0 +1,214 @@
+/* ============================================================
+   Colors — Tadfuq Al-Khayr × Apple Pro
+   ----------------------------------------------------
+   Architecture (layered, intentional):
+
+     1. Brand primitives  (--brand-*)        identity (unchanged)
+     2. iOS system palette (--sys-*)         semantic accents
+     3. Apple Pro neutrals (--neutral-*)     refined gray ladder
+     4. Department colors (--c-CS|CB|CT|CA)  four departments (unchanged)
+     5. Semantic state    (--ok / warn / err / info)
+     6. Surface tiers     (HIG: primary / secondary / tertiary / grouped)
+     7. Text tiers        (HIG: primary / secondary / tertiary / quaternary)
+
+   Brand identity stays exactly as it was — navy ring, crimson
+   wordmark, ceremonial gold — because that's a registered mark
+   and a calm palette the project owner explicitly wants kept.
+   What changes is the supporting cast: iOS system colors take
+   over the loud semantic roles (success / error / info), Apple
+   Pro neutrals replace slate, surface + text tiers move to HIG
+   names so designers reach for the same answer they would in SF.
+   ============================================================ */
+
+:root {
+  /* ============================================================
+     1. Brand primitives — Tadfuq Al-Khayr (unchanged)
+     ============================================================ */
+  --brand-navy:        #232350;
+  --brand-navy-2:      #2e2e6b;   /* lighter navy for gradients */
+  --brand-navy-3:      #15153a;   /* deepest navy for shadows  */
+  --brand-red:         #c1121f;   /* primary crimson           */
+  --brand-red-2:       #e0313c;   /* hot crimson highlight     */
+  --brand-gold:        #f4c430;   /* ceremonial gold accent    */
+
+  /* Signature gradients & lines */
+  --brand-grad:        linear-gradient(125deg, var(--brand-navy-3) 0%, var(--brand-navy) 48%, var(--brand-red) 120%);
+  --brand-grad-soft:   linear-gradient(135deg,
+                          color-mix(in oklab, var(--brand-navy) 14%, transparent),
+                          color-mix(in oklab, var(--brand-red) 12%, transparent));
+  --brand-line:        linear-gradient(90deg, var(--brand-navy), var(--brand-red));
+  --brand-sweep:       linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-red) 55%, var(--brand-gold) 100%);
+
+  /* Liquid-glass tint — sits behind translucent surfaces */
+  --brand-mesh:
+    radial-gradient(900px 520px at 12% 6%,  color-mix(in oklab, var(--brand-navy) 22%, transparent), transparent 60%),
+    radial-gradient(900px 520px at 92% 12%, color-mix(in oklab, var(--brand-red)  16%, transparent), transparent 60%),
+    radial-gradient(700px 480px at 50% 94%, color-mix(in oklab, var(--brand-gold) 10%, transparent), transparent 65%);
+
+  /* ============================================================
+     2. iOS System palette (HIG light values)
+        Re-use these for semantic + accent — never for identity.
+     ============================================================ */
+  --sys-blue:    #007AFF;
+  --sys-green:   #34C759;
+  --sys-indigo:  #5856D6;
+  --sys-orange:  #FF9500;
+  --sys-pink:    #FF2D55;
+  --sys-purple:  #AF52DE;
+  --sys-red:     #FF3B30;
+  --sys-teal:    #5AC8FA;
+  --sys-yellow:  #FFCC00;
+  --sys-mint:    #00C7BE;
+  --sys-brown:   #A2845E;
+
+  /* ============================================================
+     3. Apple Pro neutrals — iOS systemGray ladder
+        Warmer & calmer than the previous slate scale.
+     ============================================================ */
+  --neutral-50:  #F9F9FB;
+  --neutral-100: #F2F2F7;
+  --neutral-200: #E5E5EA;
+  --neutral-300: #D1D1D6;
+  --neutral-400: #C7C7CC;
+  --neutral-500: #AEAEB2;
+  --neutral-600: #8E8E93;
+  --neutral-700: #636366;
+  --neutral-800: #3A3A3C;
+  --neutral-900: #1C1C1E;
+
+  /* Legacy alias kept so existing rs-* components keep compiling. */
+  --gray-50:  var(--neutral-50);
+  --gray-100: var(--neutral-100);
+  --gray-200: var(--neutral-200);
+  --gray-300: var(--neutral-300);
+  --gray-400: var(--neutral-500);
+  --gray-500: var(--neutral-600);
+  --gray-600: var(--neutral-700);
+  --gray-700: var(--neutral-800);
+  --gray-800: var(--neutral-800);
+  --gray-900: var(--neutral-900);
+
+  /* Form-chrome supporting blues (unchanged for print compatibility) */
+  --navy-900: #0b2545;
+  --navy-800: #13315c;
+  --navy-700: #1b3b6f;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-50:  #eff4ff;
+  --teal-500: #0e7490;
+
+  /* ============================================================
+     4. Department colors (unchanged — identity)
+     ============================================================ */
+  --c-CS: #1d4ed8;  /* Subscriptions      — blue  */
+  --c-CB: #0e7490;  /* Finance & billing  — teal  */
+  --c-CT: #b45309;  /* Technical          — amber */
+  --c-CA: #b91c1c;  /* Reports/complaints — red   */
+
+  /* ============================================================
+     5. Semantic state — mapped to iOS system colors
+     ============================================================ */
+  --ok:   var(--sys-green);
+  --warn: var(--sys-orange);
+  --err:  var(--sys-red);
+  --info: var(--sys-blue);
+
+  /* ============================================================
+     6. Surface tiers (HIG Light)
+        primary   → cards on a neutral canvas
+        secondary → the canvas itself
+        tertiary  → cards on cards (modals, popovers)
+        grouped*  → settings-style grouped backgrounds
+     ============================================================ */
+  --surface-primary:     #FFFFFF;
+  --surface-secondary:   var(--neutral-50);
+  --surface-tertiary:    #FFFFFF;
+  --surface-grouped:     var(--neutral-100);
+  --surface-grouped-2:   #FFFFFF;
+  --surface-elevated:    rgba(255, 255, 255, 0.86);
+
+  /* Legacy aliases for existing components. */
+  --bg:                  var(--surface-secondary);
+  --surface:             var(--surface-primary);
+  --surface-2:           var(--neutral-100);
+  --surface-3:           var(--neutral-200);
+
+  /* ============================================================
+     7. Text tiers (HIG Light)
+     ============================================================ */
+  --text-primary:    rgba(0, 0, 0, 0.92);
+  --text-secondary:  rgba(0, 0, 0, 0.60);
+  --text-tertiary:   rgba(0, 0, 0, 0.40);
+  --text-quaternary: rgba(0, 0, 0, 0.24);
+  --text-on-brand:   #FFFFFF;
+
+  /* Legacy aliases */
+  --text:           var(--text-primary);
+  --text-soft:      var(--text-secondary);
+
+  /* ============================================================
+     8. Borders & dividers (HIG separators)
+     ============================================================ */
+  --separator:       rgba(60, 60, 67, 0.16);  /* HIG opaque separator */
+  --separator-fine:  rgba(60, 60, 67, 0.08);
+  --border:          var(--separator);
+  --border-strong:   rgba(60, 60, 67, 0.24);
+
+  /* Print-form hairlines (always black on white — never theme-swapped) */
+  --line:           #000;
+  --shade:          #f2f2f2;
+}
+
+/* ============================================================
+   Dark mode — HIG style (calm, not OLED black)
+   ============================================================ */
+body.dark {
+  /* surface tiers */
+  --surface-primary:     #1C1C1E;
+  --surface-secondary:   #000000;
+  --surface-tertiary:    #2C2C2E;
+  --surface-grouped:     #000000;
+  --surface-grouped-2:   #1C1C1E;
+  --surface-elevated:    rgba(28, 28, 30, 0.82);
+
+  --bg:             #000000;
+  --surface:        var(--surface-primary);
+  --surface-2:      var(--surface-tertiary);
+  --surface-3:      #3A3A3C;
+
+  /* text tiers */
+  --text-primary:    rgba(255, 255, 255, 0.92);
+  --text-secondary:  rgba(235, 235, 245, 0.60);
+  --text-tertiary:   rgba(235, 235, 245, 0.30);
+  --text-quaternary: rgba(235, 235, 245, 0.18);
+
+  --text:            var(--text-primary);
+  --text-soft:       var(--text-secondary);
+
+  /* separators */
+  --separator:       rgba(84, 84, 88, 0.65);
+  --separator-fine:  rgba(84, 84, 88, 0.30);
+  --border:          var(--separator);
+  --border-strong:   rgba(255, 255, 255, 0.20);
+
+  /* iOS dark system colors */
+  --sys-blue:    #0A84FF;
+  --sys-green:   #30D158;
+  --sys-indigo:  #5E5CE6;
+  --sys-orange:  #FF9F0A;
+  --sys-pink:    #FF375F;
+  --sys-purple:  #BF5AF2;
+  --sys-red:     #FF453A;
+  --sys-teal:    #64D2FF;
+  --sys-yellow:  #FFD60A;
+  --sys-mint:    #66D4CF;
+
+  /* department colors brighten a notch on dark to keep contrast */
+  --c-CS: #4F8BFF;
+  --c-CB: #2DC3D9;
+  --c-CT: #FFB23A;
+  --c-CA: #FF5C5C;
+
+  --blue-50:  #1a263f;
+}

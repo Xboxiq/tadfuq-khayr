@@ -1,0 +1,21 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Elevation — HIG" subtitle="Layered contact + ambient shadow, 1 → 5" -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 32px 26px; background: var(--surface-primary); display: flex; gap: 26px; align-items: center; justify-content: center; }
+  .e { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .e__box { width: 100px; height: 72px; background: var(--surface-primary); border-radius: var(--radius-md); border: 1px solid var(--separator-fine); }
+  .e__lbl { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-secondary); letter-spacing: var(--tracking-wide); }
+</style>
+</head>
+<body>
+  <div class="e"><div class="e__box" style="box-shadow:var(--elevation-1)"></div><span class="e__lbl">1 · contact</span></div>
+  <div class="e"><div class="e__box" style="box-shadow:var(--elevation-2)"></div><span class="e__lbl">2 · card</span></div>
+  <div class="e"><div class="e__box" style="box-shadow:var(--elevation-3)"></div><span class="e__lbl">3 · raised</span></div>
+  <div class="e"><div class="e__box" style="box-shadow:var(--elevation-4)"></div><span class="e__lbl">4 · floating</span></div>
+  <div class="e"><div class="e__box" style="box-shadow:var(--elevation-5)"></div><span class="e__lbl">5 · modal</span></div>
+</body>
+</html>

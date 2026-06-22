@@ -1,0 +1,49 @@
+/* ============================================================
+   Spacing, Radii & Layout — Apple Pro
+   ----------------------------------------------------
+   8-step base spacing with extra-generous top end (low density,
+   wide gutters). Radii follow an Apple Pro ladder: 6 / 10 / 14 /
+   18 / 22 / 28 / 36 plus the pill — bigger overall than the v1
+   set, with a softer curve at every step.
+   ============================================================ */
+
+:root {
+  /* ---------- Spacing scale (px) ---------- */
+  --s1:  4px;
+  --s2:  8px;
+  --s3:  12px;
+  --s4:  16px;
+  --s5:  20px;
+  --s6:  24px;
+  --s7:  32px;
+  --s8:  40px;
+  --s9:  48px;
+  --s10: 56px;
+  --s11: 72px;
+  --s12: 96px;
+  /* legacy aliases */
+  --s16: 64px;
+  --s20: 80px;
+  --s24: 96px;
+
+  /* ---------- Apple Pro radii ladder ---------- */
+  --radius-xs:   6px;     /* tag, status dot pill */
+  --radius-sm:   10px;    /* input, small chip    */
+  --radius:      14px;    /* button, default card */
+  --radius-md:   18px;    /* form-row card        */
+  --radius-lg:   22px;    /* section card, dock   */
+  --radius-xl:   28px;    /* hero, large surfaces */
+  --radius-2xl:  36px;    /* signature panels     */
+  --radius-pill: 999px;   /* tags, filter chips   */
+
+  /* ---------- Layout ---------- */
+  --maxw:           1280px;    /* page content cap (was 1180) */
+  --maxw-reading:   720px;     /* prose pages                 */
+
+  /* Command-shell layout tokens */
+  --cmd-rail-w:        76px;
+  --cmd-rail-w-open:   272px;
+  --cmd-rail-inset:    18px;
+  --cmd-topbar-h:      72px;
+  --cmd-dock-h:        72px;
+}

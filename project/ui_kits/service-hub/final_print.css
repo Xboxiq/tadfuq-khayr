@@ -1,0 +1,180 @@
+/* =============================================================
+   OFFICIAL PAPER — Word-only flow (preview + download + print)
+   ============================================================= */
+
+.of-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0 60px;
+}
+
+.of-toolbar {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 880px;
+  padding: 14px 16px;
+  background: var(--f-surface);
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-r-md);
+  font-family: var(--f-arab);
+  flex-wrap: wrap;
+  box-shadow: var(--f-shadow-xs);
+}
+
+.f-btn--lg { padding: 12px 22px; gap: 14px; min-width: 200px; }
+.f-btn--lg .material-symbols-outlined { font-size: 26px; }
+.f-btn--lg span { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.f-btn--lg strong { font-size: 1rem; font-weight: 700; }
+.f-btn--lg small { font-size: 0.78rem; opacity: 0.85; font-weight: 500; }
+
+/* docx-preview shell */
+.of-docx-shell {
+  width: auto;
+  max-width: 100%;
+  background: transparent;
+  position: relative;
+}
+/* Force RTL everywhere in the rendered doc — overrides any inline style */
+.of-docx-host .docx-wrapper,
+.of-docx-host .docx-wrapper *,
+.of-docx-host section.docx,
+.of-docx-host section.docx *,
+.of-docx-host .docx-rendered,
+.of-docx-host .docx-rendered * {
+  direction: rtl !important;
+  unicode-bidi: embed !important;
+}
+.of-docx-host .docx-wrapper {
+  background: transparent !important;
+  padding: 0 !important;
+}
+/* docx-preview emits section.docx with the EXACT pgSz and pgMar from
+   the .docx (in pt) — don't override its width/padding. Just style
+   the frame around it. */
+.of-docx-host section.docx {
+  background: #fff;
+  margin: 0 auto 16px !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.06),
+    0 24px 56px -20px rgba(0,0,0,0.18);
+  border-radius: 2px;
+}
+.of-docx-host table {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+.of-docx-host td, .of-docx-host th {
+  text-align: right !important;
+}
+/* Latin/digit runs inside Arabic cells stay LTR for legibility — opt-in via lang */
+.of-docx-host *[lang="en-US"],
+.of-docx-host *[lang="en"] {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}
+.of-docx-host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.of-docx-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--f-ink-2);
+  font-family: var(--f-arab);
+}
+
+.of-docx-state {
+  padding: 60px 20px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  color: var(--f-ink-2);
+  font-family: var(--f-arab);
+}
+.of-docx-state--err {
+  background: color-mix(in srgb, var(--f-err) 6%, var(--f-surface));
+  border: 1px solid color-mix(in srgb, var(--f-err) 30%, var(--f-border));
+  border-radius: var(--f-r);
+  color: var(--f-ink);
+  text-align: start;
+}
+.of-docx-state--err .material-symbols-outlined { color: var(--f-err); font-size: 28px; }
+
+/* fidelity badge — shown when the real .docx enhancement is active */
+.of-fidelity {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  padding: 6px 12px;
+  border-radius: var(--f-r-pill, 999px);
+  background: color-mix(in srgb, var(--f-ok) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--f-ok) 30%, transparent);
+  color: var(--f-ok);
+  font-family: var(--f-arab);
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.of-fidelity .material-symbols-outlined { font-size: 16px; }
+
+.of-docx-spinner {
+  width: 22px; height: 22px;
+  border: 2.5px solid var(--f-border);
+  border-top-color: var(--f-navy);
+  border-radius: 50%;
+  animation: of-spin 0.8s linear infinite;
+}
+.f-body.dark .of-docx-spinner { border-top-color: var(--f-cs); }
+@keyframes of-spin { to { transform: rotate(360deg); } }
+
+/* ========================================================
+   PRINT — show ONLY the rendered docx pages
+   ======================================================== */
+@media print {
+  @page { size: A4 portrait; margin: 10mm; }
+
+  body * { visibility: hidden !important; }
+  .of-docx-host,
+  .of-docx-host * { visibility: visible !important; }
+  .of-docx-host {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .of-docx-host section.docx {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    page-break-after: always;
+  }
+  .of-docx-host section.docx:last-child { page-break-after: auto; }
+
+  /* HTML schema paper (fallback/default preview) also prints cleanly */
+  .of-docx-host .ff-paper-wrap,
+  .of-docx-host .ff-paper {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .no-print,
+  .of-toolbar,
+  .f-top, .f-tabs,
+  .ff-tabs, .ff-feepanel, .ff-form,
+  .f-sigfoot, .f-floatcompare { display: none !important; }
+}
+
+@media (max-width: 860px) {
+  .of-toolbar { flex-direction: column; }
+  .f-btn--lg { width: 100%; justify-content: center; min-width: 0; }
+}

@@ -1,0 +1,102 @@
+<!-- @dsCard group="Service Hub" viewport="1400x800" name="Service Hub — full app" subtitle="Original final.jsx — login → dashboard → services → cases → branches → form → print" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تدفّق الخير — كهرباء الرصافة · فرع النضال</title>
+
+  <!-- Original brand fonts (Geist + Geist Mono + Readex Pro + Alexandria + Plex Sans Arabic + Material Symbols) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Alexandria:wght@500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=block" />
+
+  <!-- Original final.css stack (the actual product look) -->
+  <link rel="stylesheet" href="./final.css" />
+  <link rel="stylesheet" href="./final_pages.css" />
+  <link rel="stylesheet" href="./final_apple.css" />
+  <link rel="stylesheet" href="./final_polish.css" />
+  <link rel="stylesheet" href="./final_spotlight.css" />
+  <link rel="stylesheet" href="./final_hub.css" />
+  <link rel="stylesheet" href="./final_micro.css" />
+  <link rel="stylesheet" href="./final_icons.css" />
+  <link rel="stylesheet" href="./final_advisory.css" />
+  <link rel="stylesheet" href="./final_sticker.css" />
+  <link rel="stylesheet" href="./final_elite.css" />
+  <link rel="stylesheet" href="./final_trends.css" />
+  <link rel="stylesheet" href="./final_chroma.css" />
+  <link rel="stylesheet" href="./final_picks.css" />
+  <link rel="stylesheet" href="./final_motifs.css" />
+  <link rel="stylesheet" href="./final_branches.css" />
+  <link rel="stylesheet" href="./final_login.css" />
+  <link rel="stylesheet" href="./final_print.css" />
+
+  <!-- Taste layer — premium polish, loads last (reversible: drop `taste` class on body) -->
+  <link rel="stylesheet" href="./final_taste.css" />
+
+  <!-- UI primitives (toasts, confirm dialog, validation summary, error boundary) -->
+  <link rel="stylesheet" href="./final_primitives.css" />
+
+  <!-- React + Babel (pinned, with integrity) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Word-template tooling (used by the Print page) -->
+  <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
+  <script src="https://unpkg.com/docxtemplater@3.42.4/build/docxtemplater.js"></script>
+  <script src="https://unpkg.com/docx-preview@0.3.2/dist/docx-preview.js"></script>
+</head>
+
+<body class="f-body taste">
+  <div id="root"></div>
+
+  <!-- AdminPage stub — full admin (users, roles, settings, audit) ships in production. -->
+  <script type="text/babel" data-presets="react">
+    function AdminPage({ nav }) {
+      return (
+        <div className="f-card" style={{ padding: 32, textAlign: 'center', maxWidth: 640, margin: '40px auto' }}>
+          <h2 style={{ marginTop: 0 }}>لوحة الإدارة</h2>
+          <p style={{ color: 'var(--f-ink-2)' }}>
+            لوحة الإدارة الكاملة (المستخدمون، الأدوار، الإعدادات، التدقيق) متاحة في الإصدار الإنتاجي على
+            <code style={{ margin: '0 6px' }}>Xboxiq/tadfuq-khayr</code>.
+            هذه نسخة العرض الخاصة بنظام التصميم.
+          </p>
+          <button className="f-btn f-btn--primary" onClick={() => nav('overview')}>العودة للوحة الرئيسية</button>
+        </div>
+      );
+    }
+    window.AdminPage = AdminPage;
+  </script>
+
+  <!-- Data + helpers (loaded plain — not Babel) -->
+  <script src="../../data.js"></script>
+  <script src="./final_forms_data.js"></script>
+  <script src="./final_branches_data.js"></script>
+  <script src="./final_db.js"></script>
+  <script src="./final_auth.js"></script>
+  <script src="./final_attach.js"></script>
+  <script src="./final_docx.js"></script>
+  <script src="./final_pdf_fill.js"></script>
+  <script src="./final_micro.js"></script>
+  <script src="./final_trends.js"></script>
+
+  <!-- UI primitives — must load before page components that use them -->
+  <script type="text/babel" data-presets="react" src="./final_primitives.jsx"></script>
+
+  <!-- Original Babel-transpiled components, in the original load order -->
+  <script type="text/babel" data-presets="react" src="./final_globals.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_sticker.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_spotlight.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_login.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_services.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_form.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_print.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_cases.jsx"></script>
+  <script type="text/babel" data-presets="react" src="./final_branches.jsx"></script>
+
+  <!-- The main App (renders into #root) -->
+  <script type="text/babel" data-presets="react" src="./final.jsx"></script>
+</body>
+</html>

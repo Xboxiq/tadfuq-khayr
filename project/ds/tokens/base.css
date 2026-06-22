@@ -1,0 +1,64 @@
+/* ============================================================
+   Base — Apple Pro defaults
+   ----------------------------------------------------
+   Reset + Arabic-first defaults + the signature aurora mesh
+   on the body. This is the only file in the token closure
+   that paints actual rules; everything else is :root custom
+   properties.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-cmd);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+
+  /* Apple Pro ambient — soft brand mesh on a clean canvas */
+  background-image:
+    radial-gradient(1100px 480px at 100% -8%,
+      color-mix(in oklab, var(--brand-red) 7%, transparent), transparent 60%),
+    radial-gradient(1100px 480px at 0% -8%,
+      color-mix(in oklab, var(--brand-navy) 9%, transparent), transparent 60%),
+    radial-gradient(900px 600px at 50% 110%,
+      color-mix(in oklab, var(--brand-gold) 4%, transparent), transparent 60%);
+  background-attachment: fixed;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  font-optical-sizing: auto;
+}
+
+/* RTL is the default for this brand; consumers can flip via
+   <html dir="ltr"> on a per-page basis. */
+html:not([dir]),
+html[dir="rtl"] { direction: rtl; }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+::selection {
+  background: color-mix(in oklab, var(--brand-red) 24%, transparent);
+}
+
+/* Honor reduced motion globally — components can opt-out
+   on a per-rule basis with their own media query. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration:  0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

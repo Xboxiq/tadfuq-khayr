@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Neutrals" subtitle="Slate-tinted gray ramp, 50 → 900" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface); }
+  .ramp { display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .cell { height: 84px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-family: var(--font-mono); font-size: 10px; }
+</style>
+</head>
+<body>
+<div class="ramp">
+  <div class="cell" style="background:var(--gray-50);color:#475569">50</div>
+  <div class="cell" style="background:var(--gray-100);color:#475569">100</div>
+  <div class="cell" style="background:var(--gray-200);color:#475569">200</div>
+  <div class="cell" style="background:var(--gray-300);color:#334155">300</div>
+  <div class="cell" style="background:var(--gray-400);color:#fff">400</div>
+  <div class="cell" style="background:var(--gray-500);color:#fff">500</div>
+  <div class="cell" style="background:var(--gray-600);color:#fff">600</div>
+  <div class="cell" style="background:var(--gray-700);color:#fff">700</div>
+  <div class="cell" style="background:var(--gray-800);color:#fff">800</div>
+  <div class="cell" style="background:var(--gray-900);color:#fff">900</div>
+</div>
+</body>
+</html>

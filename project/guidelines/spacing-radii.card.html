@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Radii — Apple Pro" subtitle="6 → 36px ladder, softer curves" -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 26px; background: var(--surface-primary); display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap; }
+  .r { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .r__box { width: 80px; height: 68px; background: color-mix(in oklab, var(--brand-navy) 10%, var(--surface-primary)); border: 1.5px solid color-mix(in oklab, var(--brand-navy) 30%, transparent); box-shadow: var(--elevation-2); }
+  .r__lbl { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-secondary); letter-spacing: var(--tracking-wide); }
+</style>
+</head>
+<body>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-xs)"></div><span class="r__lbl">xs · 6</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-sm)"></div><span class="r__lbl">sm · 10</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius)"></div><span class="r__lbl">base · 14</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-md)"></div><span class="r__lbl">md · 18</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-lg)"></div><span class="r__lbl">lg · 22</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-xl)"></div><span class="r__lbl">xl · 28</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-2xl)"></div><span class="r__lbl">2xl · 36</span></div>
+  <div class="r"><div class="r__box" style="border-radius:var(--radius-pill)"></div><span class="r__lbl">pill · 999</span></div>
+</body>
+</html>

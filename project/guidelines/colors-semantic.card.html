@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Semantic state" subtitle="ok / warn / err / info" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface); }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .st { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-xs); }
+  .st__chip { height: 56px; }
+  .st__meta { padding: 8px 12px; font-family: var(--font-cmd); }
+  .st__name { font-weight: 700; font-size: 13px; color: var(--text); }
+  .st__hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-soft); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="st"><div class="st__chip" style="background:var(--ok)"></div><div class="st__meta"><div class="st__name">ok · ناجح</div><div class="st__hex">#16a34a</div></div></div>
+  <div class="st"><div class="st__chip" style="background:var(--warn)"></div><div class="st__meta"><div class="st__name">warn · تنبيه</div><div class="st__hex">#d97706</div></div></div>
+  <div class="st"><div class="st__chip" style="background:var(--err)"></div><div class="st__meta"><div class="st__name">err · خطأ</div><div class="st__hex">#dc2626</div></div></div>
+  <div class="st"><div class="st__chip" style="background:var(--info)"></div><div class="st__meta"><div class="st__name">info · معلومة</div><div class="st__hex">#2563eb</div></div></div>
+</div>
+</body>
+</html>

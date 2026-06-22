@@ -1,0 +1,64 @@
+/* ============================================================
+   Shadows & Focus Rings — Apple Pro
+   ----------------------------------------------------
+   Two parallel ladders:
+     • elevation-* (HIG-style, neutral, multi-layer)
+     • shadow-*    (legacy navy-tinted aliases for rs-* classes)
+
+   The elevation set uses two-shadow stacking (a tight contact
+   shadow + a wide ambient halo) so cards read like real depth
+   on white surfaces. Focus rings stay brand-coloured for the
+   product personality.
+   ============================================================ */
+
+:root {
+  /* ---------- HIG elevation (light) ---------- */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --elevation-2: 0 1px 2px rgba(15, 23, 42, 0.04),
+                 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --elevation-3: 0 2px 4px rgba(15, 23, 42, 0.04),
+                 0 12px 24px -6px rgba(15, 23, 42, 0.10);
+  --elevation-4: 0 4px 8px rgba(15, 23, 42, 0.05),
+                 0 20px 40px -10px rgba(15, 23, 42, 0.14);
+  --elevation-5: 0 8px 16px rgba(15, 23, 42, 0.06),
+                 0 32px 64px -16px rgba(15, 23, 42, 0.20);
+
+  /* Legacy aliases used by rs-* component classes */
+  --shadow-xs: var(--elevation-1);
+  --shadow-sm: var(--elevation-2);
+  --shadow:    var(--elevation-3);
+  --shadow-md: var(--elevation-4);
+  --shadow-lg: var(--elevation-5);
+
+  /* ---------- Focus rings ---------- */
+  --ring:        0 0 0 4px color-mix(in oklab, var(--brand-red)  22%, transparent);
+  --ring-navy:   0 0 0 4px color-mix(in oklab, var(--brand-navy) 32%, transparent); /* @kind shadow */
+  --ring-gold:   0 0 0 3px var(--brand-gold);
+  --ring-blue:   0 0 0 4px color-mix(in oklab, var(--sys-blue)   28%, transparent);
+
+  /* ---------- Brand glows (for command surfaces) ---------- */
+  --glow-crimson: 0 0 32px color-mix(in oklab, var(--brand-red)  28%, transparent);
+  --glow-navy:    0 0 32px color-mix(in oklab, var(--brand-navy) 32%, transparent);
+  --glow-gold:    0 0 32px color-mix(in oklab, var(--brand-gold) 35%, transparent);
+  --glow-blue:    0 0 32px color-mix(in oklab, var(--sys-blue)   30%, transparent);
+}
+
+body.dark {
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --elevation-2: 0 1px 3px rgba(0, 0, 0, 0.40),
+                 0 4px 12px rgba(0, 0, 0, 0.20);
+  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.50),
+                 0 2px 8px  rgba(0, 0, 0, 0.35);
+  --elevation-4: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --elevation-5: 0 24px 54px rgba(0, 0, 0, 0.65);
+
+  --shadow-xs: var(--elevation-1);
+  --shadow-sm: var(--elevation-2);
+  --shadow:    var(--elevation-3);
+  --shadow-md: var(--elevation-4);
+  --shadow-lg: var(--elevation-5);
+
+  --ring:      0 0 0 4px color-mix(in oklab, var(--brand-red)  38%, transparent);
+  --ring-navy: 0 0 0 4px color-mix(in oklab, #6f8cff 38%, transparent); /* @kind shadow */
+}

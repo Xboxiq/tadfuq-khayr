@@ -1,0 +1,82 @@
+/* ============================================================
+   Fonts — IBM Plex family (Apple Pro spirit)
+   ----------------------------------------------------
+   IBM Plex Sans Arabic .. primary Arabic UI (rounded, refined)
+   IBM Plex Sans ........ Latin display & numerals
+   IBM Plex Mono ........ reference numbers, IDs, status chips
+   Material Symbols ..... icon font (variable axes)
+
+   Rubik was the user's first pick but lacks proper Arabic
+   coverage on Google Fonts — IBM Plex Sans Arabic is the
+   closest match in spirit: rounded terminals, geometric
+   skeleton, OpenType-rich, designed expressly for cross-
+   script use with the Latin variant.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap");
+
+/* ============================================================
+   Arimo — self-hosted print form face (Apache 2.0)
+   ----------------------------------------------------
+   Used by --font-form (printed Word sheets). Self-hosting
+   guarantees the form measurements match Word's Arial metrics
+   on every machine, regardless of OS/font availability.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Arimo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../fonts/Arimo-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../fonts/Arimo-Italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../fonts/Arimo-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../fonts/Arimo-MediumItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../fonts/Arimo-SemiBold.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../../fonts/Arimo-SemiBoldItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../fonts/Arimo-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: 'Arimo';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../fonts/Arimo-BoldItalic.ttf") format("truetype");
+}

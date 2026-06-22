@@ -1,0 +1,45 @@
+<!-- @dsCard group="Colors" viewport="700x220" name="Surface & Text tiers — HIG" subtitle="primary / secondary / tertiary / grouped" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface-secondary); }
+  .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; }
+  .panel { padding: 18px; border-radius: var(--radius-lg); border: 1px solid var(--separator); }
+  .panel--primary { background: var(--surface-primary); }
+  .panel--secondary { background: var(--surface-secondary); }
+  .panel--grouped { background: var(--surface-grouped); padding: 6px; }
+  .panel--grouped > .inner { background: var(--surface-grouped-2); padding: 14px; border-radius: var(--radius-md); }
+  .lbl { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-wide); margin-bottom: 8px; direction: ltr; }
+  .text-stack { display: grid; gap: 6px; font-family: var(--font-cmd); }
+  .t-primary    { color: var(--text-primary);    font-size: 16px; font-weight: 600; }
+  .t-secondary  { color: var(--text-secondary);  font-size: 14px; }
+  .t-tertiary   { color: var(--text-tertiary);   font-size: 13px; }
+  .t-quaternary { color: var(--text-quaternary); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="panel panel--primary">
+    <div class="lbl">surface-primary</div>
+    <div class="text-stack">
+      <span class="t-primary">نص رئيسي · primary</span>
+      <span class="t-secondary">نص ثانوي · secondary</span>
+      <span class="t-tertiary">نص خافت · tertiary</span>
+      <span class="t-quaternary">نص أبعد · quaternary</span>
+    </div>
+  </div>
+  <div class="panel panel--grouped">
+    <div class="inner">
+      <div class="lbl">surface-grouped → grouped-2</div>
+      <div class="text-stack">
+        <span class="t-primary">قائمة إعدادات</span>
+        <span class="t-secondary">شبيهة بقوائم iOS</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

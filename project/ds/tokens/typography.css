@@ -1,0 +1,76 @@
+/* ============================================================
+   Typography — Apple HIG scale on the IBM Plex family
+   ----------------------------------------------------
+   Family stacks (semantic role):
+     • --font-cmd      → primary UI body & forms (Arabic-first)
+     • --font-display  → Latin display, big numerals, headers
+     • --font-mono     → IDs, codes, status chips
+     • --font-form     → printed Word sheets (Arial-locked)
+
+   Scale follows Apple HIG Dynamic Type names — caption / footnote
+   / body / headline / title / large-title — so a designer reaching
+   for "the body size" gets the same answer they would in SF
+   Symbols specs. Legacy --fs-xs..4xl aliases are kept so existing
+   components compile unchanged.
+   ============================================================ */
+
+:root {
+  /* ---------- Family stacks ---------- */
+  --font-cmd:     'IBM Plex Sans Arabic', 'IBM Plex Sans', 'Cairo', system-ui, 'Segoe UI', Tahoma, sans-serif;
+  --font-display: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, 'SF Pro Display', -apple-system, sans-serif;
+  --font-arabic:  'IBM Plex Sans Arabic', 'Cairo', system-ui, Tahoma, sans-serif;
+  --font-tajawal: 'IBM Plex Sans Arabic', 'Tajawal', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-form:    'Arimo', 'Arial', 'Liberation Sans', 'Segoe UI', 'Tahoma', sans-serif;
+
+  /* Legacy alias kept for components migrated from the v1 app. */
+  --font:         var(--font-cmd);
+
+  /* ---------- Apple HIG Dynamic Type scale (px → rem at 16px base) ---------- */
+  --fs-caption2:    0.6875rem;   /* 11px */
+  --fs-caption1:    0.75rem;     /* 12px */
+  --fs-footnote:    0.8125rem;   /* 13px */
+  --fs-subheadline: 0.9375rem;   /* 15px */
+  --fs-callout:     1rem;        /* 16px */
+  --fs-body:        1.0625rem;   /* 17px — the canonical Apple body size */
+  --fs-headline:    1.0625rem;   /* 17px @ semibold */
+  --fs-title3:      1.25rem;     /* 20px */
+  --fs-title2:      1.375rem;    /* 22px */
+  --fs-title1:      1.75rem;     /* 28px */
+  --fs-large-title: 2.125rem;    /* 34px */
+  --fs-display:     clamp(2.5rem, 5.4vw, 3.625rem); /* @kind font */
+  --fs-hero:        clamp(3rem, 7vw, 4.75rem);       /* @kind font */
+
+  /* ---------- Legacy size aliases (keep components compiling) ---------- */
+  --fs-xs:   var(--fs-caption1);
+  --fs-sm:   var(--fs-footnote);
+  --fs-base: var(--fs-body);
+  --fs-md:   var(--fs-headline);
+  --fs-lg:   var(--fs-title3);   /* @kind font */
+  --fs-xl:   var(--fs-title2);   /* @kind font */
+  --fs-2xl:  var(--fs-title1);   /* @kind font */
+  --fs-3xl:  var(--fs-large-title); /* @kind font */
+  --fs-4xl:  var(--fs-display);  /* @kind font */
+
+  /* ---------- Line-heights ---------- */
+  --lh-tight:    1.20;  /* @kind font */
+  --lh-snug:     1.35;  /* @kind font */
+  --lh-normal:   1.55;  /* @kind font */
+  --lh-loose:    1.75;  /* @kind font */
+  --lh-display:  1.10;  /* @kind font */
+
+  /* ---------- Weights ---------- */
+  --fw-regular:  400;  /* @kind font */
+  --fw-medium:   500;  /* @kind font */
+  --fw-semibold: 600;  /* @kind font */
+  --fw-bold:     700;  /* @kind font */
+  --fw-extra:    700;  /* @kind font */ /* aliased to bold — Plex Sans has no 800 */
+
+  /* ---------- Letter-spacing (Apple HIG cadence) ---------- */
+  --tracking-display: -0.025em;  /* @kind font */ /* large-title / display */
+  --tracking-tight:   -0.015em;  /* @kind font */
+  --tracking-snug:    -0.008em;  /* @kind font */
+  --tracking-normal:   0;        /* @kind font */
+  --tracking-wide:     0.04em;   /* @kind font */
+  --tracking-caps:     0.08em;   /* @kind font */
+}

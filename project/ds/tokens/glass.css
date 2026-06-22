@@ -1,0 +1,75 @@
+/* ============================================================
+   Liquid Glass — Apple-style refractive materials
+   ----------------------------------------------------
+   Three thickness tiers (thin / regular / thick) modeled after
+   the iOS "Material" stack, plus a specular highlight recipe
+   that adds the signature top-edge reflection you see on iOS
+   floating panels.
+
+     thin     light context chrome (tabs, dock background)
+     regular  default — topbar, side rail, cards on aurora
+     thick    floating overlays (modals, command palette, menus)
+
+   The `--glass-tint-*` tokens layer a hue underneath the white
+   translucency, giving glass a department or brand undertone
+   without becoming a flat color.
+   ============================================================ */
+
+:root {
+  /* ---------- Translucent surface bodies (light) ---------- */
+  --glass-thin:        rgba(255, 255, 255, 0.55);
+  --glass-regular:     rgba(255, 255, 255, 0.72);
+  --glass-thick:       rgba(255, 255, 255, 0.86);
+
+  /* Legacy aliases */
+  --glass-bg:          var(--glass-regular);
+  --glass-bg-strong:   var(--glass-thick);
+
+  /* Hairline rim & specular top-edge */
+  --glass-border:      rgba(255, 255, 255, 0.55);
+  --glass-edge:        rgba(255, 255, 255, 0.85);
+  --glass-specular:    linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 28%); /* @kind other */
+
+  /* Drop shadow tuned for translucent surfaces */
+  --glass-shadow:      0 18px 48px -16px rgba(15, 23, 42, 0.18),
+                       0 4px 14px rgba(15, 23, 42, 0.08);
+  --glass-shadow-lg:   0 32px 64px -24px rgba(15, 23, 42, 0.30),
+                       0 10px 24px rgba(15, 23, 42, 0.10);
+
+  /* Filters — applied via backdrop-filter where the panel sits */
+  --glass-blur-thin:    blur(20px) saturate(170%); /* @kind other */
+  --glass-blur-regular: blur(28px) saturate(180%); /* @kind other */
+  --glass-blur-thick:   blur(40px) saturate(190%); /* @kind other */
+
+  /* ---------- Aurora glows used behind glass panels ---------- */
+  --bg-glow-navy:     color-mix(in oklab, var(--brand-navy) 14%, transparent);
+  --bg-glow-crimson:  color-mix(in oklab, var(--brand-red)  10%, transparent);
+  --bg-glow-gold:     color-mix(in oklab, var(--brand-gold)  8%, transparent);
+  --bg-glow-blue:     color-mix(in oklab, var(--sys-blue)   12%, transparent);
+  --bg-glow-indigo:   color-mix(in oklab, var(--sys-indigo) 12%, transparent);
+}
+
+body.dark {
+  /* thinner alpha on dark so the aurora still reads through */
+  --glass-thin:        rgba(28, 28, 30, 0.48);
+  --glass-regular:     rgba(28, 28, 30, 0.62);
+  --glass-thick:       rgba(28, 28, 30, 0.78);
+
+  --glass-bg:          var(--glass-regular);
+  --glass-bg-strong:   var(--glass-thick);
+
+  --glass-border:      rgba(255, 255, 255, 0.10);
+  --glass-edge:        rgba(255, 255, 255, 0.22);
+  --glass-specular:    linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 28%); /* @kind other */
+
+  --glass-shadow:      0 18px 48px -16px rgba(0, 0, 0, 0.50),
+                       0 4px 14px rgba(0, 0, 0, 0.30);
+  --glass-shadow-lg:   0 32px 64px -24px rgba(0, 0, 0, 0.70),
+                       0 10px 24px rgba(0, 0, 0, 0.40);
+
+  --bg-glow-navy:      rgba(35, 35, 80, 0.45);
+  --bg-glow-crimson:   rgba(193, 18, 31, 0.18);
+  --bg-glow-gold:      rgba(244, 196, 48, 0.08);
+  --bg-glow-blue:      rgba(10, 132, 255, 0.18);
+  --bg-glow-indigo:    rgba(94, 92, 230, 0.16);
+}

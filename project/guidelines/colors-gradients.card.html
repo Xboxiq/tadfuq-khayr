@@ -1,0 +1,20 @@
+<!-- @dsCard group="Colors" viewport="700x160" name="Brand gradients" subtitle="The navy→crimson→gold sweep & signature lines" -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
+  .bar { height: 46px; border-radius: var(--radius); box-shadow: var(--shadow-xs); display: flex; align-items: center; padding: 0 16px; font-family: var(--font-mono); font-size: 11px; color: #fff; }
+  .line { height: 5px; border-radius: 999px; }
+  .lbl { font-family: var(--font-cmd); font-size: 12px; color: var(--text-soft); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="bar" style="background:var(--brand-grad)">--brand-grad · navy → red</div>
+  <div class="bar" style="background:var(--brand-sweep)">--brand-sweep · navy → red → gold</div>
+  <div class="lbl">--brand-line</div>
+  <div class="line" style="background:var(--brand-line)"></div>
+</body>
+</html>

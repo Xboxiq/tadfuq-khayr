@@ -1,0 +1,885 @@
+// =============================================================
+// FINAL Dashboard — Tadfuq Al-Khayr (approved direction)
+// Order: Head → Departments (focus) → Services Express →
+//        Tips Ticker (rotates per refresh) → Spotlight →
+//        Stats + Activity at the bottom
+// =============================================================
+
+// shared globals (useState, Icon, DEPT_COLORS …) come from final_globals.jsx
+
+function bars(seed, n = 14) {
+  const a = [];
+  let s = seed;
+  for (let i = 0; i < n; i++) { s = (s * 9301 + 49297) % 233280; a.push(20 + (s / 233280) * 80); }
+  return a;
+}
+
+// =============================================================
+// USER MENU — avatar dropdown (profile + admin entry)
+// =============================================================
+function UserMenu({ nav }) {
+  const [open, setOpen] = useState(false);
+  const [, force] = useState(0);
+  useEffect(() => window.Auth && window.Auth.subscribe(() => force(n => n + 1)), []);
+  const me = window.Auth && window.Auth.currentUser();
+  const can = window.Auth ? window.Auth.can : () => false;
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+
+  if (!me) return null;  // login gate handles unauthenticated state
+
+  const role = window.DB && window.DB.roles.get(me.roleId);
+  const initial = (me.name || '?').trim().slice(0, 1);
+  const roleLbl = role ? role.name : me.role || '—';
+  const branch = me.branchId && window.DB ? window.DB.branches.get(me.branchId) : null;
+  const dept   = me.departmentId && window.DB ? window.DB.departments.get(me.departmentId) : null;
+
+  const goAdmin = (tab) => { setOpen(false); nav && nav('admin', { tab }); };
+  const isSysAdmin = can('role.manage') && can('user.create');
+  const showAdminEntry = can('user.read') || can('role.read') || can('settings.read') || can('audit.read');
+
+  return (
+    <div className="f-usermenu" ref={ref}>
+      <button className={`f-avatar f-avatar--btn ${open ? 'is-on' : ''}`}
+              onClick={() => setOpen(o => !o)}
+              aria-haspopup="menu" aria-expanded={open}
+              title={`${me.name} — ${roleLbl}`}>
+        <span className="f-avatar__txt">{initial}</span>
+        {isSysAdmin && <span className="f-avatar__badge" title="مسؤول النظام"><Icon name="shield_person" /></span>}
+      </button>
+
+      {open && (
+        <div className="f-umenu" role="menu" dir="rtl">
+          <div className="f-umenu__head">
+            <span className="f-umenu__avatar">{initial}</span>
+            <div className="f-umenu__head-main">
+              <div className="f-umenu__name">{me.name}</div>
+              <div className="f-umenu__role">
+                {isSysAdmin && <Icon name="shield_person" />}
+                {roleLbl}
+                {branch && <span className="f-umenu__sec">· {branch.name}</span>}
+                {dept && <span className="f-umenu__sec">· {dept.name}</span>}
+              </div>
+              {me.email && <div className="f-umenu__email">{me.email}</div>}
+            </div>
+          </div>
+
+          {showAdminEntry && (
+            <>
+              <div className="f-umenu__sep" />
+              <div className="f-umenu__sect-lbl">
+                <Icon name="admin_panel_settings" /> لوحة الإدارة
+              </div>
+              <button className="f-umenu__item" onClick={() => goAdmin('overview')}>
+                <Icon name="space_dashboard" /><span>نظرة عامة</span>
+              </button>
+              {can('services.manage') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('services')}>
+                  <Icon name="apps" /><span>إدارة الخدمات</span>
+                </button>
+              )}
+              {can('tips.manage') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('tips')}>
+                  <Icon name="tips_and_updates" /><span>إدارة النصائح</span>
+                </button>
+              )}
+              {can('user.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('users')}>
+                  <Icon name="group" /><span>المستخدمون</span>
+                </button>
+              )}
+              {can('role.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('roles')}>
+                  <Icon name="badge" /><span>الأدوار والصلاحيات</span>
+                </button>
+              )}
+              {can('settings.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('settings')}>
+                  <Icon name="tune" /><span>إعدادات المركز</span>
+                </button>
+              )}
+              {can('audit.read') && (
+                <button className="f-umenu__item" onClick={() => goAdmin('audit')}>
+                  <Icon name="history" /><span>سجل التدقيق</span>
+                </button>
+              )}
+            </>
+          )}
+
+          <div className="f-umenu__sep" />
+          <button className="f-umenu__item"
+                  onClick={() => { setOpen(false); /* TODO: open change-password modal */
+                                   alert('غيّر كلمة المرور من قائمة "المستخدمون" بإعادة تعيين ذاتي قريباً.'); }}>
+            <Icon name="key" /><span>تغيير كلمة المرور</span>
+          </button>
+          <button className="f-umenu__item f-umenu__item--danger"
+                  onClick={() => { window.Auth.signOut(); setOpen(false); }}>
+            <Icon name="logout" /><span>تسجيل الخروج</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================
+// NOTIFICATIONS — bell + popover (real feedback, empty state)
+// =============================================================
+const SEED_NOTIFS = [
+  { id: 'n1', icon: 'verified', tone: 'ok',   title: 'تمت الموافقة على CS0001', body: 'اشتراك جديد — علي عبدالله حسين', age: 'قبل ٥ د' },
+  { id: 'n2', icon: 'schedule', tone: 'warn', title: 'حالة بانتظار توقيعك',     body: 'CT0003 — فحص مقياس · RS-014',      age: 'قبل ٢٢ د' },
+  { id: 'n3', icon: 'payments', tone: 'cb',   title: 'تحصيل قائمة أجور',         body: '٤٥٠٬٠٠٠ د.ع — وصل #٤٨١',          age: 'قبل ساعة' },
+];
+
+function NotificationsBell() {
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState(SEED_NOTIFS);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+
+  const unread = items.length;
+  return (
+    <div className="f-notif" ref={ref}>
+      <button className="f-iconbtn" title="الإشعارات" aria-haspopup="true" aria-expanded={open}
+              onClick={() => setOpen(o => !o)}>
+        <Icon name="notifications" />
+        {unread > 0 && <span className="f-notif__badge">{unread}</span>}
+      </button>
+      {open && (
+        <div className="f-notif__pop" role="dialog" aria-label="الإشعارات">
+          <div className="f-notif__head">
+            <strong>الإشعارات</strong>
+            {items.length > 0 && (
+              <button className="f-notif__clear" onClick={() => setItems([])}>تحديد الكل كمقروء</button>
+            )}
+          </div>
+          {items.length === 0 ? (
+            <div className="f-notif__empty">
+              <Icon name="notifications_off" />
+              <span>لا إشعارات جديدة</span>
+              <small>ستظهر هنا تحديثات الحالات والتحصيل والموافقات</small>
+            </div>
+          ) : (
+            <div className="f-notif__list">
+              {items.map(n => (
+                <div key={n.id} className={`f-notif__item f-notif__item--${n.tone}`}>
+                  <span className="f-notif__ico"><Icon name={n.icon} /></span>
+                  <span className="f-notif__main">
+                    <span className="f-notif__title">{n.title}</span>
+                    <span className="f-notif__body">{n.body}</span>
+                  </span>
+                  <span className="f-notif__age">{n.age}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================
+// TOP CHROME
+// =============================================================
+function TopChrome({ tab, setTab, dark, setDark, onCmdK, nav }) {
+  return (
+    <header className="f-top">
+      <div className="f-top__row">
+        <a className="f-brand" href="#">
+          <span className="f-brand__mark"><img src="../../assets/logo.png" alt="" /></span>
+          <span className="f-brand__name">
+            <strong>تدفّق الخير</strong>
+            <small>RASAFA · CS HUB</small>
+          </span>
+        </a>
+        <span className="f-top__sep" />
+        <button className="f-team">
+          <span className="f-team__avatar">رص</span>
+          <span>RS-014 · النضال</span>
+          <Icon name="unfold_more" />
+        </button>
+        <span className="f-top__push" />
+        <button className="f-search" onClick={onCmdK}>
+          <Icon name="search" />
+          <span className="f-search__input">ابحث برقم اشتراك، اسم، أو رقم خدمة…</span>
+          <span className="f-kbd">⌘K</span>
+        </button>
+        <button className="f-iconbtn" title="السجل"><Icon name="article" /></button>
+        <NotificationsBell />
+        <button className="f-iconbtn f-morph" onClick={() => setDark(!dark)} title="السمة">
+          <Icon name={dark ? 'light_mode' : 'dark_mode'} />
+          <span className="f-morph__lbl">{dark ? 'نهاري' : 'ليلي'}</span>
+        </button>
+        <UserMenu nav={nav} />
+      </div>
+      <nav className="f-tabs">
+        {[
+          { k: 'overview', l: 'نظرة عامة' },
+          { k: 'services', l: 'الخدمات' },
+          { k: 'cases',    l: 'الحالات' },
+          { k: 'branches', l: 'الفروع' },
+          { k: 'reports',  l: 'التقارير' },
+          { k: 'pricing',  l: 'الأجور' },
+          { k: 'guide',    l: 'الدليل' },
+        ].map(t => (
+          <button key={t.k} className={`f-tab ${tab === t.k ? 'is-on' : ''}`} onClick={() => setTab(t.k)}>
+            {t.l}
+          </button>
+        ))}
+      </nav>
+    </header>
+  );
+}
+
+// =============================================================
+// PAGE HEAD — compact
+// =============================================================
+function PageHead({ onCmdK, nav }) {
+  const dateStr = new Date().toLocaleDateString('ar-IQ-u-ca-gregory', { weekday: 'long', day: 'numeric', month: 'long' });
+  return (
+    <section className="f-pagehead">
+      <div className="f-pagehead__intro">
+        <span className="f-pagehead__date">
+          <span className="pulse" />
+          {dateStr} · مركز الرصافة · فرع النضال
+        </span>
+        <h1>أهلاً أستاذ رامز — <em>ابدأ من القسم</em></h1>
+        <p className="f-pagehead__lede">
+          الأقسام الأربعة هي بوابتك لكل خدمة. اختر القسم أو ابدأ خدمة مباشرة من القائمة السريعة.
+        </p>
+      </div>
+      <div className="f-pagehead__actions">
+        <button className="f-btn" onClick={() => nav('branches')}>
+          <Icon name="hub" /> نطاق التغطية
+        </button>
+        <button className="f-btn"><Icon name="file_download" /> تصدير</button>
+        <button className="f-btn f-btn--primary" onClick={onCmdK}>
+          <Icon name="bolt" /> ابدأ سريع <span className="f-kbd">⌘K</span>
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================
+// 1) DEPARTMENTS — the centerpiece
+// =============================================================
+function Departments({ nav }) {
+  const todayBySection = { CS: 28, CT: 19, CB: 31, CA: 6 };
+  const [open, setOpen] = useState(0);
+  return (
+    <section>
+      <div className="f-h2">
+        <div className="f-h2__main">
+          <h2 className="f-h2__title">
+            <span className="f-h2__icon"><Icon name="hub" /></span>
+            أقسام الخدمات
+          </h2>
+          <span className="f-h2__sub">{window.SERVICES.length} خدمة موزّعة وفق دليل ٢٠٢٦ — مرّر أو اضغط على القسم لفتحه</span>
+        </div>
+        <button className="f-btn f-btn--ghost f-btn--sm" onClick={() => nav('services')}>كل الخدمات <Icon name="arrow_back" /></button>
+      </div>
+
+      <div className="f-deck">
+        {window.SECTIONS.map((s, i) => {
+          const services = window.SERVICES.filter(v => v.section === s.code);
+          const sample = services.slice(0, 4);
+          const today = todayBySection[s.code] ?? 0;
+          const avgSla = Math.round(services.reduce((a, v) => a + (v.sla || 0), 0) / services.length);
+          const isOpen = open === i;
+          return (
+            <div key={s.code}
+                 role="button"
+                 tabIndex={0}
+                 className={`f-deck__panel ${isOpen ? 'is-open' : ''}`}
+                 style={{ '--d-c': DEPT_COLORS[s.code] }}
+                 onMouseEnter={() => setOpen(i)}
+                 onFocus={() => setOpen(i)}
+                 onClick={() => setOpen(i)}>
+              <span className="f-deck__wm" aria-hidden="true">{s.code}</span>
+              <div className="f-deck__head">
+                <window.SigBadge kind={s.code} size={56} className="f-deck__sig" />
+                <span className="f-deck__code">{s.code}</span>
+              </div>
+
+              {/* collapsed view */}
+              <div className="f-deck__mini">
+                <span className="f-deck__mini-name">{s.name}</span>
+                <span className="f-deck__mini-count">{services.length} خدمة</span>
+              </div>
+
+              {/* expanded view */}
+              <div className="f-deck__full">
+                <h3 className="f-deck__name">{s.name}</h3>
+                <p className="f-deck__blurb">{s.blurb}</p>
+                <div className="f-deck__chips">
+                  {sample.map(sv => <span key={sv.code} className="f-deck__chip">{sv.code}</span>)}
+                  {services.length > 4 && <span className="f-deck__chip f-deck__chip--more">+{services.length - 4}</span>}
+                </div>
+                <div className="f-deck__foot">
+                  <div className="f-deck__stats">
+                    <div className="f-deck__stat">
+                      <span className="f-deck__stat-n">{services.length}</span>
+                      <span className="f-deck__stat-l">خدمة</span>
+                    </div>
+                    <div className="f-deck__stat">
+                      <span className="f-deck__stat-n">{today}</span>
+                      <span className="f-deck__stat-l">اليوم</span>
+                    </div>
+                    <div className="f-deck__stat">
+                      <span className="f-deck__stat-n">{avgSla}<small style={{ fontSize: '0.65em', marginInlineStart: 2 }}>ي</small></span>
+                      <span className="f-deck__stat-l">متوسط</span>
+                    </div>
+                  </div>
+                  <button className="f-deck__cta syn__cta" onClick={(e) => { e.stopPropagation(); nav('services', { section: s.code }); }}>
+                    <svg className="arc" aria-hidden="true"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)" rx="14" pathLength="100" /></svg>
+                    <span className="syn__cta-roll"><span className="syn__cta-roll-stack"><span>افتح القسم</span><span>تصفّح الخدمات</span></span></span>
+                    <Icon name="arrow_back" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="f-deck__dots" role="tablist" aria-label="الأقسام">
+        {window.SECTIONS.map((s, i) => (
+          <button key={s.code}
+                  className={`f-deck__dot ${open === i ? 'is-on' : ''}`}
+                  style={{ '--dd-c': DEPT_COLORS[s.code] }}
+                  onClick={() => setOpen(i)}
+                  aria-label={s.name} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// =============================================================
+// 2) SERVICES EXPRESS — most-used services, instant start
+// =============================================================
+function ServicesExpress({ nav }) {
+  const top = useMemo(() => [...window.SERVICES].sort((a, b) => b.popularity - a.popularity).slice(0, 8), []);
+  return (
+    <section>
+      <div className="f-h2">
+        <div className="f-h2__main">
+          <h2 className="f-h2__title">
+            <span className="f-h2__icon"><Icon name="bolt" /></span>
+            ابدأ خدمة مباشرة
+          </h2>
+          <span className="f-h2__sub">الأكثر استخداماً في مركزك — نقرة واحدة للفورمة</span>
+        </div>
+      </div>
+      <div className="f-express">
+        {top.map(svc => {
+          const sec = window.SECTION_MAP[svc.section];
+          return (
+            <button key={svc.code} className="f-exp" style={{ '--e-c': DEPT_COLORS[svc.section] }}
+                    onClick={() => nav('form', { code: svc.code })}>
+              <span className="f-exp__ico"><Icon name={svc.icon} /></span>
+              <span className="f-exp__main">
+                <span className="f-exp__name">{svc.short || svc.name}</span>
+                <span className="f-exp__meta">{svc.code} · {svc.sla}ي · {sec.name}</span>
+              </span>
+              <span className="f-exp__go"><Icon name="arrow_back" /></span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// =============================================================
+// 3) TIPS TICKER — rotates per refresh, managed via Admin page
+// =============================================================
+function TipsTicker({ nav }) {
+  const [version, setVersion] = useState(0);
+  useEffect(() => window.DB && window.DB.tips.subscribe(() => setVersion(v => v + 1)), []);
+  const tips = useMemo(() => {
+    if (!window.DB) return [];
+    return window.DB.tips.list().filter(t => t.active !== false);
+  }, [version]);
+
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * Math.max(1, tips.length)));
+  useEffect(() => { if (idx >= tips.length && tips.length > 0) setIdx(0); }, [tips.length, idx]);
+  const [paused, setPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (paused || tips.length === 0) return;
+    setProgress(0);
+    const id = setInterval(() => {
+      setProgress(p => {
+        const next = p + 100 / 100;
+        if (next >= 100) { setIdx(i => (i + 1) % tips.length); return 0; }
+        return next;
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, [idx, paused, tips.length]);
+
+  if (tips.length === 0) return null;
+  const t = tips[idx] || tips[0];
+
+  return (
+    <section className="f-ticker" style={{ '--t-c': t.c }}
+             onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="f-ticker__rail" aria-hidden="true">
+        <span className="f-ticker__rail-fill" style={{ height: progress + '%' }} />
+      </div>
+      <span className="f-ticker__ico"><Icon name={t.ico} /></span>
+      <div key={idx} className="f-ticker__main">
+        <div className="f-ticker__toprow">
+          <span className="f-ticker__tag">{t.tag}</span>
+          <span className="f-ticker__by">{t.by}</span>
+        </div>
+        <div className="f-ticker__title">{t.title}</div>
+        <p className="f-ticker__body">{t.body}</p>
+      </div>
+      <div className="f-ticker__side">
+        <div className="f-ticker__nav">
+          <button className="f-ticker__btn" onClick={() => setIdx(i => (i - 1 + tips.length) % tips.length)} aria-label="السابق">
+            <Icon name="chevron_right" />
+          </button>
+          <span className="f-ticker__count">{idx + 1} / {tips.length}</span>
+          <button className="f-ticker__btn" onClick={() => setIdx(i => (i + 1) % tips.length)} aria-label="التالي">
+            <Icon name="chevron_left" />
+          </button>
+        </div>
+        {window.Auth && window.Auth.can('tips.write') && (
+          <button className="f-ticker__add" onClick={() => nav && nav('admin', { tab: 'tips' })} title="إدارة النصائح">
+            <Icon name="add" /> إدارة النصائح
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// =============================================================
+// 4) SPOTLIGHT — rotating featured service
+// =============================================================
+const SCENES = [{ c: 'var(--f-cs)' }, { c: 'var(--f-ct)' }, { c: 'var(--f-cb)' }, { c: 'var(--f-ca)' }];
+
+function Spotlight({ nav }) {
+  const top = useMemo(() => [...window.SERVICES].sort((a, b) => b.popularity - a.popularity).slice(0, 4), []);
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (paused) return;
+    setProgress(0);
+    const id = setInterval(() => {
+      setProgress(p => {
+        const next = p + 100 / 80;
+        if (next >= 100) { setIdx(i => (i + 1) % top.length); return 0; }
+        return next;
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, [idx, paused, top.length]);
+
+  const svc = top[idx];
+  const sec = window.SECTION_MAP[svc.section];
+  const scene = SCENES[idx % SCENES.length];
+
+  return (
+    <section className="f-spot-wrap" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="f-h2">
+        <div className="f-h2__main">
+          <h2 className="f-h2__title">
+            <span className="f-h2__icon"><Icon name="auto_awesome" /></span>
+            خدمة مختارة
+          </h2>
+          <span className="f-h2__sub">تتبدّل تلقائياً بين أكثر الخدمات استخداماً — توقّف عند التمرير</span>
+        </div>
+      </div>
+      <article key={svc.code} className="f-spot" style={{ '--sp-c': scene.c }}>
+        <span className="f-spot__ico"><Icon name={svc.icon} /></span>
+        <div className="f-spot__main">
+          <div className="f-spot__chips">
+            <span className="f-spot__chip">#{idx + 1} الأكثر طلباً</span>
+            <span className="f-spot__chip">{sec.name}</span>
+            <span className="f-spot__chip">{svc.code}</span>
+          </div>
+          <h3 className="f-spot__name">{svc.name}</h3>
+          <div className="f-spot__meta">
+            <span><Icon name="schedule" /> مدّة معتادة {svc.sla} أيام</span>
+            <span><Icon name="local_fire_department" /> طلب {svc.popularity}٪</span>
+            <span><Icon name="payments" /> {svc.fixedPrice ? fmtIQD(svc.fixedPrice) : svc.priceNote || 'حسب الصنف'}</span>
+          </div>
+        </div>
+        <div className="f-spot__side">
+          <button className="f-spot__cta syn__cta" onClick={() => nav('form', { code: svc.code })}>
+            <svg className="arc" aria-hidden="true"><rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)" rx="22" pathLength="100" /></svg>
+            <span className="syn__cta-roll"><span className="syn__cta-roll-stack"><span>ابدأ التعبئة</span><span>افتح النموذج</span></span></span>
+            <Icon name="arrow_back" />
+          </button>
+          <button className="f-spot__alt" onClick={() => nav('detail', { code: svc.code })}><Icon name="info" /> تفاصيل الخدمة</button>
+        </div>
+        <div className="f-spot__progress"><span className="f-spot__progress-fill" style={{ width: progress + '%' }} /></div>
+      </article>
+      <div className="f-spot__controls">
+        <button className="f-spot__arrow" onClick={() => setIdx(i => (i - 1 + top.length) % top.length)}><Icon name="chevron_right" /></button>
+        <div className="f-spot__dots">
+          {top.map((s, i) => (
+            <button key={s.code} className={`f-spot__dot ${i === idx ? 'is-on' : ''}`}
+                    style={{ '--dot-c': SCENES[i % SCENES.length].c }}
+                    onClick={() => { setIdx(i); setProgress(0); }} />
+          ))}
+        </div>
+        <button className="f-spot__arrow" onClick={() => setIdx(i => (i + 1) % top.length)}><Icon name="chevron_left" /></button>
+        <button className="f-spot__pause" onClick={() => setPaused(p => !p)}>
+          <Icon name={paused ? 'play_arrow' : 'pause'} />
+          {paused ? 'متوقف' : 'تلقائي'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// =============================================================
+// 5) BOTTOM — stats + activity + sidebar
+// =============================================================
+function Spark({ values }) {
+  const max = Math.max(...values);
+  return (
+    <div className="f-spark" aria-hidden="true">
+      {values.map((v, i) => (
+        <span key={i} className={i === values.length - 1 ? 'last' : ''}
+              style={{ height: Math.max(10, (v / max) * 100) + '%' }} />
+      ))}
+    </div>
+  );
+}
+
+function Stats() {
+  const k = window.KPIS;
+  const items = [
+    { c: 'var(--f-cs)', ico: 'bolt', lbl: 'طلبات اليوم', val: k.todayCases, unit: 'طلب', d: '+12%', sub: 'منذ 09:00 صباحاً', seed: 3 },
+    { c: 'var(--f-ct)', ico: 'pending_actions', lbl: 'قيد المعالجة', val: k.pending, unit: 'حالة', d: '+5%', sub: '23 بانتظار توقيعك', seed: 9 },
+    { c: 'var(--f-cb)', ico: 'payments', lbl: 'محصّل اليوم', val: fmt(k.collected), unit: 'د.ع', d: '+8%', sub: 'من 38 معاملة', seed: 17 },
+    { c: 'var(--f-ca)', ico: 'sentiment_satisfied', lbl: 'رضا المشتركين', val: k.satisfaction, unit: '%', d: '+2%', sub: 'على 124 تقييم', seed: 11 },
+  ];
+  return (
+    <section>
+      <div className="f-h2">
+        <div className="f-h2__main">
+          <h2 className="f-h2__title">
+            <span className="f-h2__icon"><Icon name="insights" /></span>
+            الإحصاءات والنتائج
+          </h2>
+          <span className="f-h2__sub">مؤشرات اليوم — تفاصيل أعمق في تبويب التقارير</span>
+        </div>
+      </div>
+      <div className="f-stats">
+        {items.map((it, i) => (
+          <div key={i} className="f-stat" style={{ '--st-c': it.c }}>
+            <div className="f-stat__top">
+              <span className="f-stat__lbl">
+                <span className="f-stat__lbl-ico"><Icon name={it.ico} /></span>
+                {it.lbl}
+              </span>
+              <span className="f-stat__delta up"><Icon name="arrow_upward" />{it.d}</span>
+            </div>
+            <div className="f-stat__val">{it.val}<span className="f-stat__unit">{it.unit}</span></div>
+            <div className="f-stat__sub">{it.sub}</div>
+            <Spark values={bars(it.seed)} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Activity() {
+  return (
+    <div className="f-card">
+      <div className="f-card__head">
+        <div>
+          <h3 className="f-card__title"><Icon name="bolt" /> آخر الحركة</h3>
+          <p className="f-card__sub">الحالات الحيّة في مركزك</p>
+        </div>
+        <button className="f-btn f-btn--ghost f-btn--sm"><Icon name="filter_alt" /> فلترة</button>
+      </div>
+      <div className="f-feed">
+        {window.RECENT_CASES.map(c => {
+          const svc = window.SERVICE_MAP[c.svc];
+          const leadC = c.priority === 'urgent' ? 'var(--f-err)' :
+                        c.priority === 'vip'    ? 'var(--f-warn)' : DEPT_COLORS[svc.section];
+          return (
+            <div key={c.id} className="f-feed__row" style={{ '--lead-c': leadC }}>
+              <span className="f-feed__lead" />
+              <div className="f-feed__main">
+                <div className="f-feed__title">
+                  <span className="f-feed__code">{svc.code}</span>
+                  {c.subscriber}
+                </div>
+                <div className="f-feed__sub">{c.id} · {svc.name}</div>
+              </div>
+              <span className="f-feed__status">{c.status}</span>
+              <span className="f-feed__time">{c.age}</span>
+              <span className="f-feed__chev"><Icon name="chevron_left" /></span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="f-card__foot">
+        <span>عرض 6 من 213 حالة نشطة</span>
+        <a href="#">عرض الكل ←</a>
+      </div>
+    </div>
+  );
+}
+
+function Sidebar() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="f-card">
+        <div className="f-card__head">
+          <div>
+            <h3 className="f-card__title"><Icon name="donut_small" /> الاستخدام الشهري</h3>
+            <p className="f-card__sub">2,481 حالة · 94% ضمن SLA</p>
+          </div>
+        </div>
+        <div className="f-usage">
+          {window.SECTIONS.map((s) => {
+            const count = window.SERVICES.filter(x => x.section === s.code).length * 19;
+            const pct = Math.min(100, Math.round((count / 600) * 100));
+            return (
+              <div key={s.code} className="f-usage__row" style={{ '--u-c': DEPT_COLORS[s.code] }}>
+                <div className="f-usage__head">
+                  <span className="f-usage__lbl">
+                    <span className="f-usage__code">{s.code}</span>
+                    {s.name}
+                  </span>
+                  <span className="f-usage__n">{count}</span>
+                </div>
+                <div className="f-usage__bar"><div className="f-usage__fill" style={{ width: pct + '%' }} /></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="f-card">
+        <div className="f-card__head">
+          <div>
+            <h3 className="f-card__title"><Icon name="terminal" /> أوامر سريعة</h3>
+            <p className="f-card__sub">اضغط <span className="f-kbd">⌘K</span> للبحث الشامل</p>
+          </div>
+        </div>
+        <div className="f-quicks">
+          {/* Q1 — أيقونات تروي معناها (نقل حرفي من البنك) */}
+          {[
+            { lbl: 'فتح حالة جديدة', kbd: 'N', kind: 'newcase', c: 'var(--f-cs)' },
+            { lbl: 'الانتقال للحالات', kbd: 'G I', kind: 'meter', c: 'var(--f-ct)' },
+            { lbl: 'الانتقال للخدمات', kbd: 'G S', kind: 'pole', c: 'var(--f-cb)' },
+            { lbl: 'تبديل السمة', kbd: '⌘J', kind: 'bill', c: 'var(--f-ca)' },
+          ].map((it, i) => (
+            <button key={i} className={`f-quick qik qik--${it.kind}`} style={{ '--q-c': it.c, '--c-c': it.c }}>
+              <span className="f-quick__ico">
+                {it.kind === 'newcase' && (
+                  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M6 3 H17 L21 7 V22.5 H6 Z" /><line x1="9.5" y1="12" x2="16.5" y2="12" opacity="0.55" /><line className="plusH" x1="9.5" y1="17" x2="16.5" y2="17" /><line className="plusV" x1="13" y1="13.5" x2="13" y2="20.5" /></svg>
+                )}
+                {it.kind === 'meter' && (
+                  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 16 A 10 10 0 0 1 23 16" /><line className="tick" x1="4.5" y1="12.5" x2="6" y2="13.5" /><line className="tick" x1="13" y1="6" x2="13" y2="8" /><line className="tick" x1="21.5" y1="12.5" x2="20" y2="13.5" /><line className="needle" x1="13" y1="15" x2="17" y2="10" /><circle className="s" cx="13" cy="15" r="1.5" /></svg>
+                )}
+                {it.kind === 'pole' && (
+                  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><line x1="13" y1="3" x2="13" y2="22" /><path d="M3 8 C 9 12, 17 12, 23 8" /><path d="M6 6 L13 9 L20 6" opacity="0.55" /><circle className="spark s" cx="3" cy="8" r="1.6" /></svg>
+                )}
+                {it.kind === 'bill' && (
+                  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M6 3.5 H17 L20.5 7 V22.5 H6 Z" /><line x1="9.5" y1="11" x2="16.5" y2="11" opacity="0.55" /><line x1="9.5" y1="14.5" x2="14.5" y2="14.5" opacity="0.55" /><g className="stamp"><circle className="s" cx="17" cy="17" r="4.6" /><path d="M15 17 L16.4 18.5 L19 15.8" /></g></svg>
+                )}
+              </span>
+              <span className="f-quick__lbl">{it.lbl}</span>
+              <span className="f-kbd">{it.kbd}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================
+// APP
+// =============================================================
+function App() {
+  // -----------------------------------------------------------------
+  // All hooks first (Rules of Hooks) — conditional returns later.
+  // -----------------------------------------------------------------
+  const [dark, setDark] = useState(() => localStorage.getItem('tq-final-dark') === '1');
+  useEffect(() => {
+    document.body.classList.toggle('dark', dark);
+    localStorage.setItem('tq-final-dark', dark ? '1' : '0');
+  }, [dark]);
+
+  // Auth state: re-render whenever Auth changes (login, logout, role change…)
+  // and also when the users table changes (DB seed completes asynchronously
+  // on first load, so the initial render may have no users yet).
+  const [, setAuthTick] = useState(0);
+  useEffect(() => {
+    const unsubA = window.Auth && window.Auth.subscribe(() => setAuthTick(t => t + 1));
+    const unsubU = window.DB && window.DB.users.subscribe(() => setAuthTick(t => t + 1));
+    return () => { unsubA && unsubA(); unsubU && unsubU(); };
+  }, []);
+
+  const [route, setRoute] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('tq-f-route') || '{"name":"overview"}'); }
+    catch { return { name: 'overview' }; }
+  });
+  useEffect(() => { localStorage.setItem('tq-f-route', JSON.stringify(route)); }, [route]);
+  useEffect(() => { window.scrollTo(0, 0); }, [route.name, route.code, route.section]);
+
+  const [spot, setSpot] = useState(false);
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSpot(s => !s); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // -----------------------------------------------------------------
+  // Auth gate (after all hooks have been called)
+  // -----------------------------------------------------------------
+  const me = window.Auth && window.Auth.currentUser();
+  if (!me) {
+    return <window.LoginPage onSuccess={() => setAuthTick(t => t + 1)} />;
+  }
+  if (me.mustChangePassword) {
+    return <window.ForceChangePassword onDone={() => setAuthTick(t => t + 1)} />;
+  }
+  // -----------------------------------------------------------------
+
+  const nav = (name, params = {}) => {
+    // Guard: admin routes require admin permission.
+    if (name === 'admin' && !window.Auth.can('role.manage')
+        && !window.Auth.can('user.read') && !window.Auth.can('settings.manage')) {
+      setRoute({ name: 'overview' });
+      return;
+    }
+    setRoute({ name, ...params });
+  };
+  const noop = () => setSpot(true);
+
+  // top tabs map to routes
+  const tab = ['services', 'detail', 'form'].includes(route.name) ? 'services'
+            : route.name === 'cases' ? 'cases'
+            : route.name === 'branches' ? 'branches'
+            : route.name === 'pricing' ? 'pricing'
+            : route.name === 'guide' ? 'guide'
+            : route.name === 'reports' ? 'reports'
+            : route.name === 'admin' ? 'admin'
+            : 'overview';
+
+  let page = null;
+  if (route.name === 'services')      page = <window.ServicesPage nav={nav} section={route.section} />;
+  else if (route.name === 'detail')   page = <window.ServiceDetailPage nav={nav} code={route.code} />;
+  else if (route.name === 'form')     page = <window.FormPage nav={nav} code={route.code} />;
+  else if (route.name === 'cases')    page = <window.CasesPage nav={nav} />;
+  else if (route.name === 'branches') page = <window.BranchesPage nav={nav} />;
+  else if (route.name === 'pricing')  page = <window.PricingPage nav={nav} />;
+  else if (route.name === 'guide')    page = <window.GuidePage nav={nav} />;
+  else if (route.name === 'admin')    page = <window.AdminPage nav={nav} initialTab={route.tab} />;
+  else if (route.name === 'reports')  page = (
+    <div className="fp-enter" style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+      <Stats />
+      <div className="f-two">
+        <Activity />
+        <Sidebar />
+      </div>
+    </div>
+  );
+  else page = (
+    <>
+      <PageHead onCmdK={noop} nav={nav} />
+      <Departments nav={nav} />
+      <ServicesExpress nav={nav} />
+      <TipsTicker nav={nav} />
+      <Spotlight nav={nav} />
+      <Stats />
+      <div className="f-two">
+        <Activity />
+        <Sidebar />
+      </div>
+    </>
+  );
+
+  return (
+    <div className="f-shell">
+      <TopChrome tab={tab} setTab={(k) => nav(k)} dark={dark} setDark={setDark} onCmdK={noop} nav={nav} />
+      <main className="f-page">
+        {page}
+      </main>
+      <window.SpotlightOverlay open={spot} onClose={() => setSpot(false)} nav={nav} />
+      <SignatureFooter />
+    </div>
+  );
+}
+
+// =============================================================
+// SIGNATURE FOOTER — distinctive credits strip
+// =============================================================
+function SignatureFooter() {
+  return (
+    <footer className="f-sigfoot" role="contentinfo" aria-label="Designed and developed by Hussein Ali">
+      <div className="f-sigfoot__rule" aria-hidden="true">
+        <span className="f-sigfoot__rule-line" />
+        <span className="f-sigfoot__rule-mark">
+          <span className="f-sigfoot__rule-diamond" />
+        </span>
+        <span className="f-sigfoot__rule-line" />
+      </div>
+
+      <div className="f-sigfoot__inner">
+        <div className="f-sigfoot__brand" aria-label="جهة التشغيل">
+          <span className="f-sigfoot__brand-c">©</span>
+          <span className="f-sigfoot__brand-y">2026</span>
+          <span className="f-sigfoot__brand-bar" aria-hidden="true" />
+          <span className="f-sigfoot__brand-name">تدفّق الخير</span>
+          <span className="f-sigfoot__brand-sub">كهرباء الرصافة · فرع النضال</span>
+        </div>
+
+        <div className="f-sigfoot__credit">
+          <span className="f-sigfoot__credit-eyebrow">Designed &amp; Developed</span>
+          <h6 className="f-sigfoot__credit-name">
+            <span className="f-sigfoot__credit-name-en">Hussein&nbsp;Ali</span>
+          </h6>
+          <span className="f-sigfoot__credit-meta">
+            <span>Software · Design</span>
+            <span className="f-sigfoot__credit-meta-dot" aria-hidden="true" />
+            <span>Baghdad — Iraq</span>
+          </span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <window.ErrorBoundary>
+    <window.ToastProvider><App /></window.ToastProvider>
+  </window.ErrorBoundary>
+);

@@ -1,0 +1,24 @@
+/* ============================================================
+   Tadfuq Al-Khayr — Design System entry
+   ----------------------------------------------------
+   Consumers link THIS one file. It pulls the full token
+   closure (fonts, colors, type, spacing, shadows, glass,
+   motion, base) followed by the component stylesheets.
+
+   Source: github.com/Xboxiq/tadfuq-khayr (ds/)
+   ============================================================ */
+
+/* ---- Tokens ---- */
+@import url("./ds/tokens/fonts.css");
+@import url("./ds/tokens/colors.css");
+@import url("./ds/tokens/typography.css");
+@import url("./ds/tokens/spacing.css");
+@import url("./ds/tokens/shadows.css");
+@import url("./ds/tokens/glass.css");
+@import url("./ds/tokens/motion.css");
+@import url("./ds/tokens/base.css");
+
+/* ---- Component stylesheets ---- */
+@import url("./ds/core.css");
+@import url("./ds/navigation.css");
+@import url("./ds/forms.css");
