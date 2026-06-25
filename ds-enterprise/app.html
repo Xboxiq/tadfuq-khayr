@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تدفّق الخير — نموذج التصميم المؤسسي</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="e-app" id="app">
+  <!-- MAIN -->
+  <div class="e-main">
+    <!-- Topbar -->
+    <header class="e-topbar">
+      <button class="e-iconbtn e-menu-toggle" id="menuToggle" aria-label="القائمة"><span class="e-i">menu</span></button>
+      <span class="e-topbar__title" id="topTitle">نظرة عامة</span>
+      <div class="e-topbar__spacer"></div>
+      <label class="e-search">
+        <span class="e-i">search</span>
+        <input type="text" placeholder="ابحث برقم اشتراك، اسم، أو رقم خدمة…" aria-label="بحث" />
+        <span class="e-kbd">⌘K</span>
+      </label>
+      <button class="e-iconbtn e-tip" data-tip="الإشعارات" aria-label="الإشعارات"><span class="e-i">notifications</span></button>
+      <button class="e-iconbtn e-tip" id="themeBtn" data-tip="السمة" aria-label="السمة"><span class="e-i">dark_mode</span></button>
+    </header>
+
+    <!-- Scroll area -->
+    <div class="e-scroll">
+      <div class="e-content" id="content"><!-- rendered by JS --></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR (inline-end in RTL) -->
+  <aside class="e-side" id="side">
+    <div class="e-side__brand">
+      <span class="e-side__logo"><span class="e-i">bolt</span></span>
+      <span class="e-side__name"><b>تدفّق الخير</b><span>الرصافة · فرع النضال</span></span>
+    </div>
+    <nav class="e-side__scroll" id="navRoot"><!-- nav rendered by JS --></nav>
+    <div class="e-side__foot">
+      <button class="e-side__user">
+        <span class="e-avatar">رك</span>
+        <span class="e-side__user-meta"><b>رامز كاظم</b><span>مشرف الفرع</span></span>
+        <span class="e-i" style="color:var(--text-muted)">unfold_more</span>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------------- Real domain data (from data.js) ---------------- */
+const SECTIONS = [
+  { code:'CS', cls:'cs', name:'الاشتراكات',        icon:'apartment',            blurb:'فتح اشتراكات جديدة، نقل ملكية، تغيير الصنف، إيقاف/تفعيل.', today:28, count:11 },
+  { code:'CT', cls:'ct', name:'الفنية',            icon:'electrical_services',  blurb:'فحص المقاييس، تغيير الكابلات، تعديل القوة والجهد، تغيير الموقع.', today:19, count:9 },
+  { code:'CB', cls:'cb', name:'الفواتير',          icon:'receipt_long',         blurb:'دفع القوائم، التقسيط، التسويات المالية، نسخ القوائم.', today:31, count:6 },
+  { code:'CA', cls:'ca', name:'الشكاوى والتقارير', icon:'report',               blurb:'إبلاغات التلاعب، الأخطار، الشكاوى الإدارية، أضرار الشبكة.', today:6, count:4 },
+];
+const SERVICES = [
+  {code:'CS0001',sec:'CS',name:'عمل اشتراك جديد',sla:7,price:'حسب الصنف والقوة',pop:98},
+  {code:'CS0004',sec:'CS',name:'إيقاف خدمة / قطع تيار مؤقت',sla:1,pop:71},
+  {code:'CS0011',sec:'CS',name:'نقل ملكية اشتراك (بيع/شراء/ورثة)',sla:7,pop:69},
+  {code:'CS0009',sec:'CS',name:'قراءة مقياس بناءً على طلب المشترك',sla:1,price:'25,000 د.ع',pop:38},
+  {code:'CT0009',sec:'CT',name:'فحص مقياس / تبديل / صيانة',sla:3,price:'يبدأ من 12,500 د.ع',pop:88},
+  {code:'CT0007',sec:'CT',name:'تغيير نوع المقياس (أحادي/ثلاثي) — زيادة قوة',sla:7,pop:64},
+  {code:'CT0003',sec:'CT',name:'تغيير كابل مشترك (من العامود إلى المقياس)',sla:5,pop:58},
+  {code:'CB0001',sec:'CB',name:'دفع قائمة أجور كهرباء',sla:1,pop:99},
+  {code:'CB0006',sec:'CB',name:'تسوية مالية / تقسيط / ترتيبات دفع',sla:5,pop:81},
+  {code:'CB0003',sec:'CB',name:'مراجعة تفاصيل القائمة / قائمة مصحّحة',sla:3,pop:67},
+  {code:'CA0002',sec:'CA',name:'إبلاغ عن حالة خطر',sla:1,pop:79,urgent:true},
+  {code:'CA0001',sec:'CA',name:'إبلاغ عن تلاعب في المقياس أو الوصلة',sla:1,pop:71},
+  {code:'CA0004',sec:'CA',name:'شكوى إدارية (نوعية الخدمة / التعامل)',sla:5,pop:36},
+];
+const CASES = [
+  {id:'TQ-2026-08-1417',svc:'CS0001',sub:'علي عبدالله حسين',sec:'CS',status:'فحص ميداني',state:'info',fee:135000,age:'منذ ساعتين',officer:'م. كرار',pri:'عادي'},
+  {id:'TQ-2026-08-1413',svc:'CT0009',sub:'هدى محمود إبراهيم',sec:'CT',status:'بانتظار الدفع',state:'warn',fee:25000,age:'منذ 4 ساعات',officer:'م. زينب',pri:'عادي'},
+  {id:'TQ-2026-08-1409',svc:'CB0006',sub:'حسن جاسم العبيدي',sec:'CB',status:'موافقة مدير',state:'info',fee:0,age:'أمس',officer:'م. أحمد',pri:'VIP'},
+  {id:'TQ-2026-08-1407',svc:'CA0002',sub:'سرى ناجي كاظم',sec:'CA',status:'فريق طوارئ',state:'err',fee:0,age:'أمس',officer:'م. مصطفى',pri:'عاجل'},
+  {id:'TQ-2026-08-1402',svc:'CS0011',sub:'أحمد علي الجبوري',sec:'CS',status:'تحقق قانوني',state:'info',fee:0,age:'منذ يومين',officer:'م. كرار',pri:'عادي'},
+  {id:'TQ-2026-08-1395',svc:'CT0008',sub:'مريم رياض الزبيدي',sec:'CT',status:'قيد التنفيذ',state:'info',fee:35000,age:'منذ 3 أيام',officer:'م. زينب',pri:'عادي'},
+  {id:'TQ-2026-08-1390',svc:'CB0001',sub:'كرار حيدر الموسوي',sec:'CB',status:'مكتمل',state:'ok',fee:48000,age:'منذ 3 أيام',officer:'م. هدى',pri:'عادي'},
+];
+const fmt = n => new Intl.NumberFormat('ar-IQ').format(n);
+const secMap = Object.fromEntries(SECTIONS.map(s=>[s.code,s]));
+const NAV = [
+  { group:'العمل', items:[
+    {k:'overview',l:'نظرة عامة',i:'dashboard'},
+    {k:'services',l:'الخدمات',i:'apps',c:'31'},
+    {k:'cases',l:'الحالات',i:'assignment',c:'213'},
+    {k:'form',l:'طلب خدمة',i:'edit_document'},
+  ]},
+  { group:'الإدارة', items:[
+    {k:'branches',l:'الفروع',i:'store'},
+    {k:'reports',l:'التقارير',i:'monitoring'},
+    {k:'pricing',l:'الأجور',i:'payments'},
+    {k:'admin',l:'الإدارة',i:'settings'},
+  ]},
+];
+const TITLES = {overview:'نظرة عامة',services:'الخدمات',cases:'الحالات',form:'طلب خدمة جديد',branches:'الفروع',reports:'التقارير',pricing:'الأجور',admin:'الإدارة'};
+
+/* ---------------- helpers ---------------- */
+const el = (h)=>{const d=document.createElement('div');d.innerHTML=h.trim();return d.firstElementChild;};
+const deptTag = (sec)=>`<span class="e-dept e-dept--${sec.toLowerCase()}">${secMap[sec]?secMap[sec].name:sec}</span>`;
+
+/* ---------------- screens ---------------- */
+function viewOverview(){
+  return `
+  <div class="e-view">
+    <div class="e-pagehead">
+      <div class="e-pagehead__titles">
+        <h1>نظرة عامة</h1>
+        <p class="e-pagehead__sub">الخميس ٢٥ حزيران · مركز النضال — كهرباء الرصافة</p>
+      </div>
+      <div class="e-pagehead__actions">
+        <button class="e-btn"><span class="e-i">file_download</span> تصدير</button>
+        <button class="e-btn e-btn--primary" data-nav="form"><span class="e-i">add</span> طلب جديد</button>
+      </div>
+    </div>
+
+    <div class="e-section">
+      <div class="e-grid e-grid--kpi">
+        ${kpi('طلبات اليوم','84','','up','12%')}
+        ${kpi('قيد المعالجة','213','','','')}
+        ${kpi('محصّل اليوم','4,810,000','د.ع','up','8%')}
+        ${kpi('رضا المراجعين','94','%','up','2%')}
+      </div>
+    </div>
+
+    <div class="e-section">
+      <div class="e-section__head"><h2>أقسام الخدمات</h2><span class="e-section__spacer"></span>
+        <button class="e-btn e-btn--ghost e-btn--sm" data-nav="services">كل الخدمات <span class="e-i">arrow_back</span></button></div>
+      <div class="e-grid e-grid--dept">
+        ${SECTIONS.map(deptCard).join('')}
+      </div>
+    </div>
+
+    <div class="e-section">
+      <div class="e-cols">
+        <div>
+          <div class="e-section__head"><h2>أحدث الحالات</h2><span class="e-section__spacer"></span>
+            <button class="e-btn e-btn--ghost e-btn--sm" data-nav="cases">الكل <span class="e-i">arrow_back</span></button></div>
+          ${casesTable(CASES.slice(0,6))}
+        </div>
+        <div>
+          <div class="e-section__head"><h2>أولوية المتابعة</h2></div>
+          ${activityCard()}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function kpi(label,val,unit,dir,delta){
+  const d = dir ? `<span class="e-kpi__delta e-kpi__delta--${dir==='up'?'up':'down'}"><span class="e-i">${dir==='up'?'trending_up':'trending_down'}</span>${delta}</span>` : '';
+  return `<div class="e-kpi"><span class="e-kpi__label">${label}</span>
+    <div class="e-kpi__row"><span class="e-kpi__value">${val}</span>${unit?`<span class="e-kpi__unit">${unit}</span>`:''}${d}</div></div>`;
+}
+function deptCard(s){
+  return `<div class="e-deptcard e-dept-rail--${s.cls}">
+    <div class="e-deptcard__top">
+      <span class="e-deptcard__icon e-dept--${s.cls}" style="background:var(--dept-${s.cls}-bg);color:var(--dept-${s.cls})"><span class="e-i">${s.icon}</span></span>
+      <div><div class="e-deptcard__title">${s.name}</div><div class="e-deptcard__meta">${s.code} · ${s.count} خدمة</div></div>
+    </div>
+    <p class="e-deptcard__blurb">${s.blurb}</p>
+    <div class="e-deptcard__foot">
+      <span class="e-status e-status--info">${s.today} طلب اليوم</span>
+      <button class="e-btn e-btn--ghost e-btn--sm" data-nav="services">فتح <span class="e-i">arrow_back</span></button>
+    </div>
+  </div>`;
+}
+function casesTable(rows){
+  return `<div class="e-tablewrap"><table class="e-table">
+    <thead><tr><th>رقم الطلب</th><th>المشترك</th><th>القسم</th><th>الحالة</th><th class="e-num">الأجور</th><th>المسؤول</th></tr></thead>
+    <tbody>${rows.map(c=>`
+      <tr>
+        <td><a href="#" data-nav="form">${c.id}</a><div class="e-text-muted" style="font-size:var(--fs-xs)">${c.svc} · ${c.age}</div></td>
+        <td>${c.sub}</td>
+        <td>${deptTag(c.sec)}</td>
+        <td><span class="e-status e-status--${c.state}">${c.status}</span></td>
+        <td class="e-num">${c.fee?fmt(c.fee):'—'}</td>
+        <td>${c.officer}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+function activityCard(){
+  return `<div class="e-card"><div class="e-card__body" style="display:flex;flex-direction:column;gap:var(--sp-3)">
+    <div class="e-alert e-alert--err"><span class="e-alert__icon e-i">warning</span><div><div class="e-alert__title">٣ حالات تجاوزت SLA</div><div class="e-alert__body">في الدائرة الفنية — راجعها لمنع التصعيد.</div></div></div>
+    <div class="e-alert e-alert--warn"><span class="e-alert__icon e-i">schedule</span><div><div class="e-alert__title">٧ بانتظار الدفع</div><div class="e-alert__body">قسائم صادرة لم تُسدّد بعد.</div></div></div>
+    <div class="e-divider"></div>
+    <div>
+      <div class="e-caps" style="margin-bottom:var(--sp-2)">توزيع اليوم حسب القسم</div>
+      ${SECTIONS.map(s=>`<div style="display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-2)">
+        <span style="width:64px;font-size:var(--fs-xs)" class="e-text-secondary">${s.name}</span>
+        <div class="e-progress" style="flex:1"><div class="e-progress__bar" style="width:${s.today*2.6}%;background:var(--dept-${s.cls})"></div></div>
+        <span class="e-num e-text-secondary" style="font-size:var(--fs-xs);width:24px;text-align:end">${s.today}</span>
+      </div>`).join('')}
+    </div>
+  </div></div>`;
+}
+
+function viewServices(){
+  return `
+  <div class="e-view">
+    <div class="e-pagehead">
+      <div class="e-pagehead__titles"><h1>الخدمات</h1><p class="e-pagehead__sub">٣١ خدمة موزّعة على أربعة أقسام — وفق دليل ٢٠٢٦</p></div>
+      <div class="e-pagehead__actions"><button class="e-btn e-btn--primary" data-nav="form"><span class="e-i">add</span> طلب خدمة</button></div>
+    </div>
+    <div class="e-toolbar">
+      <div class="e-inputwrap" style="width:280px"><span class="e-i">search</span><input class="e-input" placeholder="ابحث عن خدمة…"></div>
+      <button class="e-chip is-active">الكل</button>
+      ${SECTIONS.map(s=>`<button class="e-chip">${s.name}</button>`).join('')}
+      <div class="e-toolbar__spacer"></div>
+      <span class="e-text-muted" style="font-size:var(--fs-sm)">${SERVICES.length} نتيجة</span>
+    </div>
+    ${SECTIONS.map(s=>{
+      const list = SERVICES.filter(x=>x.sec===s.code);
+      if(!list.length) return '';
+      return `<div class="e-section">
+        <div class="e-section__head">${deptTag(s.code)}<h2 style="font-size:var(--fs-md)">${s.name}</h2><span class="e-section__spacer"></span><span class="e-text-muted" style="font-size:var(--fs-sm)">${list.length} خدمة</span></div>
+        <div class="e-tablewrap">${list.map(srvRow).join('')}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function srvRow(x){
+  return `<div class="e-srv">
+    <span class="e-srv__code">${x.code}</span>
+    <span class="e-srv__name">${x.name}${x.urgent?' <span class="e-badge e-badge--err"><span class="e-i">priority_high</span> عاجل</span>':''}</span>
+    <span class="e-srv__meta">
+      <span class="e-badge"><span class="e-i">schedule</span> ${x.sla} يوم</span>
+      ${x.price?`<span class="e-text-secondary" style="font-size:var(--fs-sm)">${x.price}</span>`:'<span class="e-text-muted" style="font-size:var(--fs-sm)">بلا أجور مباشرة</span>'}
+      <button class="e-btn e-btn--subtle e-btn--sm" data-nav="form">بدء <span class="e-i">arrow_back</span></button>
+    </span>
+  </div>`;
+}
+
+function viewCases(){
+  return `
+  <div class="e-view">
+    <div class="e-pagehead">
+      <div class="e-pagehead__titles"><h1>الحالات</h1><p class="e-pagehead__sub">٢١٣ حالة مفتوحة · فرع النضال</p></div>
+      <div class="e-pagehead__actions"><button class="e-btn"><span class="e-i">file_download</span> تصدير</button><button class="e-btn e-btn--primary" data-nav="form"><span class="e-i">add</span> حالة جديدة</button></div>
+    </div>
+    <div class="e-toolbar">
+      <div class="e-inputwrap" style="width:260px"><span class="e-i">search</span><input class="e-input" placeholder="رقم طلب أو اسم مشترك…"></div>
+      <button class="e-chip is-active">الكل</button>
+      <button class="e-chip">عاجل</button>
+      <button class="e-chip">بانتظار الدفع</button>
+      <button class="e-chip">قيد التنفيذ</button>
+      <button class="e-chip">مكتمل</button>
+      <div class="e-toolbar__spacer"></div>
+      <button class="e-btn e-btn--subtle e-btn--sm"><span class="e-i">tune</span> تصفية</button>
+      <select class="e-select e-btn--sm" style="width:auto;min-height:var(--control-h-sm)"><option>الأحدث أولاً</option><option>الأقدم أولاً</option><option>الأعلى أجوراً</option></select>
+    </div>
+    ${casesTableFull(CASES)}
+    <div class="e-toolbar" style="margin-top:var(--sp-4)">
+      <span class="e-text-muted" style="font-size:var(--fs-sm)">عرض ١–٧ من ٢١٣</span>
+      <div class="e-toolbar__spacer"></div>
+      <div class="e-pager">
+        <button class="e-pager__btn" disabled><span class="e-i">chevron_right</span></button>
+        <button class="e-pager__btn is-active">1</button><button class="e-pager__btn">2</button><button class="e-pager__btn">3</button>
+        <span class="e-text-muted" style="padding:0 4px">…</span><button class="e-pager__btn">31</button>
+        <button class="e-pager__btn"><span class="e-i">chevron_left</span></button>
+      </div>
+    </div>
+  </div>`;
+}
+function casesTableFull(rows){
+  return `<div class="e-tablewrap"><table class="e-table">
+    <thead><tr><th>رقم الطلب</th><th>المشترك</th><th>الخدمة</th><th>القسم</th><th>الأولوية</th><th>الحالة</th><th class="e-num">الأجور</th><th>المسؤول</th><th></th></tr></thead>
+    <tbody>${rows.map(c=>`
+      <tr>
+        <td><a href="#" data-nav="form">${c.id}</a></td>
+        <td>${c.sub}</td>
+        <td><span class="e-mono e-text-muted" style="font-size:var(--fs-xs)">${c.svc}</span></td>
+        <td>${deptTag(c.sec)}</td>
+        <td>${c.pri==='عاجل'?'<span class="e-badge e-badge--err">عاجل</span>':c.pri==='VIP'?'<span class="e-badge e-badge--info">VIP</span>':'<span class="e-text-muted" style="font-size:var(--fs-sm)">عادي</span>'}</td>
+        <td><span class="e-status e-status--${c.state}">${c.status}</span></td>
+        <td class="e-num">${c.fee?fmt(c.fee):'—'}</td>
+        <td>${c.officer}</td>
+        <td><button class="e-iconbtn e-iconbtn--sm"><span class="e-i">more_horiz</span></button></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function viewForm(){
+  return `
+  <div class="e-view">
+    <div class="e-crumbs" style="margin-bottom:var(--sp-4)">
+      <a href="#" data-nav="services">الخدمات</a><span class="e-crumbs__sep e-i">chevron_left</span>
+      <a href="#" data-nav="services">الاشتراكات</a><span class="e-crumbs__sep e-i">chevron_left</span>
+      <span class="e-crumbs__current">عمل اشتراك جديد</span>
+    </div>
+    <div class="e-pagehead">
+      <div class="e-pagehead__titles"><h1>طلب خدمة — CS0001 · عمل اشتراك جديد</h1><p class="e-pagehead__sub">أكمل الحقول المطلوبة. يُحفظ تلقائياً.</p></div>
+      <div class="e-pagehead__actions"><span class="e-status e-status--ok">محفوظ تلقائياً</span></div>
+    </div>
+    <div class="e-formlayout">
+      <div class="e-formlayout__main">
+        <div class="e-card"><div class="e-card__head"><span class="e-i" style="color:var(--text-muted)">person</span><span class="e-card__title">بيانات مقدّم الطلب</span></div>
+          <div class="e-card__body"><div class="e-form-grid">
+            <div class="e-field"><label class="e-label">الاسم الكامل <span class="e-label__req">*</span></label><input class="e-input" placeholder="الاسم الثلاثي"></div>
+            <div class="e-field"><label class="e-label">رقم الهاتف <span class="e-label__req">*</span></label><input class="e-input e-input--mono" placeholder="07XX XXX XXXX"></div>
+            <div class="e-field"><label class="e-label">رقم الاشتراك</label><input class="e-input e-input--mono" placeholder="••••••"></div>
+            <div class="e-field"><label class="e-label">صنف الاشتراك</label><select class="e-select"><option>منزلي</option><option>تجاري</option><option>صناعي</option><option>حكومي</option></select></div>
+            <div class="e-field e-col-full"><label class="e-label">عنوان العقار <span class="e-label__req">*</span></label><input class="e-input" placeholder="المنطقة، المحلة، الزقاق، رقم الدار"></div>
+          </div></div>
+        </div>
+        <div class="e-card"><div class="e-card__head"><span class="e-i" style="color:var(--text-muted)">tune</span><span class="e-card__title">تفاصيل الخدمة</span></div>
+          <div class="e-card__body"><div class="e-form-grid">
+            <div class="e-field"><label class="e-label">القوة المطلوبة (أمبير)</label><input class="e-input e-input--mono" placeholder="مثال: 30"></div>
+            <div class="e-field"><label class="e-label">نوع الطور</label><select class="e-select"><option>أحادي الطور</option><option>ثلاثي الأطوار</option></select></div>
+            <div class="e-field e-col-full"><label class="e-label">ملاحظات <span class="e-label__opt">(اختياري)</span></label><textarea class="e-textarea" placeholder="أي تفاصيل إضافية…"></textarea></div>
+          </div></div>
+        </div>
+        <div class="e-card"><div class="e-card__head"><span class="e-i" style="color:var(--text-muted)">folder_open</span><span class="e-card__title">الوثائق المطلوبة</span></div>
+          <div class="e-card__body" style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <label class="e-check"><input type="checkbox" checked><span>سند الملكية (الطابو) أو إجازة البناء</span></label>
+            <label class="e-check"><input type="checkbox"><span>كتاب تأييد السكن المصدّق</span></label>
+            <label class="e-check"><input type="checkbox"><span>صورة هوية الأحوال المدنية</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="e-formlayout__side">
+        <div class="e-card"><div class="e-card__head"><span class="e-card__title">ملخّص الأجور</span></div>
+          <div class="e-card__body">
+            <div class="e-summary__row"><span class="e-text-secondary">أجور الكشف (منزلي)</span><span class="e-num">15,000</span></div>
+            <div class="e-summary__row"><span class="e-text-secondary">تجهيز ونصب</span><span class="e-num">62,500</span></div>
+            <div class="e-summary__row"><span class="e-text-secondary">الغطاء السفلي</span><span class="e-num">12,500</span></div>
+            <div class="e-summary__total"><span class="e-text-secondary" style="font-size:var(--fs-sm)">الإجمالي التقديري</span><b>90,000 <span style="font-size:var(--fs-sm);font-weight:400" class="e-text-muted">د.ع</span></b></div>
+            <p class="e-hint" style="margin-top:var(--sp-3)">الأجور النهائية تُحدّد بعد الكشف الموقعي.</p>
+          </div>
+          <div class="e-card__foot" style="display:flex;flex-direction:column;gap:var(--sp-2)">
+            <button class="e-btn e-btn--primary e-btn--block"><span class="e-i">send</span> إرسال الطلب</button>
+            <button class="e-btn e-btn--ghost e-btn--block">حفظ كمسودة</button>
+          </div>
+        </div>
+        <div class="e-alert e-alert--info"><span class="e-alert__icon e-i">info</span><div><div class="e-alert__title">مراجعة رسمية</div><div class="e-alert__body">تدقيق سند الملكية إلزامي قبل قبول الطلب.</div></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewStub(title,icon,text){
+  return `<div class="e-view"><div class="e-pagehead"><div class="e-pagehead__titles"><h1>${title}</h1></div></div>
+    <div class="e-card"><div class="e-empty">
+      <span class="e-empty__icon"><span class="e-i">${icon}</span></span>
+      <div class="e-empty__title">${title}</div>
+      <p class="e-empty__text">${text}</p>
+      <button class="e-btn e-btn--primary e-btn--sm" data-nav="overview"><span class="e-i">arrow_forward</span> العودة للوحة</button>
+    </div></div></div>`;
+}
+
+const VIEWS = {
+  overview: viewOverview, services: viewServices, cases: viewCases, form: viewForm,
+  branches: ()=>viewStub('الفروع','store','إدارة فروع الرصافة الثلاثة (RS-014/015/016) وأقسامها.'),
+  reports:  ()=>viewStub('التقارير','monitoring','تقارير الأداء والتحصيل ومؤشرات SLA لكل قسم.'),
+  pricing:  ()=>viewStub('الأجور','payments','جدول الأجور الرسمي ٢٠٢٦ — الكشف، التجهيز، إعادة التيار.'),
+  admin:    ()=>viewStub('الإدارة','settings','المستخدمون، الأدوار والصلاحيات، الفروع، وإعدادات النظام.'),
+};
+
+/* ---------------- nav + router ---------------- */
+function renderNav(active){
+  document.getElementById('navRoot').innerHTML = NAV.map(g=>`
+    <div class="e-side__section">
+      <div class="e-side__label">${g.group}</div>
+      ${g.items.map(it=>`<button class="e-nav ${it.k===active?'is-active':''}" data-nav="${it.k}">
+        <span class="e-i">${it.i}</span><span class="e-nav__text">${it.l}</span>${it.c?`<span class="e-nav__count">${it.c}</span>`:''}
+      </button>`).join('')}
+    </div>`).join('');
+}
+function go(view){
+  const fn = VIEWS[view] || VIEWS.overview;
+  document.getElementById('content').innerHTML = fn();
+  document.getElementById('topTitle').textContent = TITLES[view] || '';
+  renderNav(view);
+  document.getElementById('side').classList.remove('is-open');
+  document.querySelector('.e-scroll').scrollTop = 0;
+}
+document.addEventListener('click', e=>{
+  const n = e.target.closest('[data-nav]');
+  if(n){ e.preventDefault(); go(n.getAttribute('data-nav')); }
+});
+document.getElementById('menuToggle').addEventListener('click', ()=>document.getElementById('side').classList.toggle('is-open'));
+document.getElementById('themeBtn').addEventListener('click', function(){
+  document.body.classList.toggle('e-dark');
+  this.querySelector('.e-i').textContent = document.body.classList.contains('e-dark') ? 'light_mode' : 'dark_mode';
+});
+
+go('overview');
+</script>
+</body>
+</html>

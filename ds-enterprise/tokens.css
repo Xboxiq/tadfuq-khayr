@@ -1,0 +1,181 @@
+/* ============================================================
+   Tadfuq Al-Khayr — Enterprise Design System
+   tokens.css — the single source of truth
+   ----------------------------------------------------
+   A calm, utility-grade token set for a government electricity
+   back-office tool. Cool neutrals, ONE blue accent, flat
+   surfaces with 1px borders, near-invisible elevation. The four
+   department colors exist ONLY as small semantic accents.
+
+   Prefix: .e-   (enterprise — collision-free beside f-/v2-)
+   ============================================================ */
+
+:root {
+  /* ---------- Neutral ramp (cool gray) ---------- */
+  --gray-0:   #ffffff;
+  --gray-25:  #fcfcfd;
+  --gray-50:  #f6f7f9;
+  --gray-100: #eef0f3;
+  --gray-200: #e4e7ec;
+  --gray-300: #d0d5dd;
+  --gray-400: #98a2b3;
+  --gray-500: #667085;
+  --gray-600: #475467;
+  --gray-700: #344054;
+  --gray-800: #1d2939;
+  --gray-900: #101828;
+  --gray-950: #0a101e;
+
+  /* ---------- Single accent (enterprise blue) ---------- */
+  --blue-50:  #eef3ff;
+  --blue-100: #dbe6ff;
+  --blue-200: #b9ccff;
+  --blue-500: #1652f0;   /* the one accent */
+  --blue-600: #0f43cf;
+  --blue-700: #0d36a6;
+
+  /* ---------- Brand anchor (used sparingly: sidebar, logo) ---------- */
+  --brand-navy: #232350;
+
+  /* ---------- Department colors (semantic accents ONLY) ----------
+     CS subscriptions · CT technical · CB billing · CA reports.
+     Used for small dots, tags, and table category cells — never
+     as large fills. Paired soft backgrounds for pale badges. */
+  --dept-cs:      #2456d6;  --dept-cs-bg: #eaf0fe;
+  --dept-ct:      #b45309;  --dept-ct-bg: #fbf0e2;
+  --dept-cb:      #0e7490;  --dept-cb-bg: #e3f2f5;
+  --dept-ca:      #be123c;  --dept-ca-bg: #fdeaef;
+
+  /* ---------- Semantic state ---------- */
+  --ok:   #067647;  --ok-bg:   #ecfdf3;  --ok-bd:   #abefc6;
+  --warn: #b54708;  --warn-bg: #fffaeb;  --warn-bd: #fedf89;
+  --err:  #d92d20;  --err-bg:  #fef3f2;  --err-bd:  #fecdca;
+  --info: #1652f0;  --info-bg: #eef3ff;  --info-bd: #b9ccff;
+
+  /* ---------- Semantic surface aliases (light) ---------- */
+  --bg:            var(--gray-50);
+  --surface:       var(--gray-0);
+  --surface-sunk:  var(--gray-50);
+  --surface-hover: var(--gray-50);
+  --surface-active:var(--gray-100);
+
+  --text:          var(--gray-900);
+  --text-secondary:var(--gray-600);
+  --text-muted:    var(--gray-500);
+  --text-on-accent:#ffffff;
+
+  --border:        var(--gray-200);
+  --border-strong: var(--gray-300);
+
+  --accent:        var(--blue-500);
+  --accent-hover:  var(--blue-600);
+  --accent-soft:   var(--blue-50);
+  --link:          var(--blue-600);
+
+  --focus-ring:    0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  --focus-ring-err:0 0 0 3px color-mix(in srgb, var(--err) 32%, transparent);
+
+  /* ---------- Typography ---------- */
+  --font-ui:   'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale — restrained, utility-first (no fluid display drama) */
+  --fs-xs:   0.75rem;    /* 12 — micro labels, table meta */
+  --fs-sm:   0.8125rem;  /* 13 — secondary / dense tables */
+  --fs-base: 0.875rem;   /* 14 — body, controls (enterprise default) */
+  --fs-md:   0.9375rem;  /* 15 — emphasised */
+  --fs-lg:   1.0625rem;  /* 17 — card / section titles */
+  --fs-xl:   1.25rem;    /* 20 — page H1 */
+  --fs-2xl:  1.5rem;     /* 24 — rare, KPI numbers */
+
+  --lh-tight:  1.3;
+  --lh-normal: 1.55;
+  --lh-relaxed:1.7;
+
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  --tracking-caps: 0.04em;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --sp-1: 0.25rem;  --sp-2: 0.5rem;  --sp-3: 0.75rem; --sp-4: 1rem;
+  --sp-5: 1.25rem;  --sp-6: 1.5rem;  --sp-8: 2rem;    --sp-10: 2.5rem;
+  --sp-12: 3rem;    --sp-16: 4rem;
+
+  /* ---------- Radius (crisp, never pill on containers) ---------- */
+  --r-xs:  4px;
+  --r-sm:  6px;    /* buttons, inputs, badges */
+  --r-md:  8px;    /* cards, panels */
+  --r-lg:  12px;   /* modals, large surfaces */
+  --r-full:999px;  /* dots, avatars, status pills only */
+
+  /* ---------- Elevation (ultra-subtle; borders do the work) ---------- */
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.04);
+  --shadow-sm: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+  --shadow-md: 0 4px 8px -2px rgba(16,24,40,.08), 0 2px 4px -2px rgba(16,24,40,.04);
+  --shadow-lg: 0 12px 24px -6px rgba(16,24,40,.12), 0 4px 8px -4px rgba(16,24,40,.06);
+
+  /* ---------- Motion (quiet) ---------- */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 260ms;
+  --t-colors: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+
+  /* ---------- Layout metrics ---------- */
+  --sidebar-w:      256px;
+  --sidebar-w-mini: 68px;
+  --topbar-h:       56px;
+  --content-max:    1440px;
+  --control-h-sm:   30px;
+  --control-h:      36px;
+  --control-h-lg:   42px;
+
+  /* ---------- Z-index ---------- */
+  --z-sticky: 100;
+  --z-sidebar:200;
+  --z-overlay:400;
+  --z-modal:  500;
+  --z-toast:  600;
+  --z-tooltip:700;
+}
+
+/* ---------- Dark mode — neutral slate, never pure black ---------- */
+body.e-dark {
+  --bg:            #0d1117;
+  --surface:       #161b22;
+  --surface-sunk:  #0d1117;
+  --surface-hover: #1c2230;
+  --surface-active:#222a3a;
+
+  --text:          #e6edf3;
+  --text-secondary:#aeb9c7;
+  --text-muted:    #8893a4;
+  --text-on-accent:#ffffff;
+
+  --border:        #2a3140;
+  --border-strong: #3a4354;
+
+  --accent:        #5b85f5;
+  --accent-hover:  #6f96ff;
+  --accent-soft:   color-mix(in srgb, #5b85f5 16%, transparent);
+  --link:          #87a6ff;
+
+  --dept-cs-bg: color-mix(in srgb, var(--dept-cs) 18%, transparent);
+  --dept-ct-bg: color-mix(in srgb, var(--dept-ct) 20%, transparent);
+  --dept-cb-bg: color-mix(in srgb, var(--dept-cb) 20%, transparent);
+  --dept-ca-bg: color-mix(in srgb, var(--dept-ca) 20%, transparent);
+
+  --ok-bg:   color-mix(in srgb, var(--ok) 16%, transparent);   --ok-bd:   color-mix(in srgb, var(--ok) 40%, transparent);
+  --warn-bg: color-mix(in srgb, var(--warn) 18%, transparent); --warn-bd: color-mix(in srgb, var(--warn) 42%, transparent);
+  --err-bg:  color-mix(in srgb, var(--err) 16%, transparent);  --err-bd:  color-mix(in srgb, var(--err) 40%, transparent);
+  --info-bg: color-mix(in srgb, var(--info) 16%, transparent); --info-bd: color-mix(in srgb, var(--info) 40%, transparent);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.45);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.5);
+  --shadow-lg: 0 14px 30px rgba(0,0,0,.6);
+}

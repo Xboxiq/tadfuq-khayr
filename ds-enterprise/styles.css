@@ -1,0 +1,17 @@
+/* ============================================================
+   Tadfuq Al-Khayr — Enterprise Design System (entry)
+   ----------------------------------------------------
+   A calm, clear, organized back-office system for the Rasafa
+   electricity CS Hub. Built fresh to replace the busy decorative
+   direction with utility-grade enterprise UX.
+
+   Usage:  <link rel="stylesheet" href="ds-enterprise/styles.css">
+           <html dir="rtl">   <body> (add class "e-dark" for dark)
+
+   Import order: tokens → base → components → app layout.
+   ============================================================ */
+
+@import url("./base.css");        /* font @imports must lead; base pulls them in */
+@import url("./tokens.css");
+@import url("./components.css");
+@import url("./app.css");
