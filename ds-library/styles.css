@@ -1,0 +1,11 @@
+/* =============================================================
+   Tadfuq Design System — single entry point.
+   Import this ONE file. Order is load-bearing:
+     tokens (source of truth) → base (reset/fonts) →
+     primitives (components) → layout (shell/scaffold).
+   The React layer (window.DS, ds.jsx) renders these classes.
+   ============================================================= */
+@import url("./tokens.css");
+@import url("./base.css");
+@import url("./primitives.css");
+@import url("./layout.css");

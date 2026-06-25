@@ -1,0 +1,214 @@
+/* =============================================================
+   Tadfuq Design System — tokens.css
+   THE SINGLE SOURCE OF TRUTH. Nothing else may define a color,
+   size, radius, shadow, font, or duration. Every component reads
+   from here.
+
+   Built on the audited canonical language ("warmth of Rasafa +
+   discipline of Vercel"): warm calm canvas, muted jewel accents,
+   OKLCH department palette — now completed with the layers the
+   audit found missing: a 4px spacing scale, a role-based type
+   scale, an extended neutral ramp, semantic elevation, motion,
+   control sizing, z-index, and a full semantic alias contract
+   that the primitive library consumes.
+
+   Layers:
+     1. Primitives   (--f-*)         raw, brand-level values
+     2. Neutral ramp (--f-n-*)       warm gray scale
+     3. Scales       (sp / fs / r)   spacing, type, radius
+     4. Semantic     (--surface/--text/--accent/…)  what components use
+     5. Dark theme   override of the semantic layer only
+   Retires: ds/tokens (v1) and ds-enterprise/tokens (cool). One source now.
+   ============================================================= */
+
+:root {
+  /* ---------- 1. BRAND PRIMITIVES (muted jewel — never loud) ---------- */
+  --f-navy:        #1e2a4d;
+  --f-navy-soft:   #28366e;
+  --f-gold:        #b8861b;
+  --f-gold-soft:   #ddbb5d;
+  --f-crimson:     #8f1d28;
+  --f-crimson-soft:#c54a55;
+  --f-ok:          #3a7a55;
+  --f-warn:        #b87918;
+  --f-err:         #b03a3a;
+
+  /* Department palette — jewel-calm, uniform OKLCH lightness */
+  --f-cs: oklch(0.52 0.105 259);  /* cobalt   — Subscriptions */
+  --f-ct: oklch(0.57 0.090 72);   /* bronze   — Technical     */
+  --f-cb: oklch(0.56 0.085 192);  /* sea teal — Billing       */
+  --f-ca: oklch(0.54 0.095 12);   /* rosewood — Reports       */
+
+  /* ---------- 2. WARM NEUTRAL RAMP ---------- */
+  --f-n-0:   #ffffff;
+  --f-n-50:  #fafaf7;
+  --f-n-100: #f4f3ee;
+  --f-n-150: #efedde;
+  --f-n-200: #e7e5dc;
+  --f-n-300: #d6d2c5;
+  --f-n-400: #b3ac9c;
+  --f-n-500: #8a8478;
+  --f-n-600: #615b50;
+  --f-n-700: #4a4940;
+  --f-n-800: #2c2b26;
+  --f-n-900: #161513;
+  --f-n-950: #0c0b0a;
+
+  /* legacy alias (so any --gray-* reference resolves to the warm ramp) */
+  --gray-0: var(--f-n-0); --gray-50: var(--f-n-50); --gray-100: var(--f-n-100);
+  --gray-200: var(--f-n-200); --gray-300: var(--f-n-300); --gray-400: var(--f-n-400);
+  --gray-500: var(--f-n-500); --gray-600: var(--f-n-600); --gray-700: var(--f-n-700);
+  --gray-800: var(--f-n-800); --gray-900: var(--f-n-900); --gray-950: var(--f-n-950);
+
+  /* ---------- 3a. TYPOGRAPHY ---------- */
+  --font-ui:      "Readex Pro", "IBM Plex Sans Arabic", -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Alexandria", "Readex Pro", "IBM Plex Sans Arabic", sans-serif;
+  --font-latin:   "Geist", "Readex Pro", sans-serif;
+  --font-mono:    "Geist Mono", "SF Mono", Menlo, monospace;
+
+  /* numeric type scale (14px base — data-dense enterprise) */
+  --fs-2xs: 0.6875rem;  /* 11 */
+  --fs-xs:  0.75rem;    /* 12 */
+  --fs-sm:  0.8125rem;  /* 13 */
+  --fs-base:0.875rem;   /* 14 */
+  --fs-md:  0.9375rem;  /* 15 */
+  --fs-lg:  1.0625rem;  /* 17 */
+  --fs-xl:  1.375rem;   /* 22 */
+  --fs-2xl: 1.75rem;    /* 28 */
+  --fs-3xl: 2.25rem;    /* 36 — display */
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.7;
+
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+  --tracking-tight: -0.02em; --tracking-caps: 0.08em;
+
+  /* role tokens (semantic shortcuts for screens — size/weight pairing) */
+  --text-display: 700 var(--fs-3xl)/1.1 var(--font-display);
+  --text-title:   600 var(--fs-xl)/1.2 var(--font-display);
+  --text-heading: 600 var(--fs-lg)/1.3 var(--font-ui);
+  --text-body:    400 var(--fs-base)/var(--lh-normal) var(--font-ui);
+  --text-caption: 500 var(--fs-xs)/1.4 var(--font-ui);
+
+  /* ---------- 3b. SPACING (4px base) ---------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;  --sp-5: 20px; --sp-6: 24px;
+  --sp-7: 28px; --sp-8: 32px; --sp-9: 36px; --sp-10: 40px; --sp-11: 44px; --sp-12: 48px;
+
+  /* ---------- 3c. RADIUS ---------- */
+  --r-xs: 6px; --r-sm: 8px; --r-md: 16px; --r-lg: 20px; --r-xl: 26px; --r-full: 999px;
+  /* legacy alias */ --r: var(--r-md);
+
+  /* ---------- 4. SEMANTIC — LIGHT (what components read) ---------- */
+  --bg:             var(--f-n-50);
+  --surface:        var(--f-n-0);
+  --surface-sunk:   var(--f-n-50);
+  --surface-hover:  var(--f-n-100);
+  --surface-active: var(--f-n-150);
+
+  --text:           var(--f-n-900);
+  --text-secondary: var(--f-n-700);
+  --text-muted:     var(--f-n-500);
+  --text-on-accent: #ffffff;
+
+  --border:         var(--f-n-200);
+  --border-strong:  var(--f-n-300);
+
+  --accent:         var(--f-navy);
+  --accent-hover:   var(--f-navy-soft);
+  --accent-soft:    color-mix(in srgb, var(--f-navy) 9%, transparent);
+  --link:           var(--f-navy-soft);
+  --brand-navy:     var(--f-navy);
+
+  /* state + soft fills + borders */
+  --ok: var(--f-ok);  --ok-bg: color-mix(in srgb, var(--f-ok) 11%, var(--surface));  --ok-bd: color-mix(in srgb, var(--f-ok) 28%, transparent);
+  --warn: var(--f-warn); --warn-bg: color-mix(in srgb, var(--f-warn) 12%, var(--surface)); --warn-bd: color-mix(in srgb, var(--f-warn) 30%, transparent);
+  --err: var(--f-err); --err-bg: color-mix(in srgb, var(--f-err) 11%, var(--surface)); --err-bd: color-mix(in srgb, var(--f-err) 28%, transparent);
+  --info: var(--f-cs); --info-bg: color-mix(in srgb, var(--f-cs) 11%, var(--surface)); --info-bd: color-mix(in srgb, var(--f-cs) 28%, transparent);
+
+  /* department semantic + soft */
+  --dept-cs: var(--f-cs); --dept-cs-bg: color-mix(in srgb, var(--f-cs) 12%, var(--surface));
+  --dept-ct: var(--f-ct); --dept-ct-bg: color-mix(in srgb, var(--f-ct) 12%, var(--surface));
+  --dept-cb: var(--f-cb); --dept-cb-bg: color-mix(in srgb, var(--f-cb) 12%, var(--surface));
+  --dept-ca: var(--f-ca); --dept-ca-bg: color-mix(in srgb, var(--f-ca) 12%, var(--surface));
+
+  /* ---------- ELEVATION (warm, soft, layered) ---------- */
+  --shadow-xs: 0 1px 2px rgba(22,21,19,0.04);
+  --shadow-sm: 0 1px 2px rgba(22,21,19,0.05);
+  --shadow:    0 1px 2px rgba(22,21,19,0.04), 0 12px 28px -16px rgba(22,21,19,0.12);
+  --shadow-md: 0 1px 2px rgba(22,21,19,0.05), 0 24px 56px -20px rgba(22,21,19,0.16);
+  --shadow-lg: 0 1px 2px rgba(22,21,19,0.05), 0 32px 64px -24px rgba(22,21,19,0.22);
+  /* semantic elevation roles */
+  --elev-card: var(--shadow-xs); --elev-raised: var(--shadow-sm);
+  --elev-popover: var(--shadow-md); --elev-modal: var(--shadow-lg);
+
+  /* ---------- FOCUS ---------- */
+  --focus-ring:     0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+  --focus-ring-err: 0 0 0 3px color-mix(in srgb, var(--err) 30%, transparent);
+
+  /* ---------- MOTION ---------- */
+  --ease:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring:   cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 120ms; --dur: 200ms; --dur-slow: 300ms;
+  --t-colors: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+
+  /* ---------- CONTROL SIZING ---------- */
+  --control-h-sm: 30px; --control-h: 38px; --control-h-lg: 46px;
+
+  /* ---------- LAYOUT METRICS ---------- */
+  --sidebar-w: 264px; --sidebar-w-mini: 68px; --topbar-h: 60px; --content-max: 1320px;
+  /* breakpoints (reference; use in @media): sm 640 · md 768 · lg 1024 · xl 1280 */
+
+  /* ---------- Z-INDEX SYSTEM ---------- */
+  --z-sticky: 100; --z-sidebar: 200; --z-overlay: 400; --z-modal: 500; --z-toast: 600; --z-tooltip: 700;
+}
+
+/* ============================================================
+   5. DARK THEME — overrides the SEMANTIC layer only.
+   Triggers: body.e-dark · body.dark · .dark · [data-theme="dark"]
+   Calm warm navy-charcoal, never zero-black.
+   ============================================================ */
+body.e-dark, body.dark, .dark, [data-theme="dark"] {
+  --f-cs: oklch(0.78 0.085 259);
+  --f-ct: oklch(0.80 0.080 78);
+  --f-cb: oklch(0.80 0.075 192);
+  --f-ca: oklch(0.78 0.080 12);
+
+  --bg:             #131720;
+  --surface:        #1e2330;
+  --surface-sunk:   #181c27;
+  --surface-hover:  #252b39;
+  --surface-active: #2f3645;
+
+  --text:           #f1efe6;
+  --text-secondary: #cdcabf;
+  --text-muted:     #9a958a;
+  --text-on-accent: #0e1119;
+
+  --border:         #313847;
+  --border-strong:  #424a5c;
+
+  --accent:         oklch(0.74 0.115 259);   /* lifted cobalt for contrast on dark */
+  --accent-hover:   oklch(0.80 0.115 259);
+  --accent-soft:    color-mix(in srgb, var(--accent) 18%, transparent);
+  --link:           var(--accent);
+  --brand-navy:     #2a3a66;
+
+  --ok-bg: color-mix(in srgb, var(--f-ok) 22%, var(--surface));  --ok-bd: color-mix(in srgb, var(--f-ok) 45%, transparent);
+  --warn-bg: color-mix(in srgb, var(--f-warn) 24%, var(--surface)); --warn-bd: color-mix(in srgb, var(--f-warn) 48%, transparent);
+  --err-bg: color-mix(in srgb, var(--f-err) 22%, var(--surface));  --err-bd: color-mix(in srgb, var(--f-err) 45%, transparent);
+  --info-bg: color-mix(in srgb, var(--f-cs) 20%, var(--surface));  --info-bd: color-mix(in srgb, var(--f-cs) 42%, transparent);
+
+  --dept-cs-bg: color-mix(in srgb, var(--f-cs) 18%, var(--surface));
+  --dept-ct-bg: color-mix(in srgb, var(--f-ct) 18%, var(--surface));
+  --dept-cb-bg: color-mix(in srgb, var(--f-cb) 18%, var(--surface));
+  --dept-ca-bg: color-mix(in srgb, var(--f-ca) 18%, var(--surface));
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.28);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.32);
+  --shadow:    0 1px 2px rgba(0,0,0,0.28), 0 18px 40px -18px rgba(0,0,0,0.55);
+  --shadow-md: 0 1px 2px rgba(0,0,0,0.28), 0 30px 64px -22px rgba(0,0,0,0.6);
+  --shadow-lg: 0 1px 2px rgba(0,0,0,0.3),  0 40px 80px -28px rgba(0,0,0,0.7);
+}

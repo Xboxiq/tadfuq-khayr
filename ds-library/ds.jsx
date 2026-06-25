@@ -4,7 +4,9 @@
    ONE place for every UI primitive. React-via-CDN (no build):
    reads global window.React / window.ReactDOM, attaches the
    library to window.DS. Styled exclusively by the enterprise
-   tokens (.e-) + the "new soul" refinement (ds-theme.css).
+   Styled exclusively by the single token source (tokens.css) via the
+   .e- primitive classes (primitives.css). No component defines raw
+   values — everything reads from tokens.
 
    Rule of the refactor: all UI routes through these components.
    No screen re-implements a primitive; no raw f-* classes.
