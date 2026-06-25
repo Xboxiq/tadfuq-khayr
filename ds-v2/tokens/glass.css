@@ -1,0 +1,48 @@
+/* ============================================================
+   Glass & Atmosphere — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   v2 deliberately steps BACK from "glassmorphism on everything"
+   toward an INSTRUMENT-PANEL read: less blur, a crisper rim, a
+   single hairline highlight. Glass is reserved for surfaces that
+   genuinely float above scrolling content — the rail, topbar,
+   command dock, menus and modals. Content cards are solid.
+
+   A `prefers-reduced-transparency` fallback fills glass solid.
+   ============================================================ */
+
+:root {
+  /* Translucent body for floating chrome */
+  --glass-bg:        color-mix(in srgb, var(--surface) 72%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--surface) 88%, transparent);
+  --glass-blur:      14px;            /* restrained (v1 was heavier) */
+  --glass-saturate:  1.4;
+  --glass-border:    color-mix(in srgb, var(--ink-0) 55%, transparent);
+  --glass-edge:      rgba(255, 255, 255, .8);   /* top hairline highlight */
+  --glass-shadow:    var(--shadow-md);
+
+  /* Aurora glows behind glass — quiet, brand-keyed, never neon */
+  --aurora-navy:    color-mix(in srgb, var(--navy-700) 12%, transparent);
+  --aurora-crimson: color-mix(in srgb, var(--red-500)   9%, transparent);
+  --aurora-gold:    color-mix(in srgb, var(--gold)      6%, transparent);
+}
+
+body.dark {
+  --glass-bg:        color-mix(in srgb, var(--surface) 64%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--surface) 84%, transparent);
+  --glass-border:    rgba(255, 255, 255, .09);
+  --glass-edge:      rgba(255, 255, 255, .14);
+  --glass-shadow:    var(--shadow-lg);
+
+  --aurora-navy:    rgba(46, 46, 107, .40);
+  --aurora-crimson: rgba(193, 18, 31, .18);
+  --aurora-gold:    rgba(244, 196, 48, .07);
+}
+
+/* Accessibility: solid fallback when the user reduces transparency */
+@media (prefers-reduced-transparency: reduce) {
+  :root, body.dark {
+    --glass-bg:        var(--surface);
+    --glass-bg-strong: var(--surface);
+    --glass-blur:      0px;
+  }
+}

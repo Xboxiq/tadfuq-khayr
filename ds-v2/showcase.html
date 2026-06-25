@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام التصميم v2 — مركز خدمات الرصافة</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* Page-local scaffolding for the gallery only (not part of the DS). */
+    .gx-content { padding-block: var(--sp-7) var(--sp-10); }
+    .gx-block { scroll-margin-top: calc(var(--topbar-h) + var(--sp-4)); }
+    .gx-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-3); }
+    .gx-sw { border-radius: var(--r-md); overflow: clip; border: var(--hairline) solid var(--border); }
+    .gx-sw__chip { height: 56px; }
+    .gx-sw__meta { padding: var(--sp-2) var(--sp-3); background: var(--surface); }
+    .gx-sw__meta b { display: block; font-size: var(--fs-xs); }
+    .gx-sw__meta code { font-family: var(--font-data); font-size: var(--fs-2xs); color: var(--text-faint); }
+    .gx-type-row { display: flex; align-items: baseline; gap: var(--sp-4); padding-block: var(--sp-2); border-bottom: 1px dashed var(--border); }
+    .gx-type-row span:first-child { color: var(--text-faint); font-family: var(--font-data); font-size: var(--fs-xs); min-width: 64px; }
+  </style>
+</head>
+<body class="dark">
+  <div class="v2-shell" id="shell">
+    <!-- MAIN -->
+    <div class="v2-shell__main">
+      <!-- Topbar -->
+      <header class="v2-topbar">
+        <button class="v2-iconbtn" id="railToggle" aria-label="إظهار القائمة"><span class="v2-i">menu</span></button>
+        <span class="v2-topbar__title">نظام التصميم — v2</span>
+        <div class="v2-topbar__search" role="search">
+          <span class="v2-i">search</span>
+          <input type="text" placeholder="ابحث في المكوّنات…" aria-label="بحث" />
+          <kbd class="v2-kbd">⌘K</kbd>
+        </div>
+        <div class="v2-topbar__spacer"></div>
+        <a class="v2-btn v2-btn--sm v2-btn--outline" href="../ds/showcase.html" target="_blank" rel="noopener">
+          <span class="v2-i">compare_arrows</span> قارن مع v1
+        </a>
+        <button class="v2-iconbtn" id="themeToggle" aria-label="تبديل السمة"><span class="v2-i">dark_mode</span></button>
+        <div class="v2-avatar v2-avatar--sm">ر</div>
+      </header>
+
+      <!-- Scroll area -->
+      <div class="v2-shell__scroll">
+        <div class="v2-content gx-content">
+
+          <!-- Hero / page head -->
+          <div class="v2-pagehead">
+            <div class="v2-pagehead__top">
+              <div class="v2-pagehead__titles">
+                <span class="v2-eyebrow">DESIGN SYSTEM · V2</span>
+                <h1>هوية مُطوّرة — الكحلي والقرمزي والذهبي</h1>
+                <p class="v2-pagehead__sub">تطوير منضبط لنظام v1: خط Readex Pro، زجاج «لوحة تحكم» مدروس، وخط Meridian كتوقيع بصري. مبني بجانب v1 للمقارنة المباشرة.</p>
+              </div>
+              <div class="v2-pagehead__actions">
+                <button class="v2-btn v2-btn--ghost"><span class="v2-i">download</span> تصدير التوكنز</button>
+                <button class="v2-btn v2-btn--brand">
+                  ابدأ التطبيق <span class="v2-btn__dot"><span class="v2-i">arrow_back</span></span>
+                </button>
+              </div>
+            </div>
+            <hr class="meridian v2-pagehead__rule" />
+          </div>
+
+          <!-- Tabs -->
+          <div class="v2-tabs" style="margin-bottom: var(--sp-6)">
+            <button class="v2-tab is-active">الأساسيات</button>
+            <button class="v2-tab">المكوّنات</button>
+            <button class="v2-tab">النماذج</button>
+            <button class="v2-tab">الحالات</button>
+          </div>
+
+          <!-- ===== Metrics ===== -->
+          <section class="v2-section gx-block">
+            <div class="v2-grid v2-grid--metrics">
+              <div class="v2-card v2-card--meridian"><div class="v2-card__body">
+                <div class="v2-stat"><span class="v2-stat__label">طلبات اليوم</span>
+                  <span class="v2-stat__value">1٬284</span>
+                  <span class="v2-stat__delta v2-stat__delta--up"><span class="v2-i">trending_up</span> 12%</span></div>
+              </div></div>
+              <div class="v2-card"><div class="v2-card__body">
+                <div class="v2-stat"><span class="v2-stat__label">قيد المعالجة</span>
+                  <span class="v2-stat__value">317</span>
+                  <span class="v2-stat__delta v2-stat__delta--down"><span class="v2-i">trending_down</span> 4%</span></div>
+              </div></div>
+              <div class="v2-card"><div class="v2-card__body">
+                <div class="v2-stat"><span class="v2-stat__label">منجزة</span>
+                  <span class="v2-stat__value">9٬640</span>
+                  <span class="v2-stat__delta v2-stat__delta--up"><span class="v2-i">trending_up</span> 8%</span></div>
+              </div></div>
+              <div class="v2-card"><div class="v2-card__body">
+                <div class="v2-stat"><span class="v2-stat__label">متوسط الإنجاز</span>
+                  <span class="v2-stat__value">2.4<small style="font-size:.5em;color:var(--text-faint)"> يوم</small></span>
+                  <span class="v2-stat__delta v2-stat__delta--up"><span class="v2-i">bolt</span> أسرع</span></div>
+              </div></div>
+            </div>
+          </section>
+
+          <!-- ===== Color ===== -->
+          <section class="v2-section gx-block" id="color">
+            <div class="v2-section-head">
+              <h2 class="v2-section-head__title">الألوان</h2>
+              <p class="v2-section-head__sub">القرمزي هو لون الإجراء الوحيد. الذهبي احتفالي نادر. المحايدات مائلة للكحلي لتماسك الهوية.</p>
+            </div>
+            <div class="gx-swatches">
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--navy-700)"></div><div class="gx-sw__meta"><b>Navy</b><code>--navy-700</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--navy-900)"></div><div class="gx-sw__meta"><b>Navy Deep</b><code>--navy-900</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--red-500)"></div><div class="gx-sw__meta"><b>Crimson</b><code>--red-500</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--red-400)"></div><div class="gx-sw__meta"><b>Crimson Hot</b><code>--red-400</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--gold)"></div><div class="gx-sw__meta"><b>Gold</b><code>--gold</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--brand-sweep)"></div><div class="gx-sw__meta"><b>Meridian</b><code>--brand-sweep</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--c-CS)"></div><div class="gx-sw__meta"><b>اشتراكات</b><code>--c-CS</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--c-CB)"></div><div class="gx-sw__meta"><b>مالية</b><code>--c-CB</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--c-CT)"></div><div class="gx-sw__meta"><b>فنية</b><code>--c-CT</code></div></div>
+              <div class="gx-sw"><div class="gx-sw__chip" style="background:var(--c-CA)"></div><div class="gx-sw__meta"><b>شكاوى</b><code>--c-CA</code></div></div>
+            </div>
+          </section>
+
+          <!-- ===== Typography ===== -->
+          <section class="v2-section gx-block" id="type">
+            <div class="v2-section-head">
+              <h2 class="v2-section-head__title">التايبوغرافي</h2>
+              <p class="v2-section-head__sub">Readex Pro لكل الواجهة، JetBrains Mono للأرقام والمعرّفات.</p>
+            </div>
+            <div class="v2-card"><div class="v2-card__body">
+              <div class="gx-type-row"><span>3xl</span><span style="font-size:var(--fs-3xl);font-weight:700;letter-spacing:var(--tracking-tight)">مركز خدمات الرصافة</span></div>
+              <div class="gx-type-row"><span>2xl</span><span style="font-size:var(--fs-2xl);font-weight:700">عنوان الصفحة الرئيسي</span></div>
+              <div class="gx-type-row"><span>xl</span><span style="font-size:var(--fs-xl);font-weight:600">عنوان بطاقة أو لوحة</span></div>
+              <div class="gx-type-row"><span>base</span><span style="font-size:var(--fs-base)">نص الفقرة الأساسي بوزن منتظم — قابل للقراءة بسلاسة في الاتجاه من اليمين لليسار.</span></div>
+              <div class="gx-type-row"><span>data</span><span class="font-data" style="font-size:var(--fs-md)">REF-2026-00481 · 1٬284 · 99.4%</span></div>
+            </div></div>
+          </section>
+
+          <!-- ===== Buttons & controls ===== -->
+          <section class="v2-section gx-block" id="buttons">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">الأزرار والتحكم</h2></div>
+            <div class="v2-card"><div class="v2-card__body v2-stack">
+              <div class="v2-cluster">
+                <button class="v2-btn v2-btn--primary"><span class="v2-i">check</span> إجراء أساسي</button>
+                <button class="v2-btn v2-btn--brand">هوية <span class="v2-btn__dot"><span class="v2-i">arrow_back</span></span></button>
+                <button class="v2-btn v2-btn--outline">إطار</button>
+                <button class="v2-btn v2-btn--ghost">شبح</button>
+                <button class="v2-btn v2-btn--danger"><span class="v2-i">delete</span> حذف</button>
+                <button class="v2-btn" disabled>معطّل</button>
+              </div>
+              <hr class="v2-divider" />
+              <div class="v2-cluster">
+                <button class="v2-btn v2-btn--sm v2-btn--primary">صغير</button>
+                <button class="v2-btn v2-btn--primary">عادي</button>
+                <button class="v2-btn v2-btn--lg v2-btn--primary">كبير</button>
+                <button class="v2-btn v2-btn--pill v2-btn--outline">حبّة</button>
+                <span class="v2-iconbtn v2-tip" data-v2-tip="إعدادات"><span class="v2-i">settings</span></span>
+                <div class="v2-segmented">
+                  <button class="v2-segmented__item is-active">الكل</button>
+                  <button class="v2-segmented__item">مفتوح</button>
+                  <button class="v2-segmented__item">مغلق</button>
+                </div>
+              </div>
+            </div></div>
+          </section>
+
+          <!-- ===== Badges / dept / chips ===== -->
+          <section class="v2-section gx-block" id="badges">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">الشارات والأقسام والوسوم</h2></div>
+            <div class="v2-card"><div class="v2-card__body v2-stack">
+              <div class="v2-cluster">
+                <span class="v2-badge v2-badge--ok"><span class="v2-i">check_circle</span> مكتمل</span>
+                <span class="v2-badge v2-badge--warn"><span class="v2-i">schedule</span> معلّق</span>
+                <span class="v2-badge v2-badge--err"><span class="v2-i">error</span> متأخر</span>
+                <span class="v2-badge v2-badge--info">جديد</span>
+                <span class="v2-badge v2-badge--solid">42</span>
+                <span class="v2-badge v2-badge--gold"><span class="v2-i">workspace_premium</span> مميّز</span>
+              </div>
+              <div class="v2-cluster">
+                <span class="v2-dept v2-dept--CS">اشتراكات</span>
+                <span class="v2-dept v2-dept--CB">مالية وفوترة</span>
+                <span class="v2-dept v2-dept--CT">دعم فني</span>
+                <span class="v2-dept v2-dept--CA">تقارير وشكاوى</span>
+              </div>
+              <div class="v2-cluster">
+                <span class="v2-chip v2-chip--selected">الرصافة <span class="v2-chip__x v2-i">close</span></span>
+                <span class="v2-chip">الكرخ <span class="v2-chip__x v2-i">close</span></span>
+                <span class="v2-chip">هذا الأسبوع <span class="v2-chip__x v2-i">close</span></span>
+                <span class="v2-cluster" style="gap:6px"><span class="v2-dot v2-dot--ok v2-dot--pulse"></span><small style="color:var(--text-soft)">مباشر</small></span>
+              </div>
+            </div></div>
+          </section>
+
+          <!-- ===== Cards / bezel / panel (bento) ===== -->
+          <section class="v2-section gx-block" id="cards">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">البطاقات والأسطح</h2></div>
+            <div class="v2-bento">
+              <div class="v2-bento__cell v2-bento__cell--wide v2-card v2-card--interactive">
+                <div class="v2-card__head"><div class="v2-avatar v2-avatar--sm">٢٤</div><b class="v2-card__title">بطاقة تفاعلية</b><span class="v2-badge v2-badge--ok" style="margin-inline-start:auto">نشط</span></div>
+                <div class="v2-card__body"><p style="color:var(--text-soft);font-size:var(--fs-sm)">ترفع عند التحويم بحركة هادفة وظل مُلوّن بالكحلي. تُستخدم البطاقات فقط حين تعبّر عن تدرّج هرمي حقيقي.</p></div>
+                <div class="v2-card__foot v2-cluster"><button class="v2-btn v2-btn--sm v2-btn--ghost">تفاصيل</button><button class="v2-btn v2-btn--sm v2-btn--primary">فتح</button></div>
+              </div>
+              <div class="v2-bento__cell v2-bezel">
+                <div class="v2-bezel__core" style="padding:var(--sp-5)">
+                  <span class="v2-eyebrow">DOUBLE-BEZEL</span>
+                  <p style="margin-top:var(--sp-2);font-size:var(--fs-sm);color:var(--text-soft)">قشرة خارجية + لبّ داخلي بنصف قطر متراكز — إحساس «معدني» مصنّع.</p>
+                </div>
+              </div>
+              <div class="v2-bento__cell v2-panel" style="padding:var(--sp-5)">
+                <span class="v2-eyebrow">GLASS PANEL</span>
+                <p style="margin-top:var(--sp-2);font-size:var(--fs-sm);color:var(--text-soft)">زجاج «لوحة تحكم» محجوز للأسطح الطافية — تمويه مدروس وحافة مضيئة.</p>
+                <div class="v2-progress" style="margin-top:var(--sp-4)"><div class="v2-progress__bar" style="width:68%"></div></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== Table ===== -->
+          <section class="v2-section gx-block" id="table">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">الجداول</h2></div>
+            <div class="v2-table-wrap">
+              <table class="v2-table v2-table--zebra">
+                <thead><tr><th>المعرّف</th><th>الطلب</th><th>القسم</th><th>الحالة</th><th class="num">المبلغ</th></tr></thead>
+                <tbody>
+                  <tr><td class="num">00481</td><td>تجديد اشتراك</td><td><span class="v2-dept v2-dept--CS">اشتراكات</span></td><td><span class="v2-badge v2-badge--ok">مكتمل</span></td><td class="num">120٬000</td></tr>
+                  <tr><td class="num">00482</td><td>تسوية فاتورة</td><td><span class="v2-dept v2-dept--CB">مالية</span></td><td><span class="v2-badge v2-badge--warn">معلّق</span></td><td class="num">85٬500</td></tr>
+                  <tr><td class="num">00483</td><td>بلاغ انقطاع</td><td><span class="v2-dept v2-dept--CT">فني</span></td><td><span class="v2-badge v2-badge--err">متأخر</span></td><td class="num">—</td></tr>
+                  <tr><td class="num">00484</td><td>شكوى خدمة</td><td><span class="v2-dept v2-dept--CA">شكاوى</span></td><td><span class="v2-badge v2-badge--info">جديد</span></td><td class="num">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="v2-toolbar" style="margin-top:var(--sp-4)">
+              <div class="v2-toolbar__spacer"></div>
+              <div class="v2-pager">
+                <button class="v2-pager__btn" disabled><span class="v2-i">chevron_right</span></button>
+                <button class="v2-pager__btn is-active">1</button>
+                <button class="v2-pager__btn">2</button>
+                <button class="v2-pager__btn">3</button>
+                <button class="v2-pager__btn"><span class="v2-i">chevron_left</span></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== Forms ===== -->
+          <section class="v2-section gx-block" id="forms">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">النماذج</h2><p class="v2-section-head__sub">التسمية أعلى الحقل، نص المساعدة اختياري، الخطأ أسفل الحقل.</p></div>
+            <div class="v2-card"><div class="v2-card__body">
+              <form class="v2-form-grid" onsubmit="return false">
+                <div class="v2-field">
+                  <label class="v2-label">اسم مقدّم الطلب <span class="v2-label__req">*</span></label>
+                  <input class="v2-input" type="text" placeholder="الاسم الكامل" />
+                  <span class="v2-help">كما يظهر في الهوية الرسمية.</span>
+                </div>
+                <div class="v2-field">
+                  <label class="v2-label">رقم الهاتف <span class="v2-label__opt">(اختياري)</span></label>
+                  <div class="v2-inputgroup">
+                    <span class="v2-inputgroup__addon"><span class="v2-i">call</span></span>
+                    <input class="v2-input v2-input--data" type="tel" placeholder="07XX XXX XXXX" />
+                  </div>
+                </div>
+                <div class="v2-field is-invalid">
+                  <label class="v2-label">البريد الإلكتروني <span class="v2-label__req">*</span></label>
+                  <input class="v2-input" type="email" value="name@" aria-invalid="true" />
+                  <span class="v2-error"><span class="v2-i">error</span> صيغة البريد غير صحيحة.</span>
+                </div>
+                <div class="v2-field">
+                  <label class="v2-label">القسم</label>
+                  <select class="v2-select"><option>اشتراكات</option><option>مالية وفوترة</option><option>دعم فني</option><option>تقارير وشكاوى</option></select>
+                </div>
+                <div class="v2-field v2-field--full">
+                  <label class="v2-label">تفاصيل الطلب</label>
+                  <textarea class="v2-textarea" placeholder="اكتب وصفاً موجزاً…"></textarea>
+                </div>
+                <div class="v2-field v2-field--full">
+                  <div class="v2-cluster" style="gap:var(--sp-5)">
+                    <label class="v2-check"><input type="checkbox" checked /><span class="v2-check__text">عاجل<small>يُعالج خلال 24 ساعة</small></span></label>
+                    <label class="v2-check"><input type="radio" name="ch" checked /><span class="v2-check__text">واتساب</span></label>
+                    <label class="v2-check"><input type="radio" name="ch" /><span class="v2-check__text">اتصال</span></label>
+                    <label class="v2-switch"><input type="checkbox" checked /><span class="v2-switch__track"></span><span>إشعارات</span></label>
+                  </div>
+                </div>
+                <div class="v2-field v2-field--full v2-cluster">
+                  <button class="v2-btn v2-btn--primary"><span class="v2-i">send</span> إرسال الطلب</button>
+                  <button class="v2-btn v2-btn--ghost">إلغاء</button>
+                </div>
+              </form>
+            </div></div>
+          </section>
+
+          <!-- ===== States ===== -->
+          <section class="v2-section gx-block" id="states">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">الحالات والتنبيهات</h2></div>
+            <div class="v2-grid v2-grid--2">
+              <div class="v2-stack">
+                <div class="v2-alert v2-alert--info"><span class="v2-alert__icon v2-i">info</span><div class="v2-alert__body"><div class="v2-alert__title">تحديث مجدول</div><div class="v2-alert__text">ستتوقف الخدمة 10 دقائق الليلة.</div></div></div>
+                <div class="v2-alert v2-alert--ok"><span class="v2-alert__icon v2-i">check_circle</span><div class="v2-alert__body"><div class="v2-alert__text">تم حفظ التغييرات بنجاح.</div></div></div>
+                <div class="v2-alert v2-alert--err"><span class="v2-alert__icon v2-i">report</span><div class="v2-alert__body"><div class="v2-alert__text">تعذّر الاتصال بالخادم.</div></div></div>
+                <div class="v2-card"><div class="v2-card__body">
+                  <div class="v2-skel-row"><div class="v2-skel v2-skel--avatar"></div><div class="v2-skel-row__lines"><div class="v2-skel v2-skel--line w-60"></div><div class="v2-skel v2-skel--line w-90"></div></div></div>
+                  <div class="v2-skel-row"><div class="v2-skel v2-skel--avatar"></div><div class="v2-skel-row__lines"><div class="v2-skel v2-skel--line w-75"></div><div class="v2-skel v2-skel--line"></div></div></div>
+                </div></div>
+              </div>
+              <div class="v2-stack">
+                <div class="v2-card"><div class="v2-empty">
+                  <span class="v2-empty__art v2-i">inbox</span>
+                  <div class="v2-empty__title">لا توجد طلبات بعد</div>
+                  <p class="v2-empty__text">ابدأ باستقبال طلبات هذا القسم، وستظهر هنا فور وصولها.</p>
+                  <div class="v2-empty__actions"><button class="v2-btn v2-btn--primary"><span class="v2-i">add</span> طلب جديد</button></div>
+                </div></div>
+                <div class="v2-card"><div class="v2-errstate">
+                  <span class="v2-errstate__art v2-i">wifi_off</span>
+                  <div class="v2-errstate__title">انقطع الاتصال</div>
+                  <p class="v2-errstate__text">تحقّق من الشبكة ثم أعد المحاولة.</p>
+                  <span class="v2-errstate__code">ERR_NETWORK · 503</span>
+                  <div class="v2-empty__actions"><button class="v2-btn v2-btn--outline"><span class="v2-i">refresh</span> إعادة المحاولة</button></div>
+                </div></div>
+              </div>
+            </div>
+            <div class="v2-cluster" style="margin-top:var(--sp-4)">
+              <button class="v2-btn v2-btn--primary" id="toastBtn"><span class="v2-i">notifications</span> أطلق إشعاراً</button>
+              <button class="v2-btn v2-btn--outline" id="modalBtn"><span class="v2-i">open_in_full</span> افتح نافذة</button>
+              <button class="v2-btn v2-btn--outline" id="cmdkBtn"><span class="v2-i">terminal</span> لوحة الأوامر <kbd class="v2-kbd">⌘K</kbd></button>
+              <button class="v2-btn v2-btn--outline" id="drawerBtn"><span class="v2-i">dock_to_left</span> لوح جانبي</button>
+              <div class="v2-loading-row"><span class="v2-spinner"></span> جارٍ المزامنة…</div>
+            </div>
+          </section>
+
+          <!-- ===== Case detail: timeline + stepper + detail list ===== -->
+          <section class="v2-section gx-block" id="record">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">تفاصيل الحالة</h2><p class="v2-section-head__sub">الأنماط اليومية لإدارة الطلبات: مسار المعالجة، السجلّ الزمني، والبيانات التفصيلية.</p></div>
+
+            <div class="v2-card" style="margin-bottom:var(--sp-5)"><div class="v2-card__body">
+              <div class="v2-stepper">
+                <div class="v2-step is-done"><span class="v2-step__node v2-i">check</span><span class="v2-step__label">استلام</span></div>
+                <div class="v2-step is-done"><span class="v2-step__node v2-i">check</span><span class="v2-step__label">تدقيق</span></div>
+                <div class="v2-step is-active"><span class="v2-step__node">3</span><span class="v2-step__label">معالجة</span></div>
+                <div class="v2-step"><span class="v2-step__node">4</span><span class="v2-step__label">اعتماد</span></div>
+                <div class="v2-step"><span class="v2-step__node">5</span><span class="v2-step__label">إغلاق</span></div>
+              </div>
+            </div></div>
+
+            <div class="v2-grid v2-grid--2">
+              <div class="v2-card"><div class="v2-card__head"><b class="v2-card__title">بيانات الطلب</b><span class="v2-dept v2-dept--CB" style="margin-inline-start:auto">مالية</span></div>
+                <div class="v2-card__body">
+                  <dl class="v2-detail">
+                    <dt>المعرّف</dt><dd class="num">REF-2026-00482</dd>
+                    <dt>مقدّم الطلب</dt><dd>أحمد عبدالله</dd>
+                    <dt>القسم</dt><dd>مالية وفوترة</dd>
+                    <dt>المبلغ</dt><dd class="num">85٬500 د.ع</dd>
+                    <dt>تاريخ الإنشاء</dt><dd class="num">2026/06/22</dd>
+                    <dt>الحالة</dt><dd><span class="v2-badge v2-badge--warn">معلّق</span></dd>
+                  </dl>
+                  <hr class="v2-divider" style="margin:var(--sp-4) 0" />
+                  <div class="v2-file"><span class="v2-file__icon v2-i">description</span><span class="v2-file__name">فاتورة-00482.pdf</span><span class="v2-file__size">248 KB</span></div>
+                </div>
+              </div>
+
+              <div class="v2-card"><div class="v2-card__head"><b class="v2-card__title">السجلّ الزمني</b></div>
+                <div class="v2-card__body">
+                  <div class="v2-timeline">
+                    <div class="v2-timeline__item"><div class="v2-timeline__rail"><span class="v2-timeline__dot v2-timeline__dot--accent"></span></div>
+                      <div class="v2-timeline__body"><div class="v2-timeline__title">قيد المعالجة</div><div class="v2-timeline__meta">اليوم · 10:24</div><div class="v2-timeline__text">أُحيل إلى قسم المالية للمراجعة.</div></div></div>
+                    <div class="v2-timeline__item"><div class="v2-timeline__rail"><span class="v2-timeline__dot v2-timeline__dot--ok"></span></div>
+                      <div class="v2-timeline__body"><div class="v2-timeline__title">تم التدقيق</div><div class="v2-timeline__meta">أمس · 16:08</div></div></div>
+                    <div class="v2-timeline__item"><div class="v2-timeline__rail"><span class="v2-timeline__dot v2-timeline__dot--ok"></span></div>
+                      <div class="v2-timeline__body"><div class="v2-timeline__title">استُلم الطلب</div><div class="v2-timeline__meta">2026/06/22 · 09:00</div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== Lists, accordion, dropzone, calendar, charts ===== -->
+          <section class="v2-section gx-block" id="more">
+            <div class="v2-section-head"><h2 class="v2-section-head__title">قوائم ومدخلات إضافية</h2></div>
+            <div class="v2-grid v2-grid--2">
+              <div class="v2-stack">
+                <div class="v2-table-wrap"><div class="v2-list">
+                  <div class="v2-list__item v2-list__item--link"><div class="v2-avatar v2-avatar--sm">س</div><div class="v2-list__main"><div class="v2-list__title">سارة محمود</div><div class="v2-list__sub">آخر نشاط قبل 5 دقائق</div></div><span class="v2-list__trail"><span class="v2-badge v2-badge--ok">متصل</span></span></div>
+                  <div class="v2-list__item v2-list__item--link"><div class="v2-avatar v2-avatar--sm">ع</div><div class="v2-list__main"><div class="v2-list__title">علي حسن</div><div class="v2-list__sub">3 طلبات مفتوحة</div></div><span class="v2-list__trail v2-i">chevron_left</span></div>
+                </div></div>
+
+                <div class="v2-accordion" id="acc">
+                  <div class="v2-accordion__item is-open"><button class="v2-accordion__head">شروط الاشتراك <span class="v2-i">expand_more</span></button>
+                    <div class="v2-accordion__panel"><div><div class="v2-accordion__content">يُجدَّد الاشتراك سنوياً ويُشعَر المستفيد قبل 30 يوماً من الانتهاء.</div></div></div></div>
+                  <div class="v2-accordion__item"><button class="v2-accordion__head">سياسة الاسترداد <span class="v2-i">expand_more</span></button>
+                    <div class="v2-accordion__panel"><div><div class="v2-accordion__content">يمكن طلب الاسترداد خلال 14 يوماً من تاريخ الدفع.</div></div></div></div>
+                </div>
+
+                <label class="v2-dropzone" id="dz">
+                  <span class="v2-dropzone__icon v2-i">cloud_upload</span>
+                  <span class="v2-dropzone__title">أفلت الملفات هنا</span>
+                  <span class="v2-dropzone__hint">PDF أو صور حتى 10MB</span>
+                </label>
+              </div>
+
+              <div class="v2-stack">
+                <div class="v2-card"><div class="v2-card__body">
+                  <div class="v2-spread" style="margin-bottom:var(--sp-4)"><b class="u-sm u-semibold">الطلبات حسب اليوم</b><span class="v2-badge">آخر 7 أيام</span></div>
+                  <div class="v2-bars">
+                    <div class="v2-bars__bar" style="height:40%"></div><div class="v2-bars__bar" style="height:65%"></div>
+                    <div class="v2-bars__bar" style="height:50%"></div><div class="v2-bars__bar" style="height:85%"></div>
+                    <div class="v2-bars__bar" style="height:70%"></div><div class="v2-bars__bar" style="height:95%"></div>
+                    <div class="v2-bars__bar v2-bars__bar--muted" style="height:30%"></div>
+                  </div>
+                </div></div>
+
+                <div class="v2-card"><div class="v2-card__body">
+                  <div class="v2-cal">
+                    <div class="v2-cal__head"><button class="v2-iconbtn v2-iconbtn--sm"><span class="v2-i">chevron_right</span></button><span class="v2-cal__title">حزيران 2026</span><button class="v2-iconbtn v2-iconbtn--sm"><span class="v2-i">chevron_left</span></button></div>
+                    <div class="v2-cal__grid">
+                      <span class="v2-cal__dow">أحد</span><span class="v2-cal__dow">إثن</span><span class="v2-cal__dow">ثلا</span><span class="v2-cal__dow">أرب</span><span class="v2-cal__dow">خمي</span><span class="v2-cal__dow">جمع</span><span class="v2-cal__dow">سبت</span>
+                      <button class="v2-cal__day v2-cal__day--muted">31</button><button class="v2-cal__day">1</button><button class="v2-cal__day">2</button><button class="v2-cal__day">3</button><button class="v2-cal__day">4</button><button class="v2-cal__day">5</button><button class="v2-cal__day">6</button>
+                      <button class="v2-cal__day">7</button><button class="v2-cal__day">8</button><button class="v2-cal__day">9</button><button class="v2-cal__day">10</button><button class="v2-cal__day">11</button><button class="v2-cal__day">12</button><button class="v2-cal__day">13</button>
+                      <button class="v2-cal__day">14</button><button class="v2-cal__day">15</button><button class="v2-cal__day">16</button><button class="v2-cal__day">17</button><button class="v2-cal__day">18</button><button class="v2-cal__day">19</button><button class="v2-cal__day">20</button>
+                      <button class="v2-cal__day">21</button><button class="v2-cal__day">22</button><button class="v2-cal__day">23</button><button class="v2-cal__day">24</button><button class="v2-cal__day v2-cal__day--today">25</button><button class="v2-cal__day v2-cal__day--selected">26</button><button class="v2-cal__day">27</button>
+                    </div>
+                  </div>
+                  <hr class="v2-divider" style="margin:var(--sp-4) 0" />
+                  <div class="v2-stack-2"><label class="u-xs u-text-soft">حد الأولوية</label><input class="v2-slider" type="range" min="0" max="100" value="60" /></div>
+                </div></div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RAIL (source order after main so it renders inline-end in RTL grid) -->
+    <aside class="v2-rail" id="rail">
+      <div class="v2-rail__brand">
+        <span class="v2-rail__logo v2-i">deployed_code</span>
+        <div class="v2-rail__wordmark"><b>الرصافة</b><span>Service Hub · v2</span></div>
+      </div>
+      <nav class="v2-rail__group">
+        <span class="v2-rail__label">التنقّل</span>
+        <a class="v2-navitem is-active"><span class="v2-i">dashboard</span><span class="v2-navitem__text">اللوحة</span></a>
+        <a class="v2-navitem"><span class="v2-i">assignment</span><span class="v2-navitem__text">الطلبات</span><span class="v2-navitem__badge">128</span></a>
+        <a class="v2-navitem"><span class="v2-i">groups</span><span class="v2-navitem__text">المستفيدون</span></a>
+        <a class="v2-navitem"><span class="v2-i">account_balance</span><span class="v2-navitem__text">المالية</span></a>
+        <a class="v2-navitem"><span class="v2-i">monitoring</span><span class="v2-navitem__text">التقارير</span></a>
+      </nav>
+      <nav class="v2-rail__group" style="margin-top:var(--sp-3)">
+        <span class="v2-rail__label">الأقسام</span>
+        <a class="v2-navitem"><span class="v2-dot" style="background:var(--c-CS)"></span><span class="v2-navitem__text">اشتراكات</span></a>
+        <a class="v2-navitem"><span class="v2-dot" style="background:var(--c-CB)"></span><span class="v2-navitem__text">مالية وفوترة</span></a>
+        <a class="v2-navitem"><span class="v2-dot" style="background:var(--c-CT)"></span><span class="v2-navitem__text">دعم فني</span></a>
+        <a class="v2-navitem"><span class="v2-dot" style="background:var(--c-CA)"></span><span class="v2-navitem__text">تقارير وشكاوى</span></a>
+      </nav>
+      <div class="v2-rail__spacer"></div>
+      <a class="v2-navitem"><span class="v2-i">settings</span><span class="v2-navitem__text">الإعدادات</span></a>
+    </aside>
+  </div>
+
+  <!-- Floating command dock -->
+  <div class="v2-dock" style="position:fixed; inset-block-end:var(--sp-5); inset-inline-start:50%; transform:translateX(-50%)">
+    <button class="v2-dock__btn is-active"><span class="v2-i">home</span></button>
+    <button class="v2-dock__btn"><span class="v2-i">search</span></button>
+    <button class="v2-dock__btn"><span class="v2-i">add</span></button>
+    <span class="v2-dock__sep"></span>
+    <button class="v2-dock__btn"><span class="v2-i">notifications</span></button>
+    <button class="v2-dock__btn"><span class="v2-i">person</span></button>
+  </div>
+
+  <!-- Toaster -->
+  <div class="v2-toaster" id="toaster"></div>
+
+  <script>
+    // Theme toggle
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      themeBtn.querySelector('.v2-i').textContent = document.body.classList.contains('dark') ? 'dark_mode' : 'light_mode';
+    });
+
+    // Rail toggle (mobile off-canvas)
+    document.getElementById('railToggle').addEventListener('click', () => {
+      document.getElementById('rail').classList.toggle('is-open');
+    });
+
+    // Tabs
+    document.querySelectorAll('.v2-tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.v2-tab').forEach(x => x.classList.remove('is-active'));
+      t.classList.add('is-active');
+    }));
+    // Segmented
+    document.querySelectorAll('.v2-segmented').forEach(seg => {
+      seg.querySelectorAll('.v2-segmented__item').forEach(i => i.addEventListener('click', () => {
+        seg.querySelectorAll('.v2-segmented__item').forEach(x => x.classList.remove('is-active'));
+        i.classList.add('is-active');
+      }));
+    });
+    // Chip remove
+    document.querySelectorAll('.v2-chip__x').forEach(x => x.addEventListener('click', e => { e.stopPropagation(); x.closest('.v2-chip').remove(); }));
+
+    // Toasts
+    const toaster = document.getElementById('toaster');
+    let n = 0;
+    document.getElementById('toastBtn').addEventListener('click', () => {
+      n++;
+      const t = document.createElement('div');
+      t.className = 'v2-toast v2-toast--ok';
+      t.innerHTML = '<span class="v2-toast__icon v2-i">check_circle</span>' +
+        '<div class="v2-toast__body"><div class="v2-toast__title">تم الحفظ</div><div class="v2-toast__text">طلب رقم #' + (480 + n) + ' حُفظ بنجاح.</div></div>' +
+        '<button class="v2-toast__close v2-i" aria-label="إغلاق">close</button>';
+      toaster.appendChild(t);
+      const close = () => { t.classList.add('is-leaving'); setTimeout(() => t.remove(), 180); };
+      t.querySelector('.v2-toast__close').addEventListener('click', close);
+      setTimeout(close, 4000);
+    });
+
+    // Modal
+    document.getElementById('modalBtn').addEventListener('click', () => {
+      const scrim = document.createElement('div');
+      scrim.className = 'v2-scrim';
+      scrim.innerHTML =
+        '<div class="v2-modal" role="dialog" aria-modal="true">' +
+          '<div class="v2-modal__head"><span class="v2-i" style="color:var(--accent)">verified</span><b class="v2-modal__title">تأكيد الإجراء</b>' +
+            '<button class="v2-iconbtn v2-iconbtn--sm" data-close><span class="v2-i">close</span></button></div>' +
+          '<div class="v2-modal__body"><p style="color:var(--text-soft);font-size:var(--fs-sm)">سيتم اعتماد الطلب وإشعار مقدّمه. لا يمكن التراجع بعد الاعتماد.</p></div>' +
+          '<div class="v2-modal__foot"><button class="v2-btn v2-btn--primary" data-close>اعتماد</button><button class="v2-btn v2-btn--ghost" data-close>إلغاء</button></div>' +
+        '</div>';
+      document.body.appendChild(scrim);
+      const close = () => scrim.remove();
+      scrim.addEventListener('click', e => { if (e.target === scrim || e.target.closest('[data-close]')) close(); });
+      document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc);} });
+    });
+
+    // Accordion
+    document.querySelectorAll('#acc .v2-accordion__head').forEach(h => h.addEventListener('click', () => {
+      h.closest('.v2-accordion__item').classList.toggle('is-open');
+    }));
+
+    // Dropzone drag states
+    const dz = document.getElementById('dz');
+    ['dragover','dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); }));
+    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
+
+    // Generic overlay opener (scrim + content)
+    function openOverlay(buildContent, placement) {
+      const scrim = document.createElement('div');
+      scrim.className = 'v2-scrim';
+      if (placement === 'drawer') { scrim.style.placeItems = 'stretch'; scrim.style.justifyItems = 'start'; scrim.style.padding = '0'; }
+      else if (placement === 'cmdk') { scrim.style.alignItems = 'flex-start'; scrim.style.paddingTop = '12vh'; }
+      scrim.innerHTML = buildContent();
+      document.body.appendChild(scrim);
+      const close = () => scrim.remove();
+      scrim.addEventListener('click', e => { if (e.target === scrim || e.target.closest('[data-close]')) close(); });
+      document.addEventListener('keydown', function esc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown', esc);} });
+      return close;
+    }
+
+    // Command palette
+    function openCmdk() {
+      openOverlay(() =>
+        '<div class="v2-cmdk" role="dialog" aria-modal="true">' +
+          '<div class="v2-cmdk__search"><span class="v2-i">search</span><input autofocus placeholder="اكتب أمراً أو ابحث…" /></div>' +
+          '<div class="v2-cmdk__list">' +
+            '<div class="v2-cmdk__group">إجراءات</div>' +
+            '<div class="v2-cmdk__item is-active"><span class="v2-i">add</span> طلب جديد<kbd class="v2-kbd">N</kbd></div>' +
+            '<div class="v2-cmdk__item"><span class="v2-i">search</span> البحث في الطلبات</div>' +
+            '<div class="v2-cmdk__item"><span class="v2-i">print</span> طباعة السجل<kbd class="v2-kbd">⌘P</kbd></div>' +
+            '<div class="v2-cmdk__group">التنقّل</div>' +
+            '<div class="v2-cmdk__item"><span class="v2-i">dashboard</span> اللوحة</div>' +
+            '<div class="v2-cmdk__item"><span class="v2-i">account_balance</span> المالية</div>' +
+          '</div>' +
+          '<div class="v2-cmdk__foot"><kbd class="v2-kbd">↑↓</kbd> تنقّل · <kbd class="v2-kbd">↵</kbd> اختيار · <kbd class="v2-kbd">esc</kbd> إغلاق</div>' +
+        '</div>', 'cmdk');
+    }
+    document.getElementById('cmdkBtn').addEventListener('click', openCmdk);
+    document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmdk(); } });
+
+    // Drawer
+    document.getElementById('drawerBtn').addEventListener('click', () => {
+      openOverlay(() =>
+        '<aside class="v2-drawer" role="dialog" aria-modal="true">' +
+          '<div class="v2-drawer__head"><span class="v2-i" style="color:var(--accent)">tune</span><b class="v2-drawer__title">عوامل التصفية</b>' +
+            '<button class="v2-iconbtn v2-iconbtn--sm" data-close><span class="v2-i">close</span></button></div>' +
+          '<div class="v2-drawer__body v2-stack">' +
+            '<div class="v2-field"><label class="v2-label">القسم</label><select class="v2-select"><option>الكل</option><option>اشتراكات</option><option>مالية</option></select></div>' +
+            '<div class="v2-field"><label class="v2-label">الحالة</label>' +
+              '<div class="v2-cluster"><span class="v2-chip v2-chip--selected">مفتوح</span><span class="v2-chip">معلّق</span><span class="v2-chip">مغلق</span></div></div>' +
+            '<div class="v2-field"><label class="v2-label">من تاريخ</label><input class="v2-input v2-input--data" type="date" /></div>' +
+          '</div>' +
+          '<div class="v2-drawer__foot"><button class="v2-btn v2-btn--primary" data-close>تطبيق</button><button class="v2-btn v2-btn--ghost" data-close>مسح</button></div>' +
+        '</aside>', 'drawer');
+    });
+  </script>
+</body>
+</html>

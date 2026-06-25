@@ -1,0 +1,258 @@
+/* ============================================================
+   Feedback & States — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   The full interaction cycle, not just the happy path:
+   loading → empty → error, plus transient feedback (toasts,
+   alerts, banners) and overlays (modal). Skeletons match the
+   final layout's shape; no generic centered spinners as the
+   only loading state.
+
+   Contents
+     1. Skeleton loaders (shape-matched)
+     2. Spinner (minimal) + inline loading row
+     3. Empty state
+     4. Error state
+     5. Inline alerts
+     6. Banner
+     7. Toasts (stacked, auto-rise)
+     8. Modal + scrim
+   ============================================================ */
+
+/* ============================================================
+   1. SKELETON
+   ============================================================ */
+.v2-skel {
+  --_base: var(--surface-2);
+  --_sheen: color-mix(in srgb, var(--ink-0) 55%, var(--surface-2));
+  position: relative;
+  background: var(--_base);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+body.dark .v2-skel { --_sheen: color-mix(in srgb, #fff 6%, var(--surface-2)); }
+.v2-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--_sheen), transparent);
+  animation: v2-shimmer 1.4s var(--ease-in-out-cubic) infinite;
+}
+@keyframes v2-shimmer { 100% { transform: translateX(100%); } }
+
+.v2-skel--text   { block-size: 0.8em; margin-block: 0.25em; border-radius: var(--r-xs); }
+.v2-skel--title  { block-size: 1.2em; inline-size: 40%; }
+.v2-skel--line   { block-size: 0.8em; }
+.v2-skel--line.w-90 { inline-size: 90%; } .v2-skel--line.w-75 { inline-size: 75%; } .v2-skel--line.w-60 { inline-size: 60%; }
+.v2-skel--avatar { inline-size: 40px; block-size: 40px; border-radius: var(--r-full); }
+.v2-skel--block  { block-size: 120px; border-radius: var(--r-lg); }
+.v2-skel--chip   { block-size: 24px; inline-size: 84px; border-radius: var(--r-full); }
+
+/* A ready-made skeleton row matching a list item */
+.v2-skel-row { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; }
+.v2-skel-row__lines { flex: 1; display: flex; flex-direction: column; gap: var(--sp-2); }
+
+/* ============================================================
+   2. SPINNER
+   ============================================================ */
+.v2-spinner {
+  inline-size: 20px; block-size: 20px;
+  border-radius: var(--r-full);
+  border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-top-color: var(--accent);
+  animation: v2-spin .7s linear infinite;
+  flex: none;
+}
+.v2-spinner--sm { inline-size: 14px; block-size: 14px; border-width: 2px; }
+.v2-spinner--lg { inline-size: 32px; block-size: 32px; border-width: 3px; }
+@keyframes v2-spin { 100% { transform: rotate(360deg); } }
+
+.v2-loading-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-soft);
+  font-size: var(--fs-sm);
+}
+
+/* ============================================================
+   3. EMPTY STATE (an invitation to act)
+   ============================================================ */
+.v2-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-5);
+}
+.v2-empty__art {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 64px; block-size: 64px;
+  border-radius: var(--r-xl);
+  color: var(--accent);
+  background: var(--accent-quiet);
+  box-shadow: var(--bezel-rim);
+}
+.v2-empty__art .v2-i { font-size: 2rem; }
+.v2-empty__title { font-size: var(--fs-md); font-weight: var(--fw-bold); }
+.v2-empty__text { color: var(--text-soft); font-size: var(--fs-sm); max-width: 42ch; }
+.v2-empty__actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+/* ============================================================
+   4. ERROR STATE
+   ============================================================ */
+.v2-errstate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-5);
+}
+.v2-errstate__art {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 64px; block-size: 64px;
+  border-radius: var(--r-xl);
+  color: var(--err);
+  background: var(--err-soft);
+  box-shadow: var(--bezel-rim);
+}
+.v2-errstate__art .v2-i { font-size: 2rem; }
+.v2-errstate__title { font-size: var(--fs-md); font-weight: var(--fw-bold); }
+.v2-errstate__text { color: var(--text-soft); font-size: var(--fs-sm); max-width: 46ch; }
+.v2-errstate__code { font-family: var(--font-data); font-size: var(--fs-xs); color: var(--text-faint); }
+
+/* ============================================================
+   5. INLINE ALERT
+   ============================================================ */
+.v2-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  border: var(--hairline) solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.v2-alert__icon { flex: none; line-height: 1.4; }
+.v2-alert__icon .v2-i { font-size: 1.3em; }
+.v2-alert__body { flex: 1; }
+.v2-alert__title { font-weight: var(--fw-semibold); margin-bottom: 2px; }
+.v2-alert__text { color: var(--text-soft); }
+.v2-alert--ok   { background: var(--ok-soft);   border-color: transparent; } .v2-alert--ok   .v2-alert__icon { color: var(--ok); }
+.v2-alert--warn { background: var(--warn-soft); border-color: transparent; } .v2-alert--warn .v2-alert__icon { color: var(--warn); }
+.v2-alert--err  { background: var(--err-soft);  border-color: transparent; } .v2-alert--err  .v2-alert__icon { color: var(--err); }
+.v2-alert--info { background: var(--info-soft); border-color: transparent; } .v2-alert--info .v2-alert__icon { color: var(--info); }
+
+/* ============================================================
+   6. BANNER (full-width, page-level)
+   ============================================================ */
+.v2-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  color: #fff;
+  background: var(--brand-grad);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+.v2-banner__spacer { flex: 1; }
+.v2-banner .v2-i { font-size: 1.3em; }
+
+/* ============================================================
+   7. TOASTS (stacked bottom-inline-start, rise on enter)
+   ============================================================ */
+.v2-toaster {
+  position: fixed;
+  inset-block-end: var(--sp-5);
+  inset-inline-start: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+.v2-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-inline-size: 280px;
+  max-inline-size: 380px;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: var(--hairline) solid var(--glass-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--fs-sm);
+  pointer-events: auto;
+  animation: v2-toast-in var(--dur-slow) var(--ease-out-quint);
+}
+@keyframes v2-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.v2-toast.is-leaving { animation: v2-toast-out var(--dur-exit) var(--ease-in-cubic) forwards; }
+@keyframes v2-toast-out { to { opacity: 0; transform: translateY(8px) scale(.98); } }
+.v2-toast__icon { flex: none; } .v2-toast__icon .v2-i { font-size: 1.3em; }
+.v2-toast--ok   .v2-toast__icon { color: var(--ok); }
+.v2-toast--err  .v2-toast__icon { color: var(--err); }
+.v2-toast--info .v2-toast__icon { color: var(--info); }
+.v2-toast__body { flex: 1; }
+.v2-toast__title { font-weight: var(--fw-semibold); }
+.v2-toast__text { color: var(--text-soft); font-size: var(--fs-xs); }
+.v2-toast__close { margin-inline-start: auto; color: var(--text-faint); cursor: pointer; background: 0; border: 0; display: inline-flex; }
+.v2-toast__close:hover { color: var(--text); }
+
+/* ============================================================
+   8. MODAL + SCRIM
+   ============================================================ */
+.v2-scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--navy-950) 55%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  animation: v2-fade var(--dur-base) var(--ease-out-cubic);
+}
+@keyframes v2-fade { from { opacity: 0; } to { opacity: 1; } }
+.v2-modal {
+  inline-size: min(560px, 100%);
+  max-block-size: 88dvh;
+  overflow: auto;
+  background: var(--surface);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-modal);
+  animation: v2-modal-in var(--dur-slow) var(--ease-out-quint);
+}
+@keyframes v2-modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.v2-modal__head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border-bottom: var(--hairline) solid var(--border);
+}
+.v2-modal__title { font-size: var(--fs-md); font-weight: var(--fw-bold); flex: 1; }
+.v2-modal__body { padding: var(--sp-5); }
+.v2-modal__foot {
+  display: flex; justify-content: flex-start; gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: var(--hairline) solid var(--border);
+  background: var(--surface-2);
+}

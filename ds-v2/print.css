@@ -1,0 +1,62 @@
+/* ============================================================
+   Print — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   The hub prints official request / case sheets. Print must be
+   ink-economical, high-contrast on white, and free of all
+   screen-only chrome (rail, topbar, dock, toasts, glass).
+   Tables and detail lists carry the page; the Meridian becomes
+   a plain rule so it survives black-and-white printers.
+   ============================================================ */
+
+@media print {
+  /* Reset the canvas to white paper */
+  body, body.dark {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body::before { display: none !important; }     /* kill aurora */
+
+  /* Hide all interactive / floating chrome */
+  .v2-rail, .v2-topbar, .v2-dock, .v2-toaster, .v2-scrim,
+  .v2-drawer, .v2-menu, .v2-popover, .v2-cmdk,
+  .v2-btn, .v2-iconbtn, .v2-segmented, .v2-pager,
+  [data-print="hide"] { display: none !important; }
+
+  /* Flatten the shell so content prints full width */
+  .v2-shell { display: block !important; block-size: auto !important; overflow: visible !important; }
+  .v2-shell__main, .v2-shell__scroll { display: block !important; overflow: visible !important; }
+  .v2-content { max-inline-size: none !important; padding: 0 !important; margin: 0 !important; }
+
+  /* Cards and panels become plain bordered blocks */
+  .v2-card, .v2-panel, .v2-bezel, .v2-table-wrap {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #fff !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    break-inside: avoid;
+  }
+  .v2-bezel { padding: 0 !important; }
+  .v2-bezel__core { border-radius: 0 !important; box-shadow: none !important; }
+
+  /* The Meridian → plain black rule */
+  .meridian, .v2-card--meridian::before { background: #000 !important; }
+
+  /* Tables: crisp grid for the printed sheet */
+  .v2-table th, .v2-table td { border: 1px solid #000 !important; color: #000 !important; }
+  .v2-table thead th { background: var(--shade) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Badges / pills lose fills, keep label */
+  .v2-badge, .v2-dept, .v2-chip {
+    background: transparent !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
+  }
+
+  /* Keep detail rows and headings together */
+  .v2-detail, .v2-section-head, h1, h2, h3 { break-inside: avoid; }
+  a { color: #000 !important; text-decoration: none !important; }
+
+  @page { margin: 14mm; }
+}

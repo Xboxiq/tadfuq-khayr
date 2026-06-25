@@ -1,0 +1,73 @@
+/* ============================================================
+   Spacing, Radii & Layout metrics — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   4px base grid. Radii follow a SINGLE documented scale and a
+   strict SHAPE LOCK (anti-slop rule 4.4):
+
+     • Inputs & small controls .... --r-sm  (10px)
+     • Buttons (default) .......... --r-md  (12px)
+     • Cards & panels ............. --r-lg  (16px)
+     • Outer "bezel" shells ....... --r-xl  (22px)
+     • Pills, avatars, switches ... --r-full
+     • Printed form sheets ........ 0 (sharp — paper)
+
+   The double-bezel (nested) radius is derived as
+   inner = outer − shell-padding, exposed as --r-bezel-inner.
+   ============================================================ */
+
+:root {
+  /* ---------- Space scale (4px base) ---------- */
+  --sp-0:   0;
+  --sp-1:   0.25rem;   /* 4  */
+  --sp-2:   0.5rem;    /* 8  */
+  --sp-3:   0.75rem;   /* 12 */
+  --sp-4:   1rem;      /* 16 */
+  --sp-5:   1.5rem;    /* 24 */
+  --sp-6:   2rem;      /* 32 */
+  --sp-7:   2.5rem;    /* 40 */
+  --sp-8:   3rem;      /* 48 */
+  --sp-9:   4rem;      /* 64 */
+  --sp-10:  5rem;      /* 80 */
+  --sp-12:  6rem;      /* 96 */
+
+  /* ---------- Radius scale (shape lock) ---------- */
+  --r-xs:   6px;
+  --r-sm:   10px;   /* inputs, chips */
+  --r-md:   12px;   /* buttons */
+  --r-lg:   16px;   /* cards, panels */
+  --r-xl:   22px;   /* bezel shells, modals */
+  --r-2xl:  28px;
+  --r-full: 999px;
+
+  /* Double-bezel: outer shell padding and derived inner radius */
+  --bezel-pad:      6px;
+  --r-bezel-inner:  calc(var(--r-xl) - var(--bezel-pad));
+
+  /* ---------- Hairline ---------- */
+  --hairline: 1px;
+
+  /* ---------- Layout metrics (command shell) ---------- */
+  --rail-w:        264px;   /* expanded side rail   */
+  --rail-w-mini:   72px;    /* collapsed rail       */
+  --topbar-h:      64px;    /* top bar height (≤80 cap) */
+  --dock-h:        56px;    /* floating command dock */
+  --content-max:   1320px;  /* readable content cap */
+  --page-pad-x:    var(--sp-6);
+  --page-pad-x-sm: var(--sp-4);
+
+  /* ---------- Control sizing ---------- */
+  --control-h-sm:  32px;
+  --control-h:     40px;
+  --control-h-lg:  48px;
+
+  /* ---------- Z-index system (no arbitrary values) ---------- */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-rail:    200;
+  --z-dock:    300;
+  --z-overlay: 400;
+  --z-modal:   500;
+  --z-toast:   600;
+  --z-tooltip: 700;
+}

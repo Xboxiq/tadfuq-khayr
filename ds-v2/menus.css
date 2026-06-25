@@ -1,0 +1,150 @@
+/* ============================================================
+   Overlays & Menus — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   Floating surfaces that open from a trigger: dropdown menus,
+   popovers, the command palette (⌘K), and the side drawer /
+   sheet. All use glass chrome + spring-eased entrances and
+   respect z-index discipline from spacing.css.
+
+   Contents
+     1. Dropdown / action menu
+     2. Popover
+     3. Command palette (⌘K)
+     4. Drawer / side sheet
+   ============================================================ */
+
+/* ============================================================
+   1. DROPDOWN / ACTION MENU
+   ============================================================ */
+.v2-menu {
+  min-inline-size: 220px;
+  padding: var(--sp-2);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: var(--hairline) solid var(--glass-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-overlay);
+  animation: v2-menu-in var(--dur-base) var(--ease-out-quint);
+  transform-origin: top center;
+}
+@keyframes v2-menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.v2-menu__label {
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.v2-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  inline-size: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: start;
+  transition: var(--t-colors);
+}
+.v2-menu__item .v2-i { font-size: 1.25em; color: var(--text-faint); }
+.v2-menu__item:hover { background: var(--surface-2); }
+.v2-menu__item:hover .v2-i { color: var(--text); }
+.v2-menu__item:focus-visible { box-shadow: var(--ring-navy); }
+.v2-menu__item--danger { color: var(--err); } .v2-menu__item--danger .v2-i { color: var(--err); }
+.v2-menu__item--danger:hover { background: var(--err-soft); }
+.v2-menu__item kbd, .v2-menu__shortcut { margin-inline-start: auto; }
+.v2-menu__sep { height: var(--hairline); background: var(--border); margin: var(--sp-1) 0; border: 0; }
+.v2-menu__check { margin-inline-start: auto; color: var(--accent); }
+
+/* ============================================================
+   2. POPOVER (richer than menu — arbitrary content)
+   ============================================================ */
+.v2-popover {
+  inline-size: min(320px, 90vw);
+  background: var(--surface);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-overlay);
+  overflow: clip;
+  animation: v2-menu-in var(--dur-base) var(--ease-out-quint);
+}
+.v2-popover__head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-4); border-bottom: var(--hairline) solid var(--border); }
+.v2-popover__title { font-size: var(--fs-sm); font-weight: var(--fw-bold); flex: 1; }
+.v2-popover__body { padding: var(--sp-4); font-size: var(--fs-sm); color: var(--text-soft); }
+.v2-popover__foot { display: flex; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); background: var(--surface-2); border-top: var(--hairline) solid var(--border); }
+
+/* ============================================================
+   3. COMMAND PALETTE (⌘K)
+   ============================================================ */
+.v2-cmdk {
+  inline-size: min(620px, 100%);
+  max-block-size: 70dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(var(--glass-saturate));
+  border: var(--hairline) solid var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: clip;
+  animation: v2-modal-in var(--dur-slow) var(--ease-out-quint);
+}
+.v2-cmdk__search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: var(--hairline) solid var(--border);
+}
+.v2-cmdk__search .v2-i { font-size: 1.4em; color: var(--text-faint); }
+.v2-cmdk__search input { flex: 1; border: 0; background: transparent; outline: none; font-size: var(--fs-md); color: var(--text); }
+.v2-cmdk__list { overflow-y: auto; padding: var(--sp-2); }
+.v2-cmdk__group { padding: var(--sp-2) var(--sp-3) var(--sp-1); font-size: var(--fs-2xs); font-weight: var(--fw-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--text-faint); }
+.v2-cmdk__item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3); border-radius: var(--r-sm);
+  font-size: var(--fs-sm); color: var(--text); cursor: pointer;
+  transition: var(--t-colors);
+}
+.v2-cmdk__item .v2-i { font-size: 1.3em; color: var(--text-faint); }
+.v2-cmdk__item:hover, .v2-cmdk__item.is-active { background: var(--accent-quiet); color: var(--accent); }
+.v2-cmdk__item:hover .v2-i, .v2-cmdk__item.is-active .v2-i { color: var(--accent); }
+.v2-cmdk__item .v2-kbd { margin-inline-start: auto; }
+.v2-cmdk__foot { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-2) var(--sp-5); border-top: var(--hairline) solid var(--border); font-size: var(--fs-2xs); color: var(--text-faint); }
+
+/* ============================================================
+   4. DRAWER / SIDE SHEET (slides from inline-start in RTL)
+   ============================================================ */
+.v2-drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: min(420px, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-inline-end: var(--hairline) solid var(--border);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-modal);
+  animation: v2-drawer-in var(--dur-slow) var(--ease-out-quint);
+}
+@keyframes v2-drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.v2-drawer--end { inset-inline: auto 0; border-inline: var(--hairline) solid var(--border) transparent; animation-name: v2-drawer-in-end; }
+@keyframes v2-drawer-in-end { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.v2-drawer__head { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-5); border-bottom: var(--hairline) solid var(--border); }
+.v2-drawer__title { font-size: var(--fs-md); font-weight: var(--fw-bold); flex: 1; }
+.v2-drawer__body { flex: 1; overflow-y: auto; padding: var(--sp-5); }
+.v2-drawer__foot { display: flex; gap: var(--sp-2); padding: var(--sp-4) var(--sp-5); border-top: var(--hairline) solid var(--border); background: var(--surface-2); }

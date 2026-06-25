@@ -1,0 +1,135 @@
+/* ============================================================
+   Layout — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   The command-shell skeleton: a side rail + sticky topbar + a
+   scrolling content column, plus page-level scaffolding (page
+   header, sections, content grids, bento). CSS Grid throughout
+   — never flex percentage math. Collapses to single column and
+   an off-canvas rail below 1024px.
+
+   Contents
+     1. App shell (.v2-shell)
+     2. Content column + page header
+     3. Containers + sections
+     4. Content grids + bento
+     5. Cluster / stack / spread utilities
+     6. Responsive collapse
+   ============================================================ */
+
+/* ============================================================
+   1. APP SHELL
+   ============================================================ */
+.v2-shell {
+  display: grid;
+  grid-template-columns: 1fr var(--rail-w);   /* RTL: rail sits at inline-end visually via source order */
+  block-size: 100dvh;
+  overflow: hidden;
+}
+.v2-shell.is-mini { grid-template-columns: 1fr var(--rail-w-mini); }
+
+.v2-shell__main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-inline-size: 0;        /* allow children to shrink / scroll */
+  overflow: hidden;
+}
+.v2-shell__scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-padding-block-start: var(--topbar-h);
+}
+
+/* ============================================================
+   2. CONTENT COLUMN + PAGE HEADER
+   ============================================================ */
+.v2-content {
+  inline-size: 100%;
+  max-inline-size: var(--content-max);
+  margin-inline: auto;
+  padding: var(--sp-6) var(--page-pad-x) var(--sp-9);
+}
+
+.v2-pagehead { margin-bottom: var(--sp-6); }
+.v2-pagehead__top { display: flex; align-items: flex-end; gap: var(--sp-4); flex-wrap: wrap; }
+.v2-pagehead__titles { flex: 1; min-inline-size: 0; }
+.v2-pagehead h1 {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+}
+.v2-pagehead__sub { color: var(--text-soft); font-size: var(--fs-sm); margin-top: var(--sp-1); }
+.v2-pagehead__actions { display: flex; align-items: center; gap: var(--sp-2); }
+/* The Meridian under a page header — the recurring signature */
+.v2-pagehead__rule { margin-top: var(--sp-4); }
+
+/* ============================================================
+   3. CONTAINERS + SECTIONS
+   ============================================================ */
+.v2-section { margin-bottom: var(--sp-8); }
+.v2-section:last-child { margin-bottom: 0; }
+
+.v2-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+.v2-toolbar__spacer { flex: 1; }
+
+/* ============================================================
+   4. CONTENT GRIDS + BENTO
+   ============================================================ */
+.v2-grid { display: grid; gap: var(--sp-5); }
+.v2-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.v2-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.v2-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.v2-grid--metrics { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* Bento — asymmetric tiles with rhythm (cells = content count) */
+.v2-bento {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(140px, auto);
+  gap: var(--sp-5);
+}
+.v2-bento__cell { min-inline-size: 0; }
+.v2-bento__cell--wide { grid-column: span 2; }
+.v2-bento__cell--tall { grid-row: span 2; }
+.v2-bento__cell--hero { grid-column: span 2; grid-row: span 2; }
+
+/* ============================================================
+   5. CLUSTER / STACK / SPREAD UTILITIES
+   ============================================================ */
+.v2-stack   { display: flex; flex-direction: column; gap: var(--sp-4); }
+.v2-stack-2 { display: flex; flex-direction: column; gap: var(--sp-2); }
+.v2-cluster { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.v2-spread  { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+
+/* ============================================================
+   6. RESPONSIVE COLLAPSE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .v2-shell { grid-template-columns: 1fr; }
+  .v2-rail {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    transform: translateX(100%);          /* RTL: off-canvas to the inline-end */
+    box-shadow: var(--shadow-xl);
+    transition: transform var(--dur-base) var(--ease-out-quint);
+  }
+  .v2-rail.is-open { transform: translateX(0); }
+  .v2-bento__cell--hero { grid-column: span 4; grid-row: span 1; }
+}
+
+@media (max-width: 768px) {
+  .v2-content { padding-inline: var(--page-pad-x-sm); }
+  .v2-grid--2, .v2-grid--3, .v2-grid--4 { grid-template-columns: 1fr; }
+  .v2-bento { grid-template-columns: 1fr; }
+  .v2-bento__cell--wide,
+  .v2-bento__cell--tall,
+  .v2-bento__cell--hero { grid-column: auto; grid-row: auto; }
+  .v2-pagehead__actions { inline-size: 100%; }
+}

@@ -1,0 +1,20 @@
+/* ============================================================
+   Fonts — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   v2 unifies on TWO families instead of four:
+
+     Readex Pro ......... the whole UI — Arabic-first body AND
+                          display. Contemporary, low-contrast,
+                          excellent RTL rhythm, ships Latin too,
+                          so Arabic + numerals + English share
+                          one voice (v1 mixed Cairo + Jakarta).
+     JetBrains Mono ..... reference numbers, IDs, tabular data,
+                          status codes — anything that must align
+                          in a column.
+     Material Symbols ... icon font (Rounded, variable axes).
+
+   One family for prose, one for data. Nothing decorative.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap");

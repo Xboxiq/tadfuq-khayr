@@ -1,0 +1,62 @@
+/* ============================================================
+   Shadows, Bezel & Focus — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   Every shadow is tinted with brand navy (never pure black on
+   light) so neutral surfaces still feel like they belong to the
+   system. Six elevation steps + the double-bezel highlight/inset
+   tokens that give cards their "machined hardware" edge, + focus
+   rings keyed to crimson (primary) and navy (navigation).
+   ============================================================ */
+
+:root {
+  /* Tint the shadow to the background hue (anti-slop 4.4) */
+  --shadow-tint: 21, 26, 56;          /* ≈ navy-800 rgb */
+
+  /* ---------- Elevation (light) ---------- */
+  --shadow-xs: 0 1px 2px rgba(var(--shadow-tint), .05);
+  --shadow-sm: 0 1px 2px rgba(var(--shadow-tint), .06),
+               0 2px 5px rgba(var(--shadow-tint), .05);
+  --shadow:    0 4px 14px rgba(var(--shadow-tint), .08),
+               0 1px 4px  rgba(var(--shadow-tint), .05);
+  --shadow-md: 0 10px 28px rgba(var(--shadow-tint), .11),
+               0 3px 9px   rgba(var(--shadow-tint), .07);
+  --shadow-lg: 0 20px 46px rgba(var(--shadow-tint), .16),
+               0 7px 16px  rgba(var(--shadow-tint), .09);
+  --shadow-xl: 0 32px 70px rgba(var(--shadow-tint), .22),
+               0 12px 28px rgba(var(--shadow-tint), .12);
+
+  /* ---------- Double-bezel highlights (machined edge) ---------- */
+  --bezel-top:     inset 0 1px 0 rgba(255, 255, 255, .65);   /* inner core top highlight */
+  --bezel-rim:     inset 0 0 0 1px rgba(255, 255, 255, .55); /* glass rim on a shell */
+  --bezel-recess:  inset 0 1px 2px rgba(var(--shadow-tint), .10); /* sunken inputs/wells */
+
+  /* ---------- Focus rings ---------- */
+  --ring:      0 0 0 3px color-mix(in srgb, var(--accent)   30%, transparent);
+  --ring-navy: 0 0 0 3px color-mix(in srgb, var(--navy-600) 34%, transparent);
+  --ring-gold: 0 0 0 2px var(--gold);
+  --ring-err:  0 0 0 3px color-mix(in srgb, var(--err) 32%, transparent);
+
+  /* ---------- Brand glows (command surfaces, used sparingly) ---------- */
+  --glow-crimson: 0 0 28px color-mix(in srgb, var(--red-500)  26%, transparent);
+  --glow-navy:    0 0 28px color-mix(in srgb, var(--navy-700) 30%, transparent);
+  --glow-gold:    0 0 26px color-mix(in srgb, var(--gold)     30%, transparent);
+}
+
+body.dark {
+  --shadow-tint: 0, 0, 0;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, .40);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .42);
+  --shadow:    0 6px 20px rgba(0, 0, 0, .46),
+               0 2px 6px  rgba(0, 0, 0, .34);
+  --shadow-md: 0 12px 30px rgba(0, 0, 0, .52);
+  --shadow-lg: 0 22px 50px rgba(0, 0, 0, .60);
+  --shadow-xl: 0 34px 74px rgba(0, 0, 0, .66);
+
+  --bezel-top:    inset 0 1px 0 rgba(255, 255, 255, .07);
+  --bezel-rim:    inset 0 0 0 1px rgba(255, 255, 255, .08);
+  --bezel-recess: inset 0 1px 2px rgba(0, 0, 0, .45);
+
+  --ring:      0 0 0 3px color-mix(in srgb, var(--accent) 42%, transparent);
+  --ring-navy: 0 0 0 3px color-mix(in srgb, #6f8cff 42%, transparent);
+}

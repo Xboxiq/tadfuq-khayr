@@ -1,0 +1,43 @@
+/* ============================================================
+   Rasafa Service Hub — Design System v2 (entry)
+   ----------------------------------------------------
+   A disciplined evolution of v1's navy + crimson + gold
+   identity. Built alongside ds/ (v1) for side-by-side
+   comparison — neither file touches the other.
+
+   Identity ....... bold evolution of navy + crimson + gold
+   Type ........... Readex Pro (UI) + JetBrains Mono (data)
+   Surface ........ instrument-panel glass (restrained blur)
+   Signature ...... the Meridian (navy → crimson → gold sweep)
+   Prefix ......... .v2-  (collision-free beside v1)
+
+   Import order matters: tokens first (cascade foundation),
+   then base reset, then components, then layout.
+   ============================================================ */
+
+/* 1 — Tokens */
+@import url("./tokens/fonts.css");
+@import url("./tokens/colors.css");
+@import url("./tokens/typography.css");
+@import url("./tokens/spacing.css");
+@import url("./tokens/shadows.css");
+@import url("./tokens/glass.css");
+@import url("./tokens/motion.css");
+
+/* 2 — Base / reset */
+@import url("./tokens/base.css");
+
+/* 3 — Components */
+@import url("./core.css");
+@import url("./navigation.css");
+@import url("./forms.css");
+@import url("./feedback.css");
+@import url("./menus.css");
+@import url("./data.css");
+
+/* 4 — Layout */
+@import url("./layout.css");
+
+/* 5 — Utilities + print (last, so helpers can win where intended) */
+@import url("./utilities.css");
+@import url("./print.css");

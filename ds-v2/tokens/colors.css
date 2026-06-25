@@ -1,0 +1,173 @@
+/* ============================================================
+   Colors — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   v2 keeps the v1 identity (navy + crimson + gold, extracted
+   from the Tadfuq Al-Khayr logo) but makes it disciplined:
+
+     • Real tonal ramps (navy / red 50–900) so components have
+       genuine steps instead of ad-hoc color-mix() everywhere.
+     • CRIMSON is the ONE accent — every primary action.
+       (Color Consistency Lock.)
+     • GOLD is ceremonial only — used rarely, for honors /
+       seals / the Meridian terminus. Never a default accent.
+     • Neutrals are NAVY-TINTED cool grays so even plain
+       surfaces read as part of the brand (one palette, no
+       warm/cool drift).
+
+   Layer order:
+     1. Brand ramps        (--navy-* / --red-* / --gold)
+     2. Neutral ramp       (--ink-*)            surfaces & text
+     3. Department colors  (--c-CS|CB|CT|CA)    four sections
+     4. Semantic state     (--ok / warn / err / info)
+     5. Surface aliases    (--bg / --text / …)  light + dark
+   ============================================================ */
+
+:root {
+  /* ---------- Brand: Navy ramp ---------- */
+  --navy-50:  #eef0f7;
+  --navy-100: #d6daec;
+  --navy-200: #b0b7d8;
+  --navy-300: #838dc0;
+  --navy-400: #5a64a0;
+  --navy-500: #3c4585;
+  --navy-600: #2e2e6b;   /* v1 --brand-navy-2 */
+  --navy-700: #232350;   /* v1 --brand-navy   (anchor) */
+  --navy-800: #1a1a40;
+  --navy-900: #15153a;   /* v1 --brand-navy-3 (deepest) */
+  --navy-950: #0d0d28;
+
+  /* ---------- Brand: Crimson ramp (THE accent) ---------- */
+  --red-50:  #fdecee;
+  --red-100: #fbd3d7;
+  --red-200: #f5a6ad;
+  --red-300: #ee7681;
+  --red-400: #e0313c;   /* v1 --brand-red-2 (hot highlight) */
+  --red-500: #c1121f;   /* v1 --brand-red   (anchor)        */
+  --red-600: #a30d1a;
+  --red-700: #840a15;
+  --red-800: #650810;
+  --red-900: #47060b;
+
+  /* ---------- Brand: Gold (ceremonial — use sparingly) ---------- */
+  --gold:      #f4c430;
+  --gold-soft: #f7d666;
+  --gold-deep: #c89a18;
+
+  /* ---------- Neutral: navy-tinted ink ramp ---------- */
+  --ink-0:   #ffffff;
+  --ink-50:  #f6f8fc;
+  --ink-100: #eef1f8;
+  --ink-200: #e0e5f0;
+  --ink-300: #cbd2e2;
+  --ink-400: #9aa3bd;
+  --ink-500: #6b7592;
+  --ink-600: #4c5570;
+  --ink-700: #353c54;
+  --ink-800: #232940;
+  --ink-900: #161b2e;
+  --ink-950: #0d111f;
+
+  /* ---------- Brand identity helpers ---------- */
+  --brand-navy: var(--navy-700);
+  --brand-red:  var(--red-500);
+  --brand-gold: var(--gold);
+
+  --brand-grad:      linear-gradient(122deg, var(--navy-900) 0%, var(--navy-700) 46%, var(--red-500) 128%);
+  --brand-grad-soft: linear-gradient(122deg,
+                       color-mix(in srgb, var(--navy-700) 10%, transparent),
+                       color-mix(in srgb, var(--red-500)  10%, transparent));
+  /* Meridian — the signature 3-stop sweep, navy → crimson → gold */
+  --brand-sweep:     linear-gradient(90deg, var(--navy-700) 0%, var(--red-500) 62%, var(--gold) 100%);
+  --brand-line:      linear-gradient(90deg, var(--navy-700), var(--red-500));
+
+  /* ---------- Department colors (CS/CB/CT/CA) ----------
+     One color per department, used consistently for any pill,
+     badge, tab, or chart slice representing that section.
+     Recalibrated for AA contrast on light surfaces. */
+  --c-CS: #2456d6;  /* Subscriptions        — blue  */
+  --c-CB: #0e7c8b;  /* Finance & billing    — teal  */
+  --c-CT: #b4690e;  /* Technical            — amber */
+  --c-CA: #c1121f;  /* Reports & complaints — crimson (brand) */
+
+  --c-CS-soft: color-mix(in srgb, var(--c-CS) 12%, transparent);
+  --c-CB-soft: color-mix(in srgb, var(--c-CB) 12%, transparent);
+  --c-CT-soft: color-mix(in srgb, var(--c-CT) 12%, transparent);
+  --c-CA-soft: color-mix(in srgb, var(--c-CA) 12%, transparent);
+
+  /* ---------- Semantic state ---------- */
+  --ok:   #15924c;
+  --warn: #c87a0a;
+  --err:  #cc1f2a;
+  --info: #2456d6;
+
+  --ok-soft:   color-mix(in srgb, var(--ok)   12%, transparent);
+  --warn-soft: color-mix(in srgb, var(--warn) 14%, transparent);
+  --err-soft:  color-mix(in srgb, var(--err)  12%, transparent);
+  --info-soft: color-mix(in srgb, var(--info) 12%, transparent);
+
+  /* ---------- Surface aliases (light) ---------- */
+  --bg:            var(--ink-50);
+  --surface:       var(--ink-0);
+  --surface-2:     var(--ink-100);
+  --surface-3:     var(--ink-200);
+  --surface-sunk:  var(--ink-50);
+
+  --text:          var(--ink-900);
+  --text-soft:     var(--ink-600);
+  --text-faint:    var(--ink-500);
+  --text-on-brand: #ffffff;
+
+  --border:        var(--ink-200);
+  --border-strong: var(--ink-300);
+  --border-faint:  color-mix(in srgb, var(--ink-300) 50%, transparent);
+
+  --accent:        var(--red-500);
+  --accent-hover:  var(--red-600);
+  --accent-quiet:  var(--red-50);
+  --on-accent:     #ffffff;
+
+  --link:          var(--navy-600);
+  --link-hover:    var(--red-500);
+
+  /* Printed-form chrome — always white paper, never themed. */
+  --line:  #000;
+  --shade: #f1f1f1;
+}
+
+/* ---------- Dark mode — calm navy canvas, never OLED black ---------- */
+body.dark {
+  --bg:            #11152099;
+  --bg:            #101524;
+  --surface:       #181d2e;
+  --surface-2:     #1f2538;
+  --surface-3:     #2a3148;
+  --surface-sunk:  #0c101b;
+
+  --text:          #eef1fa;
+  --text-soft:     #aeb7d0;
+  --text-faint:    #7c87a4;
+  --text-on-brand: #ffffff;
+
+  --border:        #2a3047;
+  --border-strong: #3a4259;
+  --border-faint:  color-mix(in srgb, #3a4259 55%, transparent);
+
+  --accent:        var(--red-400);
+  --accent-hover:  #ee4b55;
+  --accent-quiet:  color-mix(in srgb, var(--red-400) 16%, transparent);
+  --on-accent:     #ffffff;
+
+  --link:          #9aa6ff;
+  --link-hover:    var(--red-400);
+
+  /* Department colors lifted for legibility on dark surfaces */
+  --c-CS: #5b85f0;
+  --c-CB: #2bb6c6;
+  --c-CT: #e0982f;
+  --c-CA: #ee5a63;
+
+  --ok:   #34c172;
+  --warn: #e0982f;
+  --err:  #ee5a63;
+  --info: #5b85f0;
+}

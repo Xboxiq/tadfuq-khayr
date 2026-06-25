@@ -1,0 +1,67 @@
+/* ============================================================
+   Typography — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   Two voices, three roles (down from v1's four families):
+
+     --font-ui       Readex Pro — the entire interface, Arabic
+                     first, used for body AND display. One voice
+                     for Arabic, numerals and Latin.
+     --font-data     JetBrains Mono — IDs, reference numbers,
+                     tabular figures, status codes.
+     --font-form     Arial — printed official form sheets only
+                     (must match the paper layout, do not change).
+
+   Display sizes use a ~1.25 modular scale with fluid clamps so
+   headers breathe on wide screens without overrunning RTL line
+   widths. Emphasis inside a heading is bold/weight of the SAME
+   family — never a second typeface.
+   ============================================================ */
+
+:root {
+  /* ---------- Family stacks ---------- */
+  --font-ui:    'Readex Pro', system-ui, 'Segoe UI', Tahoma, sans-serif;
+  --font-data:  'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-form:  'Arial', 'Liberation Sans', 'Arimo', 'Segoe UI', Tahoma, sans-serif;
+
+  /* Compatibility aliases so components reading v1 names still resolve. */
+  --font:         var(--font-ui);
+  --font-cmd:     var(--font-ui);
+  --font-display: var(--font-ui);
+  --font-mono:    var(--font-data);
+
+  /* ---------- Type scale (fluid display) ---------- */
+  --fs-2xs:  0.6875rem;  /* 11px — micro caps / data labels   */
+  --fs-xs:   0.75rem;    /* 12px — captions, helper text       */
+  --fs-sm:   0.8125rem;  /* 13px — secondary body, table cells */
+  --fs-base: 0.9375rem;  /* 15px — body (tighter for density)  */
+  --fs-md:   1.0625rem;  /* 17px — emphasised body / lead      */
+  --fs-lg:   clamp(1.18rem, 0.9rem + 0.9vw, 1.35rem);  /* section heading */
+  --fs-xl:   clamp(1.40rem, 1.0rem + 1.4vw, 1.75rem);  /* card / panel title */
+  --fs-2xl:  clamp(1.70rem, 1.1rem + 2.4vw, 2.30rem);  /* page H1 */
+  --fs-3xl:  clamp(2.10rem, 1.2rem + 3.6vw, 3.10rem);  /* hero */
+  --fs-4xl:  clamp(2.60rem, 1.2rem + 5.4vw, 4.20rem);  /* display marquee */
+
+  /* ---------- Line-heights ---------- */
+  --lh-none:   1;
+  --lh-tight:  1.18;
+  --lh-snug:   1.34;
+  --lh-normal: 1.55;
+  --lh-loose:  1.75;
+
+  /* ---------- Weights (Readex Pro: 300–700) ---------- */
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ---------- Letter-spacing ----------
+     Arabic does not take positive tracking on body text; the
+     wide presets below are reserved for short Latin/numeric
+     micro-labels only. */
+  --tracking-tighter: -0.02em;
+  --tracking-tight:   -0.012em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.04em;
+  --tracking-caps:    0.14em;  /* micro caps labels (Latin) */
+}

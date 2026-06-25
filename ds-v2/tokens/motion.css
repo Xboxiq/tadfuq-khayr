@@ -1,0 +1,46 @@
+/* ============================================================
+   Motion — Rasafa Service Hub · v2
+   ----------------------------------------------------
+   Easing curves and durations follow the animate skill
+   (Emil Kowalski). Motion is purposeful, never decorative:
+   enter ease-out, exit ease-in (≈75% of enter), move ease-in-out.
+   Only `transform` and `opacity` are animated by components.
+   `prefers-reduced-motion` collapses everything to near-instant.
+   ============================================================ */
+
+:root {
+  /* ---------- Easing curves ---------- */
+  --ease-out-quint:   cubic-bezier(.23, 1, .32, 1);   /* signature entrances */
+  --ease-out-cubic:   cubic-bezier(.33, 1, .68, 1);
+  --ease-in-out-cubic:cubic-bezier(.645, .045, .355, 1);
+  --ease-in-cubic:    cubic-bezier(.32, 0, .67, 0);
+  --ease-spring:      cubic-bezier(.34, 1.56, .64, 1); /* gentle overshoot */
+  --ease:             var(--ease-out-cubic);
+
+  /* ---------- Durations ---------- */
+  --dur-instant: 80ms;
+  --dur-fast:    140ms;   /* hover / press feedback */
+  --dur-base:    220ms;   /* default UI transitions */
+  --dur-slow:    320ms;   /* enters, reveals        */
+  --dur-exit:    160ms;   /* exits (≈75% of base)   */
+  --dur-ambient: 600ms;   /* atmosphere / page-load */
+
+  /* ---------- Ready-made transitions ---------- */
+  --t-colors: color var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+  --t-transform: transform var(--dur-base) var(--ease-out-quint);
+  --t-lift: transform var(--dur-base) var(--ease-out-quint),
+            box-shadow var(--dur-base) var(--ease-out-quint);
+}
+
+/* Respect reduced-motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
