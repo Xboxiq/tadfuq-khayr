@@ -322,12 +322,13 @@ tr:hover .idl{color:var(--acc-2)}
   </aside>
 </div>
 <script>
+const raf=window.requestAnimationFrame||(f=>setTimeout(()=>f(performance.now()),16));
 const tb=document.getElementById('theme');
 tb.onclick=()=>{document.body.classList.toggle('light');tb.querySelector('.i').textContent=document.body.classList.contains('light')?'dark_mode':'light_mode';};
 document.getElementById('mt').onclick=()=>document.getElementById('side').classList.toggle('open');
 document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));n.classList.add('on');});
-function cu(el){const t=+el.dataset.count,d=1000,s=performance.now();(function f(n){const p=Math.min(1,(n-s)/d),e=1-Math.pow(1-p,3);el.textContent=new Intl.NumberFormat('ar-IQ').format(Math.round(t*e));if(p<1)requestAnimationFrame(f);})(s);}
-requestAnimationFrame(()=>{document.querySelectorAll('[data-count]').forEach(cu);document.querySelectorAll('.dept__b i').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',300));});
+function cu(el){const t=+el.dataset.count,d=1000,s=performance.now();(function f(n){const p=Math.min(1,(n-s)/d),e=1-Math.pow(1-p,3);el.textContent=new Intl.NumberFormat('ar-IQ').format(Math.round(t*e));if(p<1)raf(f);})(s);}
+raf(()=>{document.querySelectorAll('[data-count]').forEach(cu);document.querySelectorAll('.dept__b i').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',300));});
 </script>
 </body>
 </html>
