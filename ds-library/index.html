@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تدفّق الخير — مكتبة المكوّنات الموحّدة (window.DS)</title>
+
+<!-- React via CDN (no build) — same approach as the live app -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
+
+<!-- Design System: ONE entry, ONE token source -->
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div id="root"></div>
+
+<!-- The library, then the demo app — both compiled in-browser by Babel -->
+<script type="text/babel" data-presets="react" src="./ds.jsx"></script>
+<script type="text/babel" data-presets="react" src="./app.jsx"></script>
+</body>
+</html>
