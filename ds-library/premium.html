@@ -6,7 +6,7 @@
 <title>تدفّق الخير — لوحة العمليات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Readex+Pro:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,200..600,0..1,-25..0&display=swap" rel="stylesheet">
 <style>
 /* =============================================================
@@ -26,9 +26,9 @@
   --navy:#1e2a4d; --navy-soft:#28366e; --gold:#b8861b; --gold-soft:#ddbb5d; --crimson:#8f1d28; --crimson-soft:#c54a55;
   --ok:#3a7a55; --warn:#b87918; --err:#b03a3a;
   --cs:oklch(.52 .105 259); --ct:oklch(.57 .090 72); --cb:oklch(.56 .085 192); --ca:oklch(.54 .095 12);
-  --sans:'Geist','IBM Plex Sans Arabic',-apple-system,sans-serif;
-  --arab:'Readex Pro','IBM Plex Sans Arabic','Geist',sans-serif;
-  --disp:'Alexandria','Readex Pro',sans-serif;
+  --sans:'Noto Sans Arabic','Readex Pro',-apple-system,sans-serif;
+  --arab:'Noto Sans Arabic','Readex Pro',-apple-system,sans-serif;
+  --disp:'Noto Naskh Arabic','Readex Pro',serif;
   --mono:'Geist Mono','SF Mono',Menlo,monospace;
   --r-sm:8px; --r:12px; --r-md:16px; --r-lg:20px; --r-xl:26px;
   --sh-xs:0 1px 2px rgba(22,21,19,.04);
@@ -211,6 +211,15 @@ tr:hover .idl{color:var(--navy)}.dark tr:hover .idl{color:var(--cs)}
 .avs{width:27px;height:27px;border-radius:50%;display:inline-grid;place-items:center;font-size:.66rem;font-weight:700;font-family:var(--sans);color:#fff;background:linear-gradient(135deg,var(--navy),var(--crimson))}
 
 .panel{display:flex;flex-direction:column;gap:16px}
+/* data-dense filter bar + cursor discipline (ui-ux-pro-max: enable filtering, no AI slop) */
+.fbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:999px;font-size:.82rem;font-weight:500;color:var(--ink-2);background:var(--surface);border:.5px solid var(--border);cursor:pointer;transition:color .2s var(--ease),background .24s var(--spring),border-color .2s,box-shadow .24s}
+.fchip:hover{border-color:var(--border-2);color:var(--ink)}
+.fchip.on{color:#fff;background:var(--navy);border-color:transparent;box-shadow:0 5px 14px -5px color-mix(in srgb,var(--navy) 55%,transparent)}
+.fchip .ms{font-size:15px}
+.fbar__sp{flex:1}
+.fcount{font-family:var(--mono);font-size:.74rem;color:var(--ink-3)}
+.tab,.dept,.stat,.lk,.team,tbody tr{cursor:pointer}
 .note{display:flex;gap:11px;padding:14px;border-radius:var(--r-md)}
 .note .ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;color:#fff;background:linear-gradient(140deg,var(--crimson-soft),var(--crimson));box-shadow:0 6px 16px -6px color-mix(in srgb,var(--crimson) 50%,transparent)}
 .note b{font-size:.85rem;font-weight:600}.note p{font-size:.78rem;color:var(--ink-3);margin-top:3px;line-height:1.5}
@@ -297,6 +306,15 @@ tr:hover .idl{color:var(--navy)}.dark tr:hover .idl{color:var(--cs)}
     </div>
 
     <div class="sh"><h2>أحدث الحالات</h2><span class="ln"></span><button class="lk">الكل <span class="ms">arrow_back</span></button></div>
+    <div class="fbar rise" style="--i:1">
+      <button class="fchip on">الكل</button>
+      <button class="fchip"><span class="ms">priority_high</span> عاجل</button>
+      <button class="fchip">بانتظار الدفع</button>
+      <button class="fchip">قيد التنفيذ</button>
+      <button class="fchip">مكتمل</button>
+      <span class="fbar__sp"></span>
+      <span class="fcount">٧ من ٢١٣</span>
+    </div>
     <div class="cols">
       <div class="card rise" style="--i:1;overflow:hidden">
         <table>
@@ -328,6 +346,7 @@ const raf=window.requestAnimationFrame||(f=>setTimeout(()=>f(performance.now()),
 const tb=document.getElementById('theme');
 tb.onclick=()=>{document.body.classList.toggle('dark');tb.querySelector('.ms').textContent=document.body.classList.contains('dark')?'light_mode':'dark_mode';};
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');});
+document.querySelectorAll('.fchip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
 function cu(el){const t=+el.dataset.count,d=1100,s=performance.now();(function f(n){const p=Math.min(1,(n-s)/d),e=1-Math.pow(1-p,3);el.textContent=new Intl.NumberFormat('ar-IQ').format(Math.round(t*e));if(p<1)raf(f);})(s);}
 raf(()=>{document.querySelectorAll('[data-count]').forEach(cu);document.querySelectorAll('.dept__b i').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',350));});
 </script>
