@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تدفّق الخير · منصّة التشغيل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Readex+Pro:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#0d0c0a;--ink-2:#131210;--panel:#181612;--panel-2:#201d17;
+  --line:rgba(236,226,205,.09);--line-2:rgba(236,226,205,.16);--line-3:rgba(236,226,205,.26);
+  --tx:#f4eee2;--tx-2:#bcb4a4;--tx-3:#867e6f;--tx-4:#5b554a;
+  --amber:#ffb84d;--amber-2:#ffcd7a;--amber-deep:#df8512;--amber-glow:rgba(255,184,77,.55);
+  --ok:#62d7aa;--warn:#ffc857;--err:#ff7e6e;--cool:#6ea0ff;
+  --r-sm:11px;--r:15px;--r-lg:22px;--r-xl:30px;
+  --ease:cubic-bezier(.4,0,.2,1);--out:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.32,.72,0,1);--bounce:cubic-bezier(.34,1.4,.64,1);
+  --maxw:1320px;--glass:color-mix(in srgb,var(--ink) 64%,transparent);
+}
+[data-theme="light"]{
+  --ink:#f4f0e7;--ink-2:#ebe5d8;--panel:#fffdf8;--panel-2:#f6f1e8;
+  --line:rgba(28,24,16,.09);--line-2:rgba(28,24,16,.15);--line-3:rgba(28,24,16,.24);
+  --tx:#15120c;--tx-2:#4c4636;--tx-3:#867d6b;--tx-4:#a8a08c;
+  --amber:#b9760a;--amber-2:#d4922a;--amber-deep:#8f5800;--amber-glow:rgba(185,118,10,.26);--glass:color-mix(in srgb,var(--ink) 60%,transparent);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Readex Pro","Alexandria",system-ui,sans-serif;background:var(--ink);color:var(--tx);-webkit-font-smoothing:antialiased;min-height:100dvh;overflow-x:hidden;letter-spacing:-.011em}
+.ms{font-family:'Material Symbols Rounded';line-height:1;direction:ltr;display:inline-block;vertical-align:middle;font-size:20px}
+.disp{font-family:"Alexandria",sans-serif}.clash{font-family:"Clash Display","Alexandria",sans-serif;font-variant-numeric:tabular-nums}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:.02em}.num{font-variant-numeric:tabular-nums}
+::selection{background:var(--amber);color:#1a1305}
+.bg{position:fixed;inset:0;z-index:-3;pointer-events:none;background:radial-gradient(46% 40% at 84% -6%,color-mix(in srgb,var(--amber) 16%,transparent),transparent 62%),radial-gradient(40% 38% at 4% 102%,color-mix(in srgb,var(--cool) 9%,transparent),transparent 60%),var(--ink)}
+.grid-bg{position:fixed;inset:0;z-index:-3;pointer-events:none;opacity:.5;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:58px 58px;mask-image:radial-gradient(circle at 72% 2%,#000,transparent 76%)}
+.glow{position:fixed;width:520px;height:520px;border-radius:50%;z-index:-2;pointer-events:none;background:radial-gradient(circle,var(--amber-glow),transparent 64%);opacity:.35;filter:blur(40px);transform:translate(-50%,-50%);mix-blend-mode:screen}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+/* bar */
+.bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:16px;padding:14px clamp(18px,4vw,40px);backdrop-filter:blur(22px) saturate(1.7);-webkit-backdrop-filter:blur(22px) saturate(1.7);background:var(--glass);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px;font-family:"Alexandria";font-weight:700;font-size:17px;cursor:pointer}
+.glyph{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(circle at 34% 26%,var(--amber-2),var(--amber-deep));box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 0 0 1px rgba(0,0,0,.2),0 6px 20px -5px var(--amber-glow)}
+.glyph::after{content:"";position:absolute;inset:0;background:conic-gradient(from 200deg,transparent,rgba(255,255,255,.5),transparent 28%);mix-blend-mode:overlay;animation:sweep 5s linear infinite}
+@keyframes sweep{to{transform:rotate(1turn)}}
+.glyph .ms{font-size:21px;color:#1a1305;position:relative;z-index:1}
+.bar-nav{display:flex;gap:2px;margin-inline-start:6px;position:relative}
+.nav-it{padding:9px 16px;border-radius:999px;color:var(--tx-3);font-size:14px;font-weight:500;border:none;background:none;cursor:pointer;transition:color .25s;font-family:inherit;position:relative;z-index:1}
+.nav-it:hover{color:var(--tx-2)}.nav-it.on{color:#1a1305;font-weight:600}[data-theme="light"] .nav-it.on{color:#fff}
+.nav-pill{position:absolute;z-index:0;border-radius:999px;background:var(--amber);box-shadow:0 6px 18px -6px var(--amber-glow);transition:transform .42s var(--spring),width .42s var(--spring),opacity .3s;inset-block:0;opacity:0}
+.bar-r{margin-inline-start:auto;display:flex;align-items:center;gap:10px}
+.cmdk{display:flex;align-items:center;gap:9px;padding:0 14px;height:40px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel);color:var(--tx-3);font-size:13px;cursor:pointer;transition:.25s;font-family:inherit}
+.cmdk:hover{border-color:var(--line-3);color:var(--tx-2)}.cmdk kbd{font-family:"Geist Mono",monospace;font-size:11px;border:1px solid var(--line-2);border-radius:6px;padding:2px 6px}
+@media(max-width:680px){.cmdk span:not(.ms),.cmdk kbd{display:none}}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tx-2);font-weight:500}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);position:relative}
+.live i::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--ok);animation:ping 1.9s var(--ease) infinite}
+@keyframes ping{to{transform:scale(2.8);opacity:0}}
+.icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel);color:var(--tx-2);cursor:pointer;display:grid;place-items:center;transition:.22s var(--spring)}
+.icon-btn:hover{color:var(--amber);border-color:var(--amber);transform:translateY(-1px)}.icon-btn:active{transform:scale(.94)}
+.who{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:"Alexandria";font-weight:700;color:#1a1305;background:linear-gradient(150deg,var(--amber-2),var(--amber-deep))}
+@media(max-width:760px){.bar-nav{display:none}}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:9px;padding:0 22px;height:48px;border-radius:999px;font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer;border:1px solid transparent;transition:transform .16s var(--spring),box-shadow .25s,background .25s,border-color .25s;position:relative;overflow:hidden}
+.btn:active{transform:scale(.96)}
+.btn-pri{color:#1a1305;background:linear-gradient(180deg,var(--amber-2),var(--amber-deep));box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 14px 34px -10px var(--amber-glow)}
+.btn-pri:hover{transform:translateY(-2px)}
+.btn-gho{color:var(--tx);background:color-mix(in srgb,var(--panel) 60%,transparent);border-color:var(--line-2)}
+.btn-gho:hover{border-color:var(--amber);color:var(--amber)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+/* headings */
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;color:var(--amber);font-weight:600;letter-spacing:.05em;margin-bottom:18px}
+.eyebrow .ln{width:36px;height:1px;background:linear-gradient(90deg,var(--amber),transparent)}
+.s-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+.s-head h2{font-family:"Alexandria";font-weight:700;font-size:clamp(1.6rem,2.8vw,2.2rem);letter-spacing:-.025em}
+.s-head .sub{color:var(--tx-3);font-size:14px;margin-top:7px}
+.page{padding:clamp(34px,5vw,60px) 0 40px;animation:fadein .5s var(--out)}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}}
+/* hero */
+.hero{padding:clamp(40px,7vw,90px) 0 46px;position:relative}
+.hero h1{font-family:"Alexandria";font-weight:800;font-size:clamp(2.5rem,6.6vw,5.4rem);line-height:.97;letter-spacing:-.035em;max-width:15ch}
+.hero h1 .gl{background:linear-gradient(120deg,var(--amber-2),var(--amber-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin-top:22px;max-width:46ch;color:var(--tx-2);font-size:clamp(15px,1.4vw,18px);line-height:1.62}
+.hero-cta{margin-top:34px;display:flex;gap:12px;flex-wrap:wrap}
+.flow{position:absolute;inset-block:-20px 0;inset-inline-end:0;width:48%;z-index:-1;pointer-events:none;mask-image:linear-gradient(to right,transparent,#000 42%)}
+@media(max-width:880px){.flow{opacity:.3;width:72%}}
+.flow path{fill:none;stroke-width:1.5;stroke-linecap:round}.flow .base{stroke:var(--line-2)}
+.flow .dash{stroke:var(--amber);stroke-dasharray:7 240;filter:drop-shadow(0 0 7px var(--amber-glow));animation:flow 3.6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-494}}
+.node{fill:var(--amber);filter:drop-shadow(0 0 7px var(--amber-glow));animation:pn 2.4s var(--ease) infinite}
+@keyframes pn{0%,100%{r:4}50%{r:6.5}}
+.hcard{position:absolute;inset-inline-end:0;top:clamp(60px,10vw,140px);width:min(320px,37vw);z-index:2;border-radius:var(--r-xl);padding:24px;border:1px solid var(--line-2);overflow:hidden;background:linear-gradient(165deg,var(--panel-2),var(--panel));box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 30px 70px -28px rgba(0,0,0,.7);transform-style:preserve-3d;transition:transform .4s var(--spring)}
+@media(max-width:980px){.hcard{display:none}}
+.hcard .glare{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(220px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.14),transparent 60%)}
+.hcard:hover .glare{opacity:1}
+.hcard .cap{display:flex;justify-content:space-between;align-items:center;color:var(--tx-3);font-size:12px}
+.hcard .big{font-family:"Clash Display","Alexandria";font-weight:600;font-size:3.3rem;line-height:1;margin:14px 0 4px;letter-spacing:-.02em}
+.hcard .sub{color:var(--tx-3);font-size:13px}
+.spark{display:flex;align-items:flex-end;gap:4px;height:46px;margin-top:18px}
+.spark i{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--amber),color-mix(in srgb,var(--amber) 20%,transparent));transform-origin:bottom;animation:grow .8s var(--out) backwards}
+@keyframes grow{from{transform:scaleY(0)}}
+/* bento */
+.tick{margin-top:50px;display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.cell{border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;background:color-mix(in srgb,var(--panel) 42%,transparent);position:relative;overflow:hidden;transition:transform .3s var(--spring),border-color .3s,box-shadow .3s}
+.cell:hover{transform:translateY(-3px);border-color:var(--line-3);box-shadow:0 24px 50px -26px rgba(0,0,0,.6)}
+.cell.c3{grid-column:span 3}.cell.c6{grid-column:span 6}
+@media(max-width:820px){.cell.c3{grid-column:span 6}.cell.c6{grid-column:span 12}}
+@media(max-width:520px){.cell.c3,.cell.c6{grid-column:span 12}}
+.cell .k{color:var(--tx-3);font-size:12.5px;display:flex;align-items:center;gap:7px}
+.cell .v{font-family:"Clash Display","Alexandria";font-weight:600;font-size:clamp(1.9rem,3.2vw,2.7rem);letter-spacing:-.02em;margin-top:12px;line-height:1}
+.cell .d{display:inline-flex;align-items:center;gap:4px;color:var(--ok);font-size:12.5px;font-weight:600;margin-top:8px}
+.block{padding:46px 0;border-top:1px solid var(--line)}
+/* channels */
+.channels{display:flex;flex-direction:column}
+.chan{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:22px;padding:24px 8px;border-bottom:1px solid var(--line);cursor:pointer;position:relative;transition:padding .4s var(--spring),background .3s}
+.chan::before{content:"";position:absolute;inset-inline-start:0;top:50%;transform:translateY(-50%);width:3px;height:0;border-radius:3px;background:var(--ch);box-shadow:0 0 14px var(--ch);transition:height .45s var(--spring)}
+.chan:hover{padding-inline-start:24px;background:linear-gradient(90deg,color-mix(in srgb,var(--ch) 6%,transparent),transparent 60%)}
+.chan:hover::before{height:64%}
+.chan-no{font-family:"Clash Display","Alexandria";color:var(--tx-4);font-size:15px;font-weight:500}
+.chan-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,color-mix(in srgb,var(--ch) 68%,#fff),var(--ch));box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 26px -10px var(--ch)}
+.chan-ic .ms{font-size:26px}
+.chan-nm{font-family:"Alexandria";font-weight:600;font-size:18.5px}
+.chan-bl{color:var(--tx-3);font-size:13.5px;margin-top:3px;max-width:50ch;line-height:1.5}
+.chan-stat{text-align:center;min-width:54px}.chan-stat .v{font-family:"Clash Display","Alexandria";font-weight:600;font-size:22px;color:var(--ch)}.chan-stat .l{color:var(--tx-4);font-size:11px;margin-top:3px}
+.chan .go{color:var(--tx-4);transition:.3s var(--spring)}.chan:hover .go{color:var(--amber);transform:translateX(-6px)}
+@media(max-width:780px){.chan{grid-template-columns:auto 1fr auto}.chan-bl,.chan-no,.chan-stat:nth-of-type(1){display:none}}
+/* ops table */
+.ops{border:1px solid var(--line);border-radius:var(--r-xl);overflow:hidden;background:color-mix(in srgb,var(--panel) 46%,transparent)}
+.ops-top{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line)}
+.ops-top .t{font-family:"Alexandria";font-weight:600;font-size:16px}.ops-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:680px}
+thead th{text-align:start;color:var(--tx-3);font-weight:500;font-size:11.5px;letter-spacing:.04em;padding:14px 24px;background:color-mix(in srgb,var(--panel) 40%,transparent);white-space:nowrap}
+tbody td{padding:16px 24px;border-top:1px solid var(--line);color:var(--tx-2);white-space:nowrap}
+tbody tr{transition:background .2s;cursor:pointer}tbody tr:hover{background:color-mix(in srgb,var(--amber) 5%,transparent)}
+.svc-nm{color:var(--tx);font-weight:500}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-inline-end:7px;vertical-align:middle}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;border:1px solid var(--line-2);color:var(--tx-2)}
+.fee-ok{color:var(--ok);font-weight:600}.fee-pend{color:var(--tx-3);font-style:italic;display:inline-flex;align-items:center;gap:5px}.fee-gate{color:var(--warn);display:inline-flex;align-items:center;gap:5px;font-size:12.5px}
+/* filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
+.chip{padding:9px 16px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);color:var(--tx-2);font:inherit;font-size:13.5px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.chip:hover{border-color:var(--line-3);color:var(--tx)}
+.chip.on{background:var(--amber);color:#1a1305;border-color:transparent;font-weight:600}
+.search-in{display:flex;align-items:center;gap:10px;height:48px;padding:0 18px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);margin-bottom:22px;max-width:480px}
+.search-in input{flex:1;background:none;border:none;outline:none;color:var(--tx);font:inherit}
+/* service grid */
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:920px){.sgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.sgrid{grid-template-columns:1fr}}
+.scard{border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;background:color-mix(in srgb,var(--panel) 44%,transparent);cursor:pointer;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;transition:transform .3s var(--spring),border-color .3s,box-shadow .3s;min-height:170px}
+.scard:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--ch) 40%,var(--line));box-shadow:0 26px 54px -28px rgba(0,0,0,.6)}
+.scard::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:120px;height:120px;background:radial-gradient(circle,color-mix(in srgb,var(--ch) 16%,transparent),transparent 70%);opacity:0;transition:opacity .35s}
+.scard:hover::after{opacity:1}
+.scard-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(150deg,color-mix(in srgb,var(--ch) 70%,#fff),var(--ch));box-shadow:0 8px 22px -10px var(--ch)}
+.scard-nm{font-family:"Alexandria";font-weight:600;font-size:16px;line-height:1.4;flex:1}
+.scard-ft{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11.5px;border:1px solid var(--line-2);color:var(--tx-3)}
+/* detail / form */
+.det-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:30px}
+.det-ic{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;color:#fff;flex:none;background:linear-gradient(150deg,color-mix(in srgb,var(--ch) 70%,#fff),var(--ch));box-shadow:0 12px 30px -12px var(--ch)}
+.det-ic .ms{font-size:30px}
+.det-grid{display:grid;grid-template-columns:1fr 340px;gap:26px;align-items:start}
+@media(max-width:920px){.det-grid{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:var(--r-xl);background:color-mix(in srgb,var(--panel) 46%,transparent);padding:26px}
+/* stepper */
+.stepper{display:flex;align-items:center;margin-bottom:30px}
+.step{display:flex;align-items:center;gap:11px;flex:1}
+.step .dot{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;font-family:"Clash Display","Alexandria";font-weight:600;font-size:14px;background:var(--panel-2);color:var(--tx-3);border:1px solid var(--line-2);transition:.3s}
+.step .lb{font-size:13.5px;color:var(--tx-3);white-space:nowrap}
+.step .ln{flex:1;height:2px;background:var(--line-2);margin:0 12px;border-radius:2px}
+.step.done .dot{background:var(--ok);color:#0d2a1e;border-color:transparent}.step.done .ln{background:var(--ok)}
+.step.active .dot{background:linear-gradient(180deg,var(--amber-2),var(--amber-deep));color:#1a1305;border-color:transparent;box-shadow:0 0 0 4px var(--amber-glow)}
+.step.active .lb{color:var(--tx);font-weight:600}
+@media(max-width:620px){.step .lb{display:none}}
+/* fields */
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.field label{font-size:13.5px;color:var(--tx-2);font-weight:500}
+.field input,.field textarea{font:inherit;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);padding:13px 15px;color:var(--tx);outline:none;transition:.2s}
+.field input:focus,.field textarea:focus{border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-glow)}
+.field .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:520px){.field .row{grid-template-columns:1fr}}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:999px;padding:5px}
+.seg button{border:none;background:none;font:inherit;font-size:13px;color:var(--tx-3);padding:8px 14px;border-radius:999px;cursor:pointer;transition:.2s}
+.seg button.on{background:var(--amber);color:#1a1305;font-weight:600}
+.drop{border:1.6px dashed var(--line-3);border-radius:var(--r-lg);padding:36px;text-align:center;color:var(--tx-3);cursor:pointer;transition:.25s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.drop:hover{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 5%,transparent);color:var(--tx-2)}
+.drop .ms{font-size:32px;color:var(--tx-4)}
+.checks{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.chk{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);cursor:pointer;transition:.2s}
+.chk:hover{border-color:var(--line-2)}
+.chk .bx{width:22px;height:22px;border-radius:7px;border:1.6px solid var(--line-3);display:grid;place-items:center;color:transparent;transition:.2s;flex:none}
+.chk.on .bx{background:var(--ok);border-color:transparent;color:#0d2a1e}.chk.on{border-color:color-mix(in srgb,var(--ok) 30%,var(--line))}
+.chk .ms{font-size:16px}
+/* advisory cards */
+.adv{display:flex;gap:12px;padding:15px 16px;border-radius:var(--r);border:1px solid var(--line);border-inline-start:3px solid var(--tx-3);margin-bottom:11px;background:color-mix(in srgb,var(--panel) 40%,transparent)}
+.adv .ms{flex:none;margin-top:1px;font-size:19px}
+.adv .x{font-size:13.5px;line-height:1.55;color:var(--tx-2)}
+.adv.danger{border-inline-start-color:var(--err);background:color-mix(in srgb,var(--err) 8%,transparent)}.adv.danger .ms{color:var(--err)}
+.adv.review{border-inline-start-color:var(--cool)}.adv.review .ms{color:var(--cool)}
+.adv.scale{border-inline-start-color:var(--ok)}.adv.scale .ms{color:var(--ok)}
+.adv.faq{border-inline-start-color:var(--warn)}.adv.faq .ms{color:var(--warn)}
+.adv.tip{border-inline-start-color:var(--amber)}.adv.tip .ms{color:var(--amber)}
+.adv .lb{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;display:block}
+/* summary rows */
+.srow{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.srow:last-child{border-bottom:none}.srow .k{color:var(--tx-3)}.srow .v{color:var(--tx);font-weight:500}
+.fee-box{margin-top:18px;padding:20px;border-radius:var(--r-lg);border:1px solid var(--line-2);background:color-mix(in srgb,var(--amber) 6%,transparent)}
+.autosave{display:inline-flex;align-items:center;gap:8px;color:var(--tx-3);font-size:13px}
+.autosave .d{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:br 2.4s var(--ease) infinite}@keyframes br{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+/* pricing tables */
+.ptable{border:1px solid var(--line);border-radius:var(--r-xl);overflow:hidden;margin-bottom:22px;background:color-mix(in srgb,var(--panel) 44%,transparent)}
+.ptable .ph{display:flex;align-items:center;gap:10px;padding:16px 22px;border-bottom:1px solid var(--line);font-family:"Alexandria";font-weight:600}
+.ptable .ph .ms{color:var(--amber)}
+.ptable .pr{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid var(--line);font-size:14px}
+.ptable .pr:first-of-type{border-top:none}.ptable .pr .k{color:var(--tx-2)}.ptable .pr .v{font-family:"Clash Display","Alexandria";font-weight:600;color:var(--amber)}
+/* drawer */
+.ov{position:fixed;inset:0;z-index:80;background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+.ov.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;inset-block:0;inset-inline-end:0;z-index:81;width:min(460px,92vw);background:var(--panel);border-inline-start:1px solid var(--line-2);box-shadow:-30px 0 80px -30px rgba(0,0,0,.7);padding:28px;overflow-y:auto;transform:translateX(-100%);transition:transform .4s var(--spring)}
+.drawer.open{transform:translateX(0)}
+.tl{display:flex;flex-direction:column;margin-top:8px}
+.tl-i{display:flex;gap:14px;padding-bottom:18px;position:relative}
+.tl-i:not(:last-child)::before{content:"";position:absolute;inset-inline-start:8px;top:20px;bottom:0;width:2px;background:var(--line-2)}
+.tl-dot{width:18px;height:18px;border-radius:50%;flex:none;margin-top:2px;background:var(--panel-2);border:3px solid var(--line-3);z-index:1}
+.tl-i.done .tl-dot{background:var(--ok);border-color:var(--ok)}.tl-i.active .tl-dot{background:var(--amber);border-color:var(--amber-glow)}
+/* command palette */
+.cmdp{position:fixed;inset:0;z-index:90;display:none;place-items:start center;padding-top:13vh;background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(10px)}
+.cmdp.open{display:grid;animation:fade .25s var(--ease)}@keyframes fade{from{opacity:0}}
+.cmdp-box{width:min(560px,92vw);background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-lg);box-shadow:0 40px 90px -30px rgba(0,0,0,.8);overflow:hidden;animation:pop .35s var(--bounce)}
+@keyframes pop{from{transform:scale(.94) translateY(-10px);opacity:0}}
+.cmdp-in{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.cmdp-in input{flex:1;background:none;border:none;outline:none;color:var(--tx);font:inherit;font-size:16px}
+.cmdp-list{max-height:50vh;overflow:auto;padding:8px}
+.cmdp-it{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:12px;cursor:pointer;transition:background .15s}
+.cmdp-it:hover,.cmdp-it.sel{background:color-mix(in srgb,var(--amber) 12%,transparent)}
+.cmdp-it .c{margin-inline-start:auto;color:var(--tx-4);font-family:"Geist Mono",monospace;font-size:11px}
+/* toast */
+.toasts{position:fixed;inset-block-end:24px;inset-inline-start:24px;z-index:95;display:flex;flex-direction:column;gap:10px}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--r);background:var(--panel);border:1px solid var(--line-2);box-shadow:0 20px 50px -20px rgba(0,0,0,.6);animation:tin .4s var(--bounce);min-width:260px}
+.toast .ms{color:var(--ok)}@keyframes tin{from{transform:translateY(20px);opacity:0}}
+.foot{padding:54px 0 40px;border-top:1px solid var(--line);text-align:center;color:var(--tx-3)}
+.foot .rh{display:inline-flex;align-items:center;gap:14px;margin-bottom:14px}.foot .rh .di{width:7px;height:7px;background:var(--amber);transform:rotate(45deg);box-shadow:0 0 10px var(--amber-glow)}.foot .rh .ln{width:54px;height:1px;background:var(--line-2)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s var(--out),transform .7s var(--out)}.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}.glow{display:none}}
+</style>
+</head>
+<body data-theme="dark">
+<div class="bg"></div><div class="grid-bg"></div><div class="glow" id="glow"></div><div class="grain"></div>
+
+<header class="bar">
+  <div class="brand" onclick="go('console')"><span class="glyph"><span class="ms">bolt</span></span> تدفّق الخير</div>
+  <nav class="bar-nav" id="nav"><span class="nav-pill" id="pill"></span>
+    <button class="nav-it" data-v="console">الكونسول</button><button class="nav-it" data-v="services">الخدمات</button><button class="nav-it" data-v="cases">الحالات</button><button class="nav-it" data-v="pricing">الأجور</button><button class="nav-it" data-v="guide">الدليل</button>
+  </nav>
+  <div class="bar-r">
+    <button class="cmdk" id="openCmd"><span class="ms" style="font-size:17px">search</span><span>بحث سريع</span><kbd>⌘K</kbd></button>
+    <span class="live"><i></i> الشبكة فعّالة</span>
+    <button class="icon-btn" id="theme" aria-label="السمة"><span class="ms">dark_mode</span></button>
+    <span class="who">ر</span>
+  </div>
+</header>
+
+<main id="view" class="wrap"></main>
+
+<div class="ov" id="ov" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="cmdp" id="cmdp"><div class="cmdp-box"><div class="cmdp-in"><span class="ms" style="color:var(--amber)">search</span><input id="cmdInput" placeholder="ابحث عن خدمة، قسم، أو رقم طلب…" /><kbd style="font-family:Geist Mono,monospace;font-size:11px;color:var(--tx-4)">esc</kbd></div><div class="cmdp-list" id="cmdList"></div></div></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="../../data.js"></script>
+<script>
+/* ===== fallback if data.js not reachable (keeps page alive everywhere) ===== */
+if(!window.SECTIONS){
+  window.SECTIONS=[{code:'CS',name:'الاشتراكات',icon:'apartment',blurb:'فتح اشتراكات جديدة، نقل ملكية، تغيير الصنف.'},{code:'CT',name:'الفنية',icon:'electrical_services',blurb:'فحص المقاييس، الكابلات، القوة والجهد.'},{code:'CB',name:'الفواتير',icon:'receipt_long',blurb:'دفع القوائم، التقسيط، التسويات.'},{code:'CA',name:'الشكاوى والتقارير',icon:'report',blurb:'التلاعب، الأخطار، الشكاوى الإدارية.'}];
+  window.SERVICES=[{code:'CS0001',section:'CS',name:'عمل اشتراك جديد',sla:7,popularity:98,hasPrice:true,priceNote:'حسب الصنف والقوة',icon:'add_home'}];
+  window.PRICING={inspection:{label:'أجور الكشف',items:[{key:'res',name:'منزلي',amount:15000},{key:'com',name:'تجاري',amount:100000}]},install:{label:'تجهيز ونصب',items:[]},reconnect:{label:'قطع وإعادة التيار',items:[]}};
+  window.RECENT_CASES=[];window.KPIS={todayCases:84,todayDelta:12,pending:213,collected:4810000,satisfaction:94};window.ADVISORIES={};window.ADVISORY_DEFAULTS={};
+  window.SECTION_MAP=Object.fromEntries(window.SECTIONS.map(s=>[s.code,s]));window.SERVICE_MAP=Object.fromEntries(window.SERVICES.map(s=>[s.code,s]));
+  window.fmt=n=>new Intl.NumberFormat('ar-IQ').format(n);window.fmtIQD=n=>window.fmt(n)+' د.ع';
+  window.getAdvisories=c=>[];
+}
+const D=window,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const cc={CS:'#6ea0ff',CT:'#e0a23c',CB:'#3fc7c0',CA:'#ef6b6b'};
+const today={CS:28,CT:19,CB:31,CA:6};
+const ADVMETA={danger:{i:'dangerous',l:'تحذير'},review:{i:'fact_check',l:'مراجعة'},scale:{i:'trending_up',l:'قابل للتوسّع'},faq:{i:'help',l:'سؤال شائع'},tip:{i:'lightbulb',l:'إرشاد'}};
+const fmt=D.fmt,fmtIQD=D.fmtIQD;
+const view=$('#view');
+let route={v:'console',p:{}};
+
+/* ---------- helpers ---------- */
+function feeCellCase(c){if(c.fee>0)return `<span class="fee-ok num">${fmtIQD(c.fee)}</span>`;if(c.status==='موافقة مدير')return `<span class="fee-gate"><span class="ms" style="font-size:15px">admin_panel_settings</span> موافقة مدير</span>`;return `<span class="fee-pend"><span class="ms" style="font-size:15px">hourglass_empty</span> تُحدّد بعد الكشف</span>`;}
+function svcFeeTag(s){if(s.fixedPrice)return `<span class="tag" style="color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,transparent)"><span class="ms" style="font-size:13px">verified</span> ${fmtIQD(s.fixedPrice)}</span>`;if(s.hasPrice||s.priceNote)return `<span class="tag" style="color:var(--warn)"><span class="ms" style="font-size:13px">info</span> ${s.priceNote||'تقديري'}</span>`;return `<span class="tag">بلا أجور مباشرة</span>`;}
+function advCard(a){const m=ADVMETA[a.t]||ADVMETA.tip;return `<div class="adv ${a.t}"><span class="ms">${m.i}</span><div class="x"><span class="lb">${m.l}</span>${a.x}</div></div>`;}
+
+/* ===================== VIEWS ===================== */
+function vConsole(){
+  const K=D.KPIS;
+  const cells=[{c:6,k:'bolt',l:'طلبات اليوم',v:fmt(K.todayCases),d:'+'+K.todayDelta+'%'},{c:3,k:'pending_actions',l:'قيد المعالجة',v:fmt(K.pending)},{c:3,k:'sentiment_satisfied',l:'رضا المشتركين',v:K.satisfaction+'٪',d:'+2%'},{c:6,k:'payments',l:'محصّل اليوم',v:fmtIQD(K.collected),d:'+8%'},{c:3,k:'apps',l:'الخدمات',v:fmt(D.SERVICES.length)},{c:3,k:'hub',l:'الأقسام',v:fmt(D.SECTIONS.length)}];
+  return `<section class="hero">
+    <svg class="flow" viewBox="0 0 620 480" preserveAspectRatio="none" aria-hidden="true">
+      <path class="base" d="M620 70 H330 Q288 70 288 112 V214 Q288 256 246 256 H0"/><path class="base" d="M620 184 H432 Q390 184 390 226 V338 Q390 380 348 380 H0"/><path class="base" d="M620 306 H368 Q326 306 326 348 V420 Q326 452 284 452 H120"/>
+      <path class="dash" d="M620 70 H330 Q288 70 288 112 V214 Q288 256 246 256 H0"/><path class="dash" d="M620 184 H432 Q390 184 390 226 V338 Q390 380 348 380 H0" style="animation-delay:-1.3s"/><path class="dash" d="M620 306 H368 Q326 306 326 348 V420 Q326 452 284 452 H120" style="animation-delay:-2.5s"/>
+      <circle class="node" cx="288" cy="112" r="4"/><circle class="node" cx="390" cy="226" r="4" style="animation-delay:-.8s"/><circle class="node" cx="326" cy="348" r="4" style="animation-delay:-1.6s"/></svg>
+    <div class="hcard" id="hcard"><div class="glare"></div><div class="cap"><span>قيد المعالجة الآن</span><span class="live"><i></i> حيّ</span></div><div class="big clash" data-count="${K.pending}">0</div><div class="sub">طلب نشط عبر الأقسام · <span style="color:var(--ok)">+${K.todayDelta}%</span> اليوم</div><div class="spark">${[42,58,38,72,55,88,64,95,70,84].map((h,i)=>`<i style="height:${h}%;animation-delay:${i*.05}s"></i>`).join('')}</div></div>
+    <div class="eyebrow"><span class="ln"></span> كهرباء الرصافة · فرع النضال · كونسول التشغيل</div>
+    <h1 class="disp">يتدفّق <span class="gl">الخير</span><br/>حين تنساب الخدمة.</h1>
+    <p>منصّة تشغيل واحدة لكل أقسام خدمة المشترك. كل طلب، كل فاتورة، كل بلاغ، في مسار واضح يحترم وقتك ووقت المشترك.</p>
+    <div class="hero-cta"><button class="btn btn-pri" onclick="go('services')"><span class="ms" style="font-size:19px">add</span> ابدأ خدمة</button><button class="btn btn-gho" onclick="go('cases')">الحالات النشطة</button></div>
+    <div class="tick">${cells.map(t=>`<div class="cell c${t.c}"><div class="k"><span class="ms" style="font-size:16px;color:var(--amber)">${t.k}</span>${t.l}</div><div class="v clash" ${/\d/.test(t.v)&&t.l.length<12?'':''}>${t.v}</div>${t.d?`<div class="d"><span class="ms" style="font-size:14px">trending_up</span>${t.d}</div>`:''}</div>`).join('')}</div>
+  </section>
+  <section class="block"><div class="s-head"><div><h2 class="disp">قنوات الخدمة</h2><div class="sub">${D.SERVICES.length} خدمة عبر ${D.SECTIONS.length} أقسام</div></div><button class="btn btn-gho" onclick="go('services')">كل الأقسام <span class="ms" style="font-size:18px">arrow_back</span></button></div>
+    <div class="channels">${D.SECTIONS.map((s,i)=>{const n=D.SERVICES.filter(v=>v.section===s.code).length;return `<div class="chan" style="--ch:${cc[s.code]}" onclick="go('services',{sec:'${s.code}'})"><span class="chan-no clash">0${i+1}</span><div style="display:flex;align-items:center;gap:16px"><span class="chan-ic" style="--ch:${cc[s.code]}"><span class="ms">${s.icon}</span></span><div><div class="chan-nm">${s.name}</div><div class="chan-bl">${s.blurb}</div></div></div><div class="chan-stat"><div class="v">${n}</div><div class="l">خدمة</div></div><div class="chan-stat"><div class="v">${today[s.code]}</div><div class="l">اليوم</div></div><span class="go ms">arrow_back</span></div>`;}).join('')}</div></section>
+  <section class="block"><div class="s-head"><div><h2 class="disp">الحركة الحيّة</h2><div class="sub">آخر الطلبات · الأجور تُعرض بصدق</div></div><span class="live"><i></i> تتحدّث آلياً</span></div>
+    <div class="ops"><div class="ops-top"><span class="t">أحدث الطلبات</span><span class="mono" style="color:var(--tx-3);font-size:12px">SCADA · مزامنة مباشرة</span></div><div class="ops-scroll"><table><thead><tr><th>رقم الطلب</th><th>الخدمة</th><th>المشترك</th><th>الموظف</th><th>الحالة</th><th>الأجور</th></tr></thead><tbody>${D.RECENT_CASES.map(c=>{const s=D.SERVICE_MAP[c.svc]||{name:c.svc,section:'CS'};return `<tr onclick='openCase("${c.id}")'><td><span class="mono" style="color:${cc[s.section]}">${c.id}</span></td><td class="svc-nm">${s.name}</td><td>${c.subscriber}</td><td class="mono" style="font-size:13px">${c.officer}</td><td><span class="pill"><span class="dot" style="background:${c.priority==='urgent'?'var(--err)':c.priority==='vip'?'var(--amber)':'var(--ok)'}"></span>${c.status}</span></td><td>${feeCellCase(c)}</td></tr>`;}).join('')}</tbody></table></div></div></section>
+  ${foot()}`;
+}
+
+function vServices(){
+  const sec=route.p.sec||'ALL',q=(route.p.q||'');
+  const list=D.SERVICES.filter(s=>(sec==='ALL'||s.section===sec)&&(!q||s.name.includes(q)||s.code.includes(q)));
+  return `<div class="page"><div class="eyebrow"><span class="ln"></span> دليل الخدمات 2026</div>
+  <div class="s-head"><div><h2 class="disp">الخدمات</h2><div class="sub">${list.length} خدمة · اختر خدمة لبدء الطلب</div></div></div>
+  <div class="search-in"><span class="ms" style="color:var(--tx-3)">search</span><input id="svcSearch" placeholder="ابحث باسم الخدمة أو رمزها…" value="${q}"></div>
+  <div class="chips"><button class="chip ${sec==='ALL'?'on':''}" onclick="go('services',{sec:'ALL'})">الكل</button>${D.SECTIONS.map(s=>`<button class="chip ${sec===s.code?'on':''}" onclick="go('services',{sec:'${s.code}'})" style="${sec===s.code?'':'--ch:'+cc[s.code]}"><span class="ms" style="font-size:15px;color:${sec===s.code?'#1a1305':cc[s.code]}">${s.icon}</span>${s.name}</button>`).join('')}</div>
+  ${list.length?`<div class="sgrid">${list.map(s=>`<div class="scard" style="--ch:${cc[s.section]}" onclick="go('service',{code:'${s.code}'})"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span class="scard-ic" style="--ch:${cc[s.section]}"><span class="ms">${s.icon}</span></span><span class="mono" style="color:${cc[s.section]};font-size:12px">${s.code}</span></div><div class="scard-nm">${s.name}</div><div class="scard-ft"><span class="tag"><span class="ms" style="font-size:13px">schedule</span> ${s.sla} أيام</span>${svcFeeTag(s)}</div></div>`).join('')}</div>`:`<div class="card" style="text-align:center;color:var(--tx-3)">لا نتائج مطابقة</div>`}
+  ${foot()}</div>`;
+}
+
+function vService(){
+  const s=D.SERVICE_MAP[route.p.code];if(!s)return vServices();
+  const adv=D.getAdvisories(s.code);
+  const cat=route.p.cat||'res';
+  const step=route.p.step||1;
+  const cats=[['res','منزلي'],['com','تجاري'],['agr','زراعي'],['ind','صناعي'],['gov','حكومي']];
+  // fee model
+  const insp=(D.PRICING.inspection.items.find(i=>i.key===cat)||{}).amount;
+  let feeHtml;
+  if(s.fixedPrice){feeHtml=`<div class="srow"><span class="k">أجور الخدمة (مؤكّدة)</span><span class="v fee-ok num">${fmtIQD(s.fixedPrice)}</span></div>`;}
+  else{feeHtml=`${insp?`<div class="srow"><span class="k">أجور الكشف (${cats.find(c=>c[0]===cat)[1]})</span><span class="v num" style="color:var(--ok)">${fmtIQD(insp)}</span></div>`:''}<div class="srow"><span class="k">الأجور النهائية</span><span class="v"><span class="fee-pend"><span class="ms" style="font-size:15px">hourglass_empty</span> تُحدّد بعد الكشف</span></span></div>${s.priceNote?`<div class="srow"><span class="k">ملاحظة الأجور</span><span class="v" style="color:var(--warn)">${s.priceNote}</span></div>`:''}`;}
+  const steps=['بيانات المشترك','المستندات','المراجعة'];
+  const stepperHtml=`<div class="stepper">${steps.map((l,i)=>{const n=i+1,st=n<step?'done':n===step?'active':'';return `<div class="step ${st}"><span class="dot">${n<step?'<span class="ms" style="font-size:16px">check</span>':n}</span><span class="lb">${l}</span>${i<steps.length-1?'<span class="ln"></span>':''}</div>`;}).join('')}</div>`;
+  let body;
+  if(step===1){body=`<div class="field"><label>اسم المشترك الكامل</label><input placeholder="مثال: علي عبدالله حسين"></div><div class="field"><label>رقم الحساب / الاشتراك</label><div class="row"><input placeholder="${s.code}-2026-____"><input placeholder="رقم الهاتف"></div></div><div class="field"><label>العنوان</label><input placeholder="المحلة / الزقاق / الدار"></div><div class="field"><label>صنف الاشتراك</label><div class="seg">${cats.map(c=>`<button class="${c[0]===cat?'on':''}" onclick="go('service',{code:'${s.code}',cat:'${c[0]}',step:1})">${c[1]}</button>`).join('')}</div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px"><span class="autosave"><span class="d"></span> الحفظ التلقائي مفعّل</span><button class="btn btn-pri" onclick="go('service',{code:'${s.code}',cat:'${cat}',step:2})">التالي <span class="ms" style="font-size:18px">arrow_back</span></button></div>`;}
+  else if(step===2){const docs=['سند الملكية / الطابو','هوية الأحوال المدنية','كتاب تأييد السكن','صورة المقياس الحالي'];body=`<div class="drop"><span class="ms">cloud_upload</span><b>اسحب المستندات هنا أو اضغط للرفع</b><span style="font-size:13px">PDF أو صور · حتى 10MB للملف</span></div><div class="checks">${docs.map((d,i)=>`<label class="chk ${i<2?'on':''}" onclick="this.classList.toggle('on')"><span class="bx"><span class="ms">check</span></span>${d}</label>`).join('')}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px"><button class="btn btn-gho" onclick="go('service',{code:'${s.code}',cat:'${cat}',step:1})"><span class="ms" style="font-size:18px">arrow_forward</span> السابق</button><button class="btn btn-pri" onclick="go('service',{code:'${s.code}',cat:'${cat}',step:3})">مراجعة الطلب <span class="ms" style="font-size:18px">arrow_back</span></button></div>`;}
+  else{body=`<div class="srow"><span class="k">الخدمة</span><span class="v">${s.name}</span></div><div class="srow"><span class="k">رمز الخدمة</span><span class="v mono" style="color:${cc[s.section]}">${s.code}</span></div><div class="srow"><span class="k">صنف الاشتراك</span><span class="v">${cats.find(c=>c[0]===cat)[1]}</span></div><div class="srow"><span class="k">مدّة الإنجاز المتوقّعة</span><span class="v">${s.sla} أيام عمل</span></div>
+    <div class="fee-box">${feeHtml}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px"><button class="btn btn-gho" onclick="go('service',{code:'${s.code}',cat:'${cat}',step:2})"><span class="ms" style="font-size:18px">arrow_forward</span> السابق</button><button class="btn btn-pri" onclick="submitReq('${s.code}')"><span class="ms" style="font-size:18px">task_alt</span> تسجيل الطلب</button></div>`;}
+  return `<div class="page"><button class="btn btn-gho" style="height:40px;padding:0 16px;margin-bottom:20px" onclick="go('services',{sec:'${s.section}'})"><span class="ms" style="font-size:18px">arrow_forward</span> الخدمات</button>
+  <div class="det-head"><span class="det-ic" style="--ch:${cc[s.section]}"><span class="ms">${s.icon}</span></span><div><div class="eyebrow" style="margin-bottom:8px"><span class="mono" style="color:${cc[s.section]}">${s.code}</span> · ${D.SECTION_MAP[s.section].name} · SLA ${s.sla}ي</div><h2 class="disp" style="font-size:clamp(1.5rem,3vw,2rem)">${s.name}</h2></div></div>
+  <div class="det-grid"><div class="card">${stepperHtml}${body}</div>
+  <div class="card"><div style="font-family:Alexandria;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px"><span class="ms" style="color:var(--amber)">verified_user</span> إرشادات رسمية</div>${adv.length?adv.map(advCard).join(''):'<div style="color:var(--tx-3);font-size:13.5px">لا إرشادات خاصة لهذه الخدمة.</div>'}</div></div>
+  ${foot()}</div>`;
+}
+
+function vCases(){
+  const pr=route.p.pr||'ALL';
+  const list=D.RECENT_CASES.filter(c=>pr==='ALL'||c.priority===pr);
+  const prl={urgent:'عاجل',vip:'مهم',standard:'عادي'};
+  return `<div class="page"><div class="s-head"><div><h2 class="disp">الحالات</h2><div class="sub">${D.KPIS.pending} حالة نشطة · عرض ${list.length}</div></div><button class="btn btn-pri" onclick="go('services')"><span class="ms" style="font-size:18px">add</span> حالة جديدة</button></div>
+  <div class="chips">${[['ALL','الكل'],['urgent','عاجل'],['vip','مهم'],['standard','عادي']].map(p=>`<button class="chip ${pr===p[0]?'on':''}" onclick="go('cases',{pr:'${p[0]}'})">${p[1]}</button>`).join('')}</div>
+  <div class="ops"><div class="ops-scroll"><table><thead><tr><th>رقم الطلب</th><th>الخدمة</th><th>المشترك</th><th>الموظف</th><th>الأولوية</th><th>الحالة</th><th>الأجور</th></tr></thead><tbody>${list.map(c=>{const s=D.SERVICE_MAP[c.svc]||{name:c.svc,section:'CS'};return `<tr onclick='openCase("${c.id}")'><td><span class="mono" style="color:${cc[s.section]}">${c.id}</span></td><td class="svc-nm">${s.name}</td><td>${c.subscriber}</td><td class="mono" style="font-size:13px">${c.officer}</td><td><span class="pill"><span class="dot" style="background:${c.priority==='urgent'?'var(--err)':c.priority==='vip'?'var(--amber)':'var(--ok)'}"></span>${prl[c.priority]}</span></td><td>${c.status}</td><td>${feeCellCase(c)}</td></tr>`;}).join('')}</tbody></table></div></div>${foot()}</div>`;
+}
+
+function vPricing(){
+  const T=t=>`<div class="ptable"><div class="ph"><span class="ms">${t.icon}</span> ${t.data.label}</div>${t.data.items.map(i=>`<div class="pr"><span class="k">${i.name}</span><span class="v num">${fmtIQD(i.amount)}</span></div>`).join('')}</div>`;
+  return `<div class="page"><div class="eyebrow"><span class="ln"></span> جدول الأجور الرسمي 2026</div>
+  <div class="s-head"><div><h2 class="disp">الأجور</h2><div class="sub">المبالغ المؤكّدة تُعرض مباشرة · الأجور النهائية للخدمات الميدانية تُحدّد بعد الكشف</div></div></div>
+  <div class="adv review" style="margin-bottom:24px"><span class="ms">info</span><div class="x"><span class="lb">شفافية</span>لا نعرض رقماً نهائياً قبل الكشف الفعلي. القيم أدناه من جدول الأجور المعتمد، وأي خدمة ميدانية تخضع لكشف موقعي يحدّد الكلفة النهائية.</div></div>
+  ${T({icon:'travel_explore',data:D.PRICING.inspection})}${T({icon:'construction',data:D.PRICING.install})}${T({icon:'power',data:D.PRICING.reconnect})}
+  ${foot()}</div>`;
+}
+
+function vGuide(){
+  return `<div class="page"><div class="eyebrow"><span class="ln"></span> الدليل التشغيلي</div><div class="s-head"><div><h2 class="disp">الدليل</h2><div class="sub">إرشادات رسمية مصنّفة بصدق لكل قسم وخدمة</div></div></div>
+  ${D.SECTIONS.map(sec=>{const svcs=D.SERVICES.filter(s=>s.section===sec.code);return `<div class="card" style="margin-bottom:18px;--ch:${cc[sec.code]}"><div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><span class="scard-ic" style="--ch:${cc[sec.code]}"><span class="ms">${sec.icon}</span></span><div><div class="disp" style="font-weight:600;font-size:17px">${sec.name}</div><div class="sub" style="margin:0">${svcs.length} خدمة</div></div></div>${svcs.map(s=>{const a=D.getAdvisories(s.code)[0];return a?`<div class="adv ${a.t}"><span class="ms">${(ADVMETA[a.t]||ADVMETA.tip).i}</span><div class="x"><span class="lb"><span class="mono" style="color:${cc[sec.code]}">${s.code}</span> · ${(ADVMETA[a.t]||ADVMETA.tip).l}</span>${a.x}</div></div>`:'';}).join('')}</div>`;}).join('')}
+  ${foot()}</div>`;
+}
+
+function foot(){return `<footer class="foot"><div class="rh"><span class="ln"></span><span class="di"></span><span class="ln"></span></div><div class="disp" style="font-weight:600;color:var(--tx-2);margin-bottom:6px">تدفّق الخير</div><div class="mono" style="font-size:12px">RASAFA ELECTRICITY · AL-NIDAL · OPERATIONS CONSOLE</div></footer>`;}
+
+/* ===================== ROUTER ===================== */
+const VIEWS={console:vConsole,services:vServices,service:vService,cases:vCases,pricing:vPricing,guide:vGuide};
+function go(v,p={}){route={v,p};render();window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});}
+function render(){
+  view.innerHTML=(VIEWS[route.v]||vConsole)();
+  const navMap={console:'console',services:'services',service:'services',cases:'cases',pricing:'pricing',guide:'guide'};
+  $$('.nav-it').forEach(b=>b.classList.toggle('on',b.dataset.v===navMap[route.v]));
+  const on=$('.nav-it.on');if(on)movePill(on);
+  // service search live
+  const ss=$('#svcSearch');if(ss)ss.oninput=()=>{route.p.q=ss.value;const grid=()=>render();clearTimeout(window._t);window._t=setTimeout(()=>{const cur=ss.value;render();const n=$('#svcSearch');if(n){n.focus();n.value=cur;n.setSelectionRange(cur.length,cur.length);}},220);};
+  // hero card tilt + count
+  initFX();
+}
+$$('.nav-it').forEach(b=>b.onclick=()=>go(b.dataset.v));
+
+/* drawer (case detail) */
+function openCase(id){const c=D.RECENT_CASES.find(x=>x.id===id);if(!c)return;const s=D.SERVICE_MAP[c.svc]||{name:c.svc,section:'CS',sla:'-'};const adv=D.getAdvisories(c.svc);
+  const stages=[['استلام الطلب','done'],['التدقيق الأولي','done'],[c.status,'active'],['الإنجاز','']];
+  $('#drawer').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div><div class="mono" style="color:${cc[s.section]};font-size:13px">${c.id}</div><div class="disp" style="font-weight:700;font-size:20px;margin-top:6px">${s.name}</div></div><button class="icon-btn" onclick="closeDrawer()"><span class="ms">close</span></button></div>
+  <div class="srow"><span class="k">المشترك</span><span class="v">${c.subscriber}</span></div><div class="srow"><span class="k">الموظف المسؤول</span><span class="v">${c.officer}</span></div><div class="srow"><span class="k">الأولوية</span><span class="v">${c.priority==='urgent'?'عاجل':c.priority==='vip'?'مهم':'عادي'}</span></div><div class="srow"><span class="k">الأجور</span><span class="v">${feeCellCase(c)}</span></div>
+  <div style="font-family:Alexandria;font-weight:600;margin:24px 0 4px">مسار الطلب</div><div class="tl">${stages.map(st=>`<div class="tl-i ${st[1]}"><span class="tl-dot"></span><div><div style="font-weight:500;font-size:14px;color:${st[1]?'var(--tx)':'var(--tx-3)'}">${st[0]}</div></div></div>`).join('')}</div>
+  ${adv[0]?`<div style="margin-top:18px">${advCard(adv[0])}</div>`:''}
+  <button class="btn btn-pri" style="width:100%;margin-top:22px;justify-content:center" onclick="closeDrawer()">متابعة الطلب</button>`;
+  $('#ov').classList.add('open');$('#drawer').classList.add('open');}
+function closeDrawer(){$('#ov').classList.remove('open');$('#drawer').classList.remove('open');}
+
+function submitReq(code){toast('تم تسجيل الطلب وإرسال إشعار للمشترك');setTimeout(()=>go('cases'),700);}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=`<span class="ms">check_circle</span><div>${msg}</div>`;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3000);}
+
+/* nav pill */
+const nav=$('#nav'),pill=$('#pill');
+function movePill(el){const r=el.getBoundingClientRect(),p=nav.getBoundingClientRect();pill.style.width=r.width+'px';pill.style.transform=`translateX(${r.left-p.left}px)`;pill.style.opacity=1;}
+
+/* FX: theme, glow, tilt, count, reveal */
+function countUp(el){const t=+el.dataset.count;if(reduce){el.textContent=fmt(t);return;}let s=null;const step=ts=>{s=s||ts;const p=Math.min((ts-s)/1100,1),e=1-Math.pow(1-p,3);el.textContent=fmt(Math.round(t*e));if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step);}
+function initFX(){
+  $$('[data-count]').forEach(countUp);
+  if(reduce)return;
+  const hc=$('#hcard');if(hc){hc.onpointermove=e=>{const r=hc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;hc.style.transform=`perspective(900px) rotateY(${(x-.5)*-9}deg) rotateX(${(y-.5)*9}deg) translateY(-2px)`;hc.style.setProperty('--mx',x*100+'%');hc.style.setProperty('--my',y*100+'%');};hc.onpointerleave=()=>hc.style.transform='';}
+}
+$('#theme').onclick=()=>{const b=document.body,l=b.dataset.theme==='light';b.dataset.theme=l?'dark':'light';$('#theme').firstChild.textContent=l?'dark_mode':'light_mode';};
+if(!reduce){const glow=$('#glow');addEventListener('pointermove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';});}
+
+/* command palette */
+const cmdp=$('#cmdp'),cmdInput=$('#cmdInput'),cmdList=$('#cmdList');
+function renderCmds(q=''){const f=D.SERVICES.filter(x=>x.name.includes(q)||x.code.includes(q)).slice(0,8);cmdList.innerHTML=f.map((x,i)=>`<div class="cmdp-it ${i===0?'sel':''}" onclick="cmdGo('${x.code}')"><span class="ms" style="color:var(--amber)">${x.icon}</span><div><div>${x.name}</div><div style="color:var(--tx-4);font-size:12px">${D.SECTION_MAP[x.section].name}</div></div><span class="c">${x.code}</span></div>`).join('')||`<div style="padding:18px;color:var(--tx-3);text-align:center">لا نتائج</div>`;}
+function cmdGo(code){cmdp.classList.remove('open');go('service',{code});}
+$('#openCmd').onclick=()=>{cmdp.classList.add('open');cmdInput.value='';renderCmds();setTimeout(()=>cmdInput.focus(),60);};
+cmdInput.oninput=()=>renderCmds(cmdInput.value);
+cmdp.onclick=e=>{if(e.target===cmdp)cmdp.classList.remove('open');};
+addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#openCmd').click();}if(e.key==='Escape'){cmdp.classList.remove('open');closeDrawer();}});
+
+/* boot */
+render();
+</script>
+</body>
+</html>

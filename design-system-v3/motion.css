@@ -1,0 +1,105 @@
+/* =============================================================
+   TADFUQ KHAYR — DESIGN SYSTEM v3  ·  MOTION
+   One physics language. Every motion is motivated.
+   Animate transform + opacity only. Respect reduced-motion.
+   ============================================================= */
+
+/* ---------- Keyframes ---------- */
+@keyframes v3-rise {
+  from { opacity: 0; transform: translateY(12px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+@keyframes v3-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes v3-pop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+@keyframes v3-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.9); }
+  50%      { opacity: 1;    transform: scale(1.12); }
+}
+@keyframes v3-pulse-ring {
+  0%   { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes v3-sheen {
+  from { transform: translateX(-130%) skewX(-18deg); }
+  to   { transform: translateX(230%)  skewX(-18deg); }
+}
+@keyframes v3-spin {
+  to { transform: rotate(1turn); }
+}
+@keyframes v3-shimmer {
+  to { background-position: -200% 0; }
+}
+@keyframes v3-bleed {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ---------- Entrance utilities ---------- */
+.v3-rise   { animation: v3-rise var(--v3-dur-4) var(--v3-ease-out) both; }
+.v3-rise-1 { animation-delay: 60ms; }
+.v3-rise-2 { animation-delay: 120ms; }
+.v3-rise-3 { animation-delay: 180ms; }
+.v3-rise-4 { animation-delay: 240ms; }
+.v3-rise-5 { animation-delay: 300ms; }
+
+/* ---------- Shared press / lift physics (one language) ---------- */
+.v3-press      { transition: transform var(--v3-dur-1) var(--v3-spring); }
+.v3-press:active { transform: scale(0.96); }
+.v3-lift {
+  transition: transform var(--v3-dur-2) var(--v3-spring),
+              box-shadow var(--v3-dur-2) var(--v3-ease),
+              border-color var(--v3-dur-2) var(--v3-ease);
+}
+.v3-lift:hover { transform: translateY(-3px); }
+.v3-lift:active { transform: translateY(-1px) scale(0.99); }
+
+/* ---------- Pointer-aware tilt (fine pointer only) ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .v3-tilt {
+    transition: transform var(--v3-dur-3) var(--v3-spring);
+    transform-style: preserve-3d;
+  }
+}
+
+/* ---------- Live status dot ---------- */
+.v3-live-dot { position: relative; }
+.v3-live-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--v3-r-pill);
+  background: inherit; animation: v3-pulse-ring 1.8s var(--v3-ease-out) infinite;
+}
+
+/* ---------- Skeleton shimmer (loading state) ---------- */
+.v3-skeleton {
+  background: linear-gradient(90deg,
+    var(--v3-surface-2) 25%,
+    color-mix(in srgb, var(--v3-surface-3) 70%, var(--v3-surface-2)) 37%,
+    var(--v3-surface-2) 63%);
+  background-size: 200% 100%;
+  animation: v3-shimmer 1.4s linear infinite;
+  border-radius: var(--v3-r-sm);
+}
+
+/* =============================================================
+   REDUCED MOTION — mandatory honest fallback
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .v3-rise { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .v3-tilt { transform: none !important; }
+  .v3-live-dot::after { display: none; }
+  .v3-skeleton { animation: none; }
+}

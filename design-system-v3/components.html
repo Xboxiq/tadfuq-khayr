@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تدفّق الخير · مكتبة المكوّنات (v3.2)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet" />
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="motion.css" />
+  <link rel="stylesheet" href="effects.css" />
+  <link rel="stylesheet" href="components.css" />
+  <style>
+    body { margin: 0; }
+    .ms { font-family: 'Material Symbols Rounded'; line-height: 1; direction: ltr; display: inline-block; vertical-align: middle; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: var(--v3-s8) var(--v3-page-pad) var(--v3-s16); }
+    section { margin-top: var(--v3-s12); }
+    .sec-head { display: flex; align-items: baseline; gap: var(--v3-s3); margin-bottom: var(--v3-s5); padding-bottom: 10px; border-bottom: 1px solid var(--v3-border); }
+    .sec-head h2 { margin: 0; font-size: var(--v3-fs-lg); font-family: var(--v3-disp); font-weight: 700; }
+    .sec-head .v3-mono { color: var(--v3-ink-4); }
+    .demo { display: flex; flex-wrap: wrap; gap: var(--v3-s4); align-items: center; }
+    .demo-col { display: flex; flex-direction: column; gap: var(--v3-s3); align-items: stretch; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--v3-s5); }
+    .toc a { font-size: var(--v3-fs-xs); }
+  </style>
+</head>
+<body class="v3 v3-atmos">
+  <header class="v3-chrome">
+    <div class="v3-brand"><span class="v3-brand__mark">ت</span><span>تدفّق الخير<br><span class="v3-mono" style="font-weight:500;color:var(--v3-ink-3)">مكتبة المكوّنات · v3.2</span></span></div>
+    <div style="margin-inline-start:auto" class="demo">
+      <a class="v3-btn v3-btn--ghost" href="showcase.html" style="min-height:38px;padding:8px 14px">الأساسيات</a>
+      <a class="v3-btn v3-btn--ghost" href="dashboard.html" style="min-height:38px;padding:8px 14px">لوحة التحكّم</a>
+      <button class="v3-toggle" id="themeToggle" aria-checked="false" aria-label="الوضع الليلي"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <h1 class="v3-display" style="font-size:var(--v3-fs-2xl)">مكتبة المكوّنات المتكاملة</h1>
+    <p class="v3-sub">كل المكوّنات في مكان واحد: أساسيات + بيانات + ملاحة + ملاحظات + إدخال + حالات. RTL، نهاري/ليلي، reduced-motion.</p>
+
+    <!-- BUTTONS -->
+    <section>
+      <div class="sec-head"><h2>الأزرار</h2><span class="v3-mono">BUTTONS</span></div>
+      <div class="demo">
+        <button class="v3-btn v3-btn--primary">أساسي</button>
+        <button class="v3-btn v3-btn--gold">ذهبي</button>
+        <button class="v3-btn">محايد</button>
+        <button class="v3-btn v3-btn--ghost">شبح</button>
+        <button class="v3-btn v3-btn--icon" aria-label="أيقونة"><span class="ms">add</span></button>
+      </div>
+    </section>
+
+    <!-- BADGES + TRUST -->
+    <section>
+      <div class="sec-head"><h2>الشارات وإشارات الثقة</h2><span class="v3-mono">BADGES · TRUST</span></div>
+      <div class="demo">
+        <span class="v3-badge v3-badge--ok"><span class="v3-dot"></span> مكتمل</span>
+        <span class="v3-badge v3-badge--warn"><span class="v3-dot"></span> بانتظار</span>
+        <span class="v3-badge v3-badge--err"><span class="v3-dot"></span> متأخّر</span>
+        <span class="v3-badge v3-badge--gold">مميّز</span>
+        <span class="v3-trust v3-trust--confirmed"><span class="ms">verified</span> 135,000 د.ع</span>
+        <span class="v3-trust v3-trust--estimate"><span class="ms">info</span> حسب الصنف والقوة</span>
+        <span class="v3-pending-value"><span class="ms">hourglass_empty</span> تُحدّد بعد الكشف</span>
+        <span class="v3-gate"><span class="ms">admin_panel_settings</span> يتطلب موافقة مدير</span>
+      </div>
+    </section>
+
+    <!-- SIGNATURE ORB SELECTOR -->
+    <section>
+      <div class="sec-head"><h2>المُحدِّد التوقيعي (الكرة المادّية)</h2><span class="v3-mono">ORB SELECTOR · ref #001</span></div>
+      <div class="v3-plans" id="plans">
+        <div class="v3-plan" role="radio" aria-checked="false" tabindex="0" data-orb=""><span class="v3-orb"></span><span class="v3-plan__body"><span class="v3-plan__name">أساسي</span><span class="v3-plan__meta">خدمة فردية</span></span></div>
+        <div class="v3-plan" role="radio" aria-checked="true" tabindex="0" data-orb="on"><span class="v3-plan__badge">الأفضل قيمة</span><span class="v3-orb v3-orb--on"></span><span class="v3-plan__body"><span class="v3-plan__name">احترافي</span><span class="v3-plan__meta">الأكثر طلباً</span></span></div>
+      </div>
+    </section>
+
+    <!-- TABS -->
+    <section>
+      <div class="sec-head"><h2>التبويبات</h2><span class="v3-mono">SEGMENTED · UNDERLINE</span></div>
+      <div class="demo-col">
+        <div class="v3-seg" role="tablist" style="align-self:flex-start"><button class="v3-seg__opt" aria-selected="true">الكل</button><button class="v3-seg__opt" aria-selected="false">مفتوح</button><button class="v3-seg__opt" aria-selected="false">مغلق</button></div>
+        <div class="v3-utabs"><button class="v3-utab" aria-selected="true">نظرة عامة</button><button class="v3-utab" aria-selected="false">الخدمات</button><button class="v3-utab" aria-selected="false">السجل</button></div>
+      </div>
+    </section>
+
+    <!-- DATA TABLE -->
+    <section>
+      <div class="sec-head"><h2>الجدول</h2><span class="v3-mono">DATA TABLE</span></div>
+      <div class="v3-table-wrap">
+        <table class="v3-table">
+          <thead><tr><th>رقم الطلب</th><th>الخدمة</th><th>المشترك</th><th>الحالة</th><th>الأجور</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- STEPPER -->
+    <section>
+      <div class="sec-head"><h2>الخطوات</h2><span class="v3-mono">STEPPER</span></div>
+      <div class="v3-stepper">
+        <div class="v3-step v3-step--done"><span class="v3-step__dot"><span class="ms" style="font-size:16px">check</span></span><span class="v3-step__label">البيانات</span><span class="v3-step__line"></span></div>
+        <div class="v3-step v3-step--active"><span class="v3-step__dot">2</span><span class="v3-step__label">المستندات</span><span class="v3-step__line"></span></div>
+        <div class="v3-step"><span class="v3-step__dot">3</span><span class="v3-step__label">المراجعة</span></div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section>
+      <div class="sec-head"><h2>الخط الزمني</h2><span class="v3-mono">TIMELINE</span></div>
+      <div class="v3-timeline" style="max-width:460px">
+        <div class="v3-tl-item v3-tl-item--done"><span class="v3-tl-dot"></span><div class="v3-tl-body"><b>استلام الطلب</b><div class="v3-tl-time">08:14 · م. كرار</div></div></div>
+        <div class="v3-tl-item v3-tl-item--done"><span class="v3-tl-dot"></span><div class="v3-tl-body"><b>فحص ميداني</b><div class="v3-tl-time">10:02 · لجنة الفحص</div></div></div>
+        <div class="v3-tl-item v3-tl-item--active"><span class="v3-tl-dot"></span><div class="v3-tl-body"><b>احتساب الأجور</b><div class="v3-tl-time">قيد التنفيذ</div></div></div>
+        <div class="v3-tl-item"><span class="v3-tl-dot"></span><div class="v3-tl-body" style="color:var(--v3-ink-3)"><b>بانتظار الدفع</b></div></div>
+      </div>
+    </section>
+
+    <!-- ALERTS -->
+    <section>
+      <div class="sec-head"><h2>التنبيهات</h2><span class="v3-mono">ALERTS</span></div>
+      <div class="demo-col" style="max-width:640px">
+        <div class="v3-alert v3-alert--info"><span class="ms">info</span><div class="v3-alert__body">كشف هندسي مشترك (فنية + خدمات) قبل احتساب الأجور النهائية.</div></div>
+        <div class="v3-alert v3-alert--ok"><span class="ms">check_circle</span><div class="v3-alert__body">تم حفظ الطلب وإرسال إشعار للمشترك.</div></div>
+        <div class="v3-alert v3-alert--warn"><span class="ms">warning</span><div class="v3-alert__body">التقسيط فوق 5 ملايين د.ع يتطلب موافقة مدير الفرع وكفيلاً موظفاً.</div></div>
+        <div class="v3-alert v3-alert--err"><span class="ms">dangerous</span><div class="v3-alert__body">بلاغ خطر = أولوية قصوى: إشعار فرق الطوارئ فوراً قبل تسجيل الطلب.</div></div>
+      </div>
+    </section>
+
+    <!-- INPUTS + DROPZONE + TAGS -->
+    <section>
+      <div class="sec-head"><h2>الإدخال</h2><span class="v3-mono">INPUTS · UPLOAD · TAGS</span></div>
+      <div class="demo" style="align-items:flex-start">
+        <div class="demo-col" style="min-width:280px">
+          <div class="v3-field"><label class="v3-label">اسم المشترك</label><input class="v3-input" placeholder="مثال: محمد عبدالله" /></div>
+          <div class="v3-tags"><span class="v3-tag">منزلي <button aria-label="حذف"><span class="ms" style="font-size:14px">close</span></button></span><span class="v3-tag">تجاري <button aria-label="حذف"><span class="ms" style="font-size:14px">close</span></button></span><input style="border:none;background:none;outline:none;font:inherit;flex:1;min-width:80px" placeholder="أضف وسماً" /></div>
+        </div>
+        <label class="v3-dropzone" style="min-width:280px"><span class="ms">upload_file</span><b>أرفق المستندات</b><span class="v3-sub" style="font-size:var(--v3-fs-xs)">اسحب الملفات أو اضغط للاختيار</span></label>
+      </div>
+    </section>
+
+    <!-- PROGRESS + PAGINATION + AVATAR + BREADCRUMB -->
+    <section>
+      <div class="sec-head"><h2>الملاحة والمؤشّرات</h2><span class="v3-mono">PROGRESS · PAGER · AVATAR</span></div>
+      <div class="demo-col" style="gap:var(--v3-s5)">
+        <div class="v3-crumbs"><a href="#">الرئيسية</a><span class="sep">/</span><a href="#">الاشتراكات</a><span class="sep">/</span><span class="cur">عمل اشتراك جديد</span></div>
+        <div class="v3-progress" style="max-width:420px"><div class="v3-progress__fill" style="width:68%"></div></div>
+        <div class="demo">
+          <div class="v3-pager"><button class="v3-pager__btn"><span class="ms" style="font-size:18px">chevron_right</span></button><button class="v3-pager__btn" aria-current="page">1</button><button class="v3-pager__btn">2</button><button class="v3-pager__btn">3</button><button class="v3-pager__btn"><span class="ms" style="font-size:18px">chevron_left</span></button></div>
+          <div class="v3-avatar-group"><span class="v3-avatar">ك</span><span class="v3-avatar v3-avatar--gold">ز</span><span class="v3-avatar">أ</span></div>
+          <span class="v3-tip"><button class="v3-btn v3-btn--icon" aria-label="مساعدة"><span class="ms">help</span></button><span class="v3-tip__bubble">SLA: 7 أيام عمل</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERLAYS: dialog / drawer / toast / menu -->
+    <section>
+      <div class="sec-head"><h2>الطبقات العائمة</h2><span class="v3-mono">DIALOG · DRAWER · TOAST · MENU</span></div>
+      <div class="demo">
+        <button class="v3-btn v3-btn--primary" onclick="document.getElementById('dlg').style.display='grid'">فتح نافذة حوار</button>
+        <button class="v3-btn" onclick="document.getElementById('drw').style.display='flex'">فتح لوحة جانبية</button>
+        <button class="v3-btn" onclick="toast()">إظهار توست</button>
+        <div class="v3-menu" style="position:static">
+          <button class="v3-menu__item"><span class="ms">visibility</span> عرض التفاصيل</button>
+          <button class="v3-menu__item"><span class="ms">edit</span> تعديل</button>
+          <div class="v3-menu__sep"></div>
+          <button class="v3-menu__item" style="color:var(--v3-err)"><span class="ms">delete</span> حذف</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATES -->
+    <section>
+      <div class="sec-head"><h2>الحالات</h2><span class="v3-mono">EMPTY · LOADING</span></div>
+      <div class="v3-grid v3-grid--2">
+        <div class="v3-empty"><span class="ms" style="font-size:28px">inbox</span><strong>لا طلبات بعد</strong><span>ابدأ بإنشاء أول خدمة لهذا المشترك.</span><button class="v3-btn v3-btn--primary" style="margin-top:8px">طلب جديد</button></div>
+        <div class="v3-card" style="display:flex;flex-direction:column;gap:var(--v3-s3)"><div class="v3-skeleton" style="height:14px;width:60%"></div><div class="v3-skeleton" style="height:14px;width:90%"></div><div class="v3-skeleton" style="height:14px;width:45%"></div></div>
+      </div>
+    </section>
+
+    <footer style="margin-top:var(--v3-s16);text-align:center;color:var(--v3-ink-3)"><span class="v3-mono">TADFUQ KHAYR · COMPONENT LIBRARY · v3.2 · LUMINOUS CALM</span></footer>
+  </div>
+
+  <!-- overlay instances -->
+  <div class="v3-overlay" id="dlg" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+    <div class="v3-dialog">
+      <h3 class="v3-dialog__title">تأكيد إلغاء الاشتراك</h3>
+      <p class="v3-sub">هذا إجراء حسّاس ويتطلب قرارك. سيتم غلق الحساب بعد التأكيد.</p>
+      <div class="v3-gate" style="margin-top:8px"><span class="ms">admin_panel_settings</span> يتطلب موافقة مدير</div>
+      <div class="v3-dialog__foot"><button class="v3-btn v3-btn--primary" onclick="document.getElementById('dlg').style.display='none'">تأكيد</button><button class="v3-btn v3-btn--ghost" onclick="document.getElementById('dlg').style.display='none'">إلغاء</button></div>
+    </div>
+  </div>
+  <div class="v3-overlay" id="drwOv" style="display:none;background:transparent;backdrop-filter:none" onclick="closeDrawer()"></div>
+  <div class="v3-drawer" id="drw" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 class="v3-dialog__title" style="margin:0">تفاصيل الطلب</h3><button class="v3-btn v3-btn--icon" onclick="closeDrawer()" aria-label="إغلاق"><span class="ms">close</span></button></div>
+    <div class="v3-alert v3-alert--info"><span class="ms">info</span><div class="v3-alert__body">TQ-2026-08-1417 · عمل اشتراك جديد</div></div>
+    <div class="v3-timeline"><div class="v3-tl-item v3-tl-item--done"><span class="v3-tl-dot"></span><div class="v3-tl-body"><b>استلام الطلب</b><div class="v3-tl-time">08:14</div></div></div><div class="v3-tl-item v3-tl-item--active"><span class="v3-tl-dot"></span><div class="v3-tl-body"><b>فحص ميداني</b><div class="v3-tl-time">قيد التنفيذ</div></div></div></div>
+  </div>
+  <div class="v3-toasts" id="toasts"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="../data.js"></script>
+  <script>
+    // theme
+    const tt = document.getElementById('themeToggle');
+    tt.addEventListener('click', ()=>{ const on=document.body.classList.toggle('v3-dark'); tt.setAttribute('aria-checked',on); });
+    // table from real data
+    const tb = document.getElementById('tbody');
+    window.RECENT_CASES.slice(0,5).forEach(c=>{
+      const svc = window.SERVICE_MAP[c.svc];
+      const fee = c.fee>0 ? window.fmtIQD(c.fee) : (c.status==='موافقة مدير' ? 'موافقة مدير' : 'تُحدّد بعد الكشف');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="v3-mono">${c.id}</td><td>${svc.name}</td><td>${c.subscriber}</td><td><span class="v3-badge">${c.status}</span></td><td class="num">${fee}</td>`;
+      tb.appendChild(tr);
+    });
+    // orb selector
+    const orbClass={on:'v3-orb--on',cs:'v3-orb--cs',ce:'v3-orb--ce'};
+    document.querySelectorAll('#plans .v3-plan').forEach(p=>{
+      const sel=()=>{ document.querySelectorAll('#plans .v3-plan').forEach(x=>{x.setAttribute('aria-checked','false');x.querySelector('.v3-orb').className='v3-orb';}); p.setAttribute('aria-checked','true'); p.querySelector('.v3-orb').className='v3-orb '+(orbClass[p.dataset.orb]||'v3-orb--on'); };
+      p.addEventListener('click',sel); p.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel();}});
+    });
+    // tabs
+    document.querySelectorAll('.v3-seg,.v3-utabs').forEach(g=>g.querySelectorAll('.v3-seg__opt,.v3-utab').forEach(o=>o.addEventListener('click',()=>{g.querySelectorAll('.v3-seg__opt,.v3-utab').forEach(x=>x.setAttribute('aria-selected','false'));o.setAttribute('aria-selected','true');})));
+    // pager
+    document.querySelectorAll('.v3-pager__btn').forEach(b=>b.addEventListener('click',()=>{if(b.textContent.trim().match(/^\d+$/)){document.querySelectorAll('.v3-pager__btn').forEach(x=>x.removeAttribute('aria-current'));b.setAttribute('aria-current','page');}}));
+    // drawer
+    function closeDrawer(){ document.getElementById('drw').style.display='none'; document.getElementById('drwOv').style.display='none'; }
+    document.getElementById('drw').addEventListener('click',e=>e.stopPropagation());
+    const drwBtn=[...document.querySelectorAll('.v3-btn')].find(b=>b.textContent.includes('لوحة جانبية'));
+    if(drwBtn) drwBtn.addEventListener('click',()=>document.getElementById('drwOv').style.display='block');
+    // toast
+    let tc=0;
+    function toast(){ const t=document.createElement('div'); t.className='v3-toast v3-toast--ok'; t.innerHTML='<span class="ms">check_circle</span><div class="v3-toast__body">تم حفظ الطلب بنجاح</div>'; document.getElementById('toasts').appendChild(t); setTimeout(()=>t.remove(),3200); }
+  </script>
+</body>
+</html>

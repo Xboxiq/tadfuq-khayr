@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تدفّق الخير · Design System v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="motion.css" />
+  <link rel="stylesheet" href="components.css" />
+  <style>
+    body { margin: 0; }
+    .wrap { max-width: var(--v3-page-max); margin: 0 auto; padding: var(--v3-s8) var(--v3-page-pad) var(--v3-s16); }
+    section { margin-top: var(--v3-s12); }
+    .sec-head { display: flex; align-items: baseline; gap: var(--v3-s3); margin-bottom: var(--v3-s5); }
+    .sec-head h2 { margin: 0; font-size: var(--v3-fs-xl); font-family: var(--v3-disp); font-weight: 700; letter-spacing: var(--v3-track-tight); }
+    .sec-head span { color: var(--v3-ink-3); font-size: var(--v3-fs-sm); }
+    .row { display: flex; flex-wrap: wrap; gap: var(--v3-s3); align-items: center; }
+    .hero { padding-top: var(--v3-s10); }
+    .hero h1 { margin: 0 0 var(--v3-s3); font-size: var(--v3-fs-3xl); }
+    .swatches { display: flex; flex-wrap: wrap; gap: var(--v3-s2); }
+    .sw { width: 84px; height: 64px; border-radius: var(--v3-r); border: 1px solid var(--v3-border); display: flex; align-items: flex-end; padding: 6px; font-family: var(--v3-mono); font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  </style>
+</head>
+<body class="v3 v3-atmos">
+
+  <!-- GLASS CHROME -->
+  <header class="v3-chrome">
+    <div class="v3-brand">
+      <span class="v3-brand__mark">ت</span>
+      <span>تدفّق الخير<br><span class="v3-mono" style="font-weight:500;color:var(--v3-ink-3)">DESIGN SYSTEM v3</span></span>
+    </div>
+    <span class="v3-chip">كهرباء الرصافة · فرع النضال</span>
+    <div style="margin-inline-start:auto" class="row">
+      <span class="v3-live"><span class="v3-dot v3-live-dot"></span> مباشر</span>
+      <button class="v3-toggle" id="themeToggle" aria-checked="false" aria-label="تبديل الوضع الليلي"></button>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <section class="hero v3-rise">
+      <h1 class="v3-display"><span class="v3-gradient-text">نظام تصميم v3</span><br>هدوء مُضيء، انضباط دافئ.</h1>
+      <p class="v3-sub" style="max-width:60ch">تطوير لنظام تدفّق الخير: لوحة دافئة، سلالم OKLCH، مادّة زجاجية، حركة فيزيائية موحّدة. طبقة معزولة تماماً (<span class="v3-mono">--v3-*</span>) لا تمسّ التصميم الأساسي.</p>
+      <div class="row" style="margin-top:var(--v3-s5)">
+        <button class="v3-btn v3-btn--primary">ابدأ خدمة جديدة</button>
+        <button class="v3-btn v3-btn--gold">الأكثر طلباً</button>
+        <button class="v3-btn v3-btn--ghost">استعراض</button>
+        <button class="v3-btn v3-btn--icon" aria-label="بحث">⌕</button>
+      </div>
+    </section>
+
+    <!-- COLOR -->
+    <section class="v3-rise v3-rise-1">
+      <div class="sec-head"><h2>اللوحة اللونية</h2><span>توقيع دافئ + أقسام جوهرية</span></div>
+      <div class="swatches">
+        <div class="sw" style="background:var(--v3-navy)">Navy</div>
+        <div class="sw" style="background:var(--v3-gold)">Gold</div>
+        <div class="sw" style="background:var(--v3-crimson)">Crimson</div>
+        <div class="sw" style="background:var(--v3-cs)">CS</div>
+        <div class="sw" style="background:var(--v3-ct)">CT</div>
+        <div class="sw" style="background:var(--v3-cb)">CB</div>
+        <div class="sw" style="background:var(--v3-ca)">CA</div>
+        <div class="sw" style="background:var(--v3-ce)">CE</div>
+      </div>
+    </section>
+
+    <!-- SIGNATURE: PLAN SELECTOR WITH ORBS -->
+    <section class="v3-rise v3-rise-2">
+      <div class="sec-head"><h2>المُحدِّد التوقيعي</h2><span>كرة مادّية لامعة + شارة توصية (مستلهم من المرجع #001)</span></div>
+      <div class="v3-plans" id="plans">
+        <div class="v3-plan" role="radio" aria-checked="false" tabindex="0" data-orb="">
+          <span class="v3-orb"></span>
+          <span class="v3-plan__body"><span class="v3-plan__name">أساسي</span><span class="v3-plan__meta">خدمة فردية</span></span>
+        </div>
+        <div class="v3-plan" role="radio" aria-checked="true" tabindex="0" data-orb="on">
+          <span class="v3-plan__badge">الأفضل قيمة</span>
+          <span class="v3-orb v3-orb--on"></span>
+          <span class="v3-plan__body"><span class="v3-plan__name">احترافي</span><span class="v3-plan__meta">الأكثر طلباً</span></span>
+        </div>
+        <div class="v3-plan" role="radio" aria-checked="false" tabindex="0" data-orb="ce">
+          <span class="v3-orb v3-orb--ce"></span>
+          <span class="v3-plan__body"><span class="v3-plan__name">طوارئ</span><span class="v3-plan__meta">أولوية قصوى</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEGMENTED + BADGES -->
+    <section class="v3-rise v3-rise-3">
+      <div class="sec-head"><h2>المُحدِّد المجزّأ والشارات</h2><span>تنقّل + حالات دلالية</span></div>
+      <div class="row" style="margin-bottom:var(--v3-s4)">
+        <div class="v3-seg" role="tablist">
+          <button class="v3-seg__opt" aria-selected="false">الكل</button>
+          <button class="v3-seg__opt" aria-selected="true">قيد المعالجة</button>
+          <button class="v3-seg__opt" aria-selected="false">مكتمل</button>
+        </div>
+      </div>
+      <div class="row">
+        <span class="v3-badge v3-badge--ok"><span class="v3-dot"></span> مكتمل</span>
+        <span class="v3-badge v3-badge--warn"><span class="v3-dot"></span> بانتظار</span>
+        <span class="v3-badge v3-badge--err"><span class="v3-dot"></span> متأخّر</span>
+        <span class="v3-badge v3-badge--gold">مميّز</span>
+        <span class="v3-badge"><span class="v3-mono">CS0001</span></span>
+      </div>
+    </section>
+
+    <!-- STAT CARDS -->
+    <section class="v3-rise v3-rise-3">
+      <div class="sec-head"><h2>بطاقات الإحصاء</h2><span>أرقام جدولية + sparkline</span></div>
+      <div class="v3-grid v3-grid--4">
+        <div class="v3-card v3-stat" style="--dept:var(--v3-cs)">
+          <div class="v3-stat__top"><span class="v3-stat__icn">⚡</span><span class="v3-stat__delta up">+12%</span></div>
+          <div><div class="v3-stat__num v3-num">1,284</div><div class="v3-stat__lab">طلبات اليوم</div></div>
+          <div class="v3-spark"><i style="height:40%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:95%"></i></div>
+        </div>
+        <div class="v3-card v3-stat" style="--dept:var(--v3-cb)">
+          <div class="v3-stat__top"><span class="v3-stat__icn">⊞</span><span class="v3-stat__delta up">+4%</span></div>
+          <div><div class="v3-stat__num v3-num">٩٨٪</div><div class="v3-stat__lab">نسبة الإنجاز</div></div>
+          <div class="v3-spark"><i style="height:70%"></i><i style="height:75%"></i><i style="height:65%"></i><i style="height:85%"></i><i style="height:90%"></i><i style="height:98%"></i></div>
+        </div>
+        <div class="v3-card v3-stat" style="--dept:var(--v3-ct)">
+          <div class="v3-stat__top"><span class="v3-stat__icn">⚙</span><span class="v3-stat__delta dn">-3%</span></div>
+          <div><div class="v3-stat__num v3-num">42</div><div class="v3-stat__lab">زيارات فنية</div></div>
+          <div class="v3-spark"><i style="height:60%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:55%"></i></div>
+        </div>
+        <div class="v3-card v3-stat" style="--dept:var(--v3-ca)">
+          <div class="v3-stat__top"><span class="v3-stat__icn">◷</span><span class="v3-stat__delta up">+8%</span></div>
+          <div><div class="v3-stat__num v3-num">6.4<span style="font-size:.5em">د</span></div><div class="v3-stat__lab">متوسط الاستجابة</div></div>
+          <div class="v3-spark"><i style="height:50%"></i><i style="height:65%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:60%"></i><i style="height:70%"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEPT CARDS -->
+    <section class="v3-rise v3-rise-4">
+      <div class="sec-head"><h2>بطاقات الأقسام</h2><span>تلوين جوهري + توهّج عند المرور</span></div>
+      <div class="v3-grid v3-grid--3">
+        <div class="v3-dept v3-dept--cs">
+          <div class="row" style="justify-content:space-between"><span class="v3-dept__icn">⚡</span><span class="v3-dept__code">CS · الاشتراكات</span></div>
+          <div class="v3-dept__name">خدمات الاشتراك</div>
+          <div class="v3-dept__desc">طلبات اشتراك جديد، نقل ملكية، تعديل قدرة العدّاد ومتابعتها.</div>
+        </div>
+        <div class="v3-dept v3-dept--cb">
+          <div class="row" style="justify-content:space-between"><span class="v3-dept__icn">▭</span><span class="v3-dept__code">CB · الفواتير</span></div>
+          <div class="v3-dept__name">الفواتير والتحصيل</div>
+          <div class="v3-dept__desc">استعلام الفواتير، تسوية المتأخرات، خطط التقسيط والإيصالات.</div>
+        </div>
+        <div class="v3-dept v3-dept--ca">
+          <div class="row" style="justify-content:space-between"><span class="v3-dept__icn">◔</span><span class="v3-dept__code">CA · الشكاوى</span></div>
+          <div class="v3-dept__name">الشكاوى والبلاغات</div>
+          <div class="v3-dept__desc">تسجيل انقطاع، بلاغ عطل، متابعة حالة الشكوى حتى الإغلاق.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORM -->
+    <section class="v3-rise">
+      <div class="sec-head"><h2>الإدخال</h2><span>حقول + مفتاح + حفظ تلقائي</span></div>
+      <div class="v3-card" style="max-width:520px; display:flex; flex-direction:column; gap:var(--v3-s4)">
+        <div class="v3-field"><label class="v3-label">اسم المشترك</label><input class="v3-input" placeholder="مثال: محمد عبدالله" /></div>
+        <div class="v3-field"><label class="v3-label">رقم العدّاد</label><input class="v3-input" placeholder="CS0001-2026" /></div>
+        <div class="row" style="justify-content:space-between">
+          <span class="v3-label">إشعارات الرسائل</span>
+          <button class="v3-toggle" aria-checked="true" aria-label="تبديل"></button>
+        </div>
+        <div class="v3-live"><span class="v3-dot v3-live-dot"></span> يُحفظ تلقائياً</div>
+      </div>
+    </section>
+
+    <!-- STATES -->
+    <section class="v3-rise">
+      <div class="sec-head"><h2>الحالات</h2><span>فارغ · تحميل · خطأ · تراجع</span></div>
+      <div class="v3-grid v3-grid--2">
+        <div class="v3-empty"><span style="font-size:28px">▢</span><strong>لا طلبات بعد</strong><span>ابدأ بإنشاء أول خدمة لهذا المشترك.</span></div>
+        <div class="v3-card" style="display:flex;flex-direction:column;gap:var(--v3-s3)">
+          <div class="v3-skeleton" style="height:14px;width:60%"></div>
+          <div class="v3-skeleton" style="height:14px;width:90%"></div>
+          <div class="v3-skeleton" style="height:14px;width:45%"></div>
+        </div>
+        <div class="v3-error"><span>⚠</span><span>تعذّر جلب الفاتورة. تحقّق من الاتصال وأعد المحاولة.</span></div>
+        <div style="display:flex;align-items:center"><span class="v3-undo">↩ تم حذف الطلب · تراجع<span class="v3-undo__bar"></span></span></div>
+      </div>
+    </section>
+
+    <footer style="margin-top:var(--v3-s16);text-align:center;color:var(--v3-ink-3);font-size:var(--v3-fs-xs)">
+      <span class="v3-mono">TADFUQ KHAYR · DESIGN SYSTEM v3 · LUMINOUS CALM</span>
+    </footer>
+  </div>
+
+  <script>
+    // theme toggle
+    const t = document.getElementById('themeToggle');
+    t.addEventListener('click', () => {
+      const on = document.body.classList.toggle('v3-dark');
+      t.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    // plan radio selection (mixed-initiative: user leads)
+    const orbClass = { on: 'v3-orb--on', cs: 'v3-orb--cs', ct: 'v3-orb--ct', cb: 'v3-orb--cb', ca: 'v3-orb--ca', ce: 'v3-orb--ce' };
+    document.querySelectorAll('#plans .v3-plan').forEach(p => {
+      const select = () => {
+        document.querySelectorAll('#plans .v3-plan').forEach(x => {
+          x.setAttribute('aria-checked', 'false');
+          const o = x.querySelector('.v3-orb'); o.className = 'v3-orb';
+          const cls = orbClass[x.dataset.orb]; if (cls && x === p) {}
+        });
+        p.setAttribute('aria-checked', 'true');
+        const cls = orbClass[p.dataset.orb] || 'v3-orb--on';
+        p.querySelector('.v3-orb').className = 'v3-orb ' + cls;
+      };
+      p.addEventListener('click', select);
+      p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); } });
+    });
+    // segmented control
+    document.querySelectorAll('.v3-seg').forEach(seg => {
+      seg.querySelectorAll('.v3-seg__opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          seg.querySelectorAll('.v3-seg__opt').forEach(o => o.setAttribute('aria-selected','false'));
+          opt.setAttribute('aria-selected','true');
+        });
+      });
+    });
+    // toggles
+    document.querySelectorAll('.v3-toggle:not(#themeToggle)').forEach(tg => {
+      tg.addEventListener('click', () => tg.setAttribute('aria-checked', tg.getAttribute('aria-checked')==='true'?'false':'true'));
+    });
+  </script>
+</body>
+</html>
