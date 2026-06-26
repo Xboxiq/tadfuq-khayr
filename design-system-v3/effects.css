@@ -1,0 +1,102 @@
+/* =============================================================
+   TADFUQ KHAYR — DESIGN SYSTEM v3.1  ·  EFFECTS
+   Visual-feeding layer, sourced from the saved design toolkit:
+   - grainient.supply  -> grainy gradient surfaces (noise overlay)
+   - bentogrids.com    -> asymmetric bento layout utilities
+   - fontshare.com     -> Clash Display (Latin display pairing)
+   - curated.design    -> restrained editorial composition
+   Isolated namespace --v3-* / .v3-*. Does not touch original CSS.
+   ============================================================= */
+
+/* ---------- Fontshare display pairing (Latin numerals / hero) ---------- */
+/* loaded via <link> to api.fontshare.com in the HTML head */
+:root {
+  --v3-disp-lat: "Clash Display", "Alexandria", sans-serif;
+}
+
+/* =============================================================
+   GRAINIENT — grainy gradient surfaces
+   A soft brand gradient + a fine film grain overlay.
+   ============================================================= */
+.v3-grain {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+/* film grain: tiny SVG turbulence, very low opacity, screen-blended */
+.v3-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+.v3-grain > * { position: relative; z-index: 1; }
+
+/* gradient presets (calm, brand-aligned, not loud) */
+.v3-grad-navy {
+  background:
+    radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, var(--v3-navy-soft) 92%, #fff) 0%, var(--v3-navy) 55%, var(--v3-navy-700) 100%);
+  color: #fff;
+}
+.v3-grad-gold {
+  background:
+    radial-gradient(120% 140% at 88% 0%, var(--v3-gold-soft) 0%, var(--v3-gold) 60%, var(--v3-gold-600) 100%);
+  color: #2a1e05;
+}
+.v3-grad-dawn {
+  background:
+    radial-gradient(110% 130% at 0% 0%, color-mix(in srgb, var(--v3-gold) 30%, var(--v3-surface)) 0%, transparent 55%),
+    radial-gradient(110% 130% at 100% 100%, color-mix(in srgb, var(--v3-cs) 26%, var(--v3-surface)) 0%, transparent 55%),
+    var(--v3-surface);
+}
+.v3-grad-dept {
+  background:
+    radial-gradient(120% 140% at 14% 0%, color-mix(in srgb, var(--dept,var(--v3-navy)) 85%, #fff) 0%, var(--dept,var(--v3-navy)) 60%, color-mix(in srgb, var(--dept,var(--v3-navy)) 70%, #000) 100%);
+  color: #fff;
+}
+
+/* =============================================================
+   BENTO GRID — asymmetric, varying-span cards
+   ============================================================= */
+.v3-bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(120px, auto);
+  gap: var(--v3-s4);
+}
+.v3-bento > * { grid-column: span 3; }
+.col-2  { grid-column: span 2 !important; }
+.col-3  { grid-column: span 3 !important; }
+.col-4  { grid-column: span 4 !important; }
+.col-5  { grid-column: span 5 !important; }
+.col-6  { grid-column: span 6 !important; }
+.col-7  { grid-column: span 7 !important; }
+.col-8  { grid-column: span 8 !important; }
+.col-12 { grid-column: span 12 !important; }
+.row-2  { grid-row: span 2; }
+.row-3  { grid-row: span 3; }
+
+@media (max-width: 1040px){
+  .v3-bento { grid-template-columns: repeat(6, 1fr); }
+  .v3-bento > *, .col-4, .col-5, .col-7, .col-8 { grid-column: span 3 !important; }
+  .col-6, .col-12 { grid-column: span 6 !important; }
+}
+@media (max-width: 620px){
+  .v3-bento { grid-template-columns: 1fr; }
+  .v3-bento > *, [class*="col-"] { grid-column: span 1 !important; }
+  .row-2, .row-3 { grid-row: auto; }
+}
+
+/* editorial hero number / display (Clash Display) */
+.v3-hero-num {
+  font-family: var(--v3-disp-lat);
+  font-weight: 700;
+  letter-spacing: var(--v3-track-tight);
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+}

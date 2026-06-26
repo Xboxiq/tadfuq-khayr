@@ -1,0 +1,178 @@
+/* =============================================================
+   TADFUQ KHAYR — DESIGN SYSTEM v3  ·  TOKENS
+   Evolution of v-final. Codename: "Luminous Calm".
+   Keeps: warm canvas, navy/gold/crimson signature, OKLCH jewel palette.
+   Adds: full tonal ramps, 5-step elevation, fluid type scale,
+         richer spring physics, glass + orb material tokens.
+   IMPORTANT: This file is a NEW, isolated layer. It does NOT touch
+   the original final.css. Namespace is --v3-* (never --f-*).
+   ============================================================= */
+
+:root {
+  /* ---------- Canvas (warm, never pure white) ---------- */
+  --v3-bg:        #faf9f5;
+  --v3-bg-2:      #f3f1ea;
+  --v3-bg-sunk:   #ece9df;
+  --v3-surface:   #ffffff;
+  --v3-surface-2: #f8f6f0;
+  --v3-surface-3: #efece1;
+  --v3-border:    #e8e5db;
+  --v3-border-2:  #d7d3c5;
+  --v3-border-3:  #c4bfae;
+
+  /* ---------- Ink ---------- */
+  --v3-ink:    #15140f;
+  --v3-ink-2:  #47463d;
+  --v3-ink-3:  #837d70;
+  --v3-ink-4:  #aaa494;
+
+  /* ---------- Navy ramp (primary — trust) ---------- */
+  --v3-navy-50:  oklch(0.96 0.012 264);
+  --v3-navy-100: oklch(0.90 0.028 264);
+  --v3-navy-300: oklch(0.66 0.072 264);
+  --v3-navy-500: oklch(0.40 0.088 264);   /* ~#1e2a4d core */
+  --v3-navy-600: oklch(0.34 0.082 264);
+  --v3-navy-700: oklch(0.28 0.070 264);
+  --v3-navy:     var(--v3-navy-500);
+  --v3-navy-soft: oklch(0.46 0.090 264);
+
+  /* ---------- Gold ramp (signature — "the good") ---------- */
+  --v3-gold-50:  oklch(0.97 0.024 85);
+  --v3-gold-100: oklch(0.93 0.055 85);
+  --v3-gold-300: oklch(0.82 0.110 85);
+  --v3-gold-500: oklch(0.68 0.118 85);    /* ~#b8861b core */
+  --v3-gold-600: oklch(0.60 0.110 85);
+  --v3-gold:     var(--v3-gold-500);
+  --v3-gold-soft: oklch(0.80 0.110 85);
+
+  /* ---------- Crimson ramp (gravity — refined alert) ---------- */
+  --v3-crimson-50:  oklch(0.96 0.020 20);
+  --v3-crimson-100: oklch(0.90 0.050 20);
+  --v3-crimson-500: oklch(0.45 0.135 20);  /* ~#8f1d28 core */
+  --v3-crimson-600: oklch(0.40 0.125 20);
+  --v3-crimson:     var(--v3-crimson-500);
+  --v3-crimson-soft: oklch(0.58 0.140 20);
+
+  /* ---------- Status (semantic only) ---------- */
+  --v3-ok:    oklch(0.56 0.105 155);
+  --v3-warn:  oklch(0.66 0.120 75);
+  --v3-err:   oklch(0.55 0.165 25);
+  --v3-info:  oklch(0.58 0.095 235);
+  --v3-ok-bg:   color-mix(in srgb, var(--v3-ok) 12%, var(--v3-surface));
+  --v3-warn-bg: color-mix(in srgb, var(--v3-warn) 14%, var(--v3-surface));
+  --v3-err-bg:  color-mix(in srgb, var(--v3-err) 12%, var(--v3-surface));
+
+  /* ---------- Department palette (jewel-calm, uniform lightness) ---------- */
+  --v3-cs: oklch(0.52 0.105 259);  /* Subscriptions — cobalt */
+  --v3-ct: oklch(0.57 0.090 72);   /* Technical — caramel bronze */
+  --v3-cb: oklch(0.56 0.085 192);  /* Billing — sea teal */
+  --v3-ca: oklch(0.54 0.095 12);   /* Complaints — rosewood */
+  --v3-ce: oklch(0.55 0.100 305);  /* NEW v3: Emergency — amethyst */
+
+  /* ---------- Typography ---------- */
+  --v3-sans: "Geist", "IBM Plex Sans Arabic", -apple-system, "Segoe UI", sans-serif;
+  --v3-arab: "Readex Pro", "IBM Plex Sans Arabic", "Geist", sans-serif;
+  --v3-disp: "Alexandria", "Readex Pro", "IBM Plex Sans Arabic", sans-serif;
+  --v3-mono: "Geist Mono", "SF Mono", Menlo, monospace;
+
+  /* Fluid type scale (1.20 ratio, viewport-aware) */
+  --v3-fs-xs:  0.75rem;
+  --v3-fs-sm:  0.825rem;
+  --v3-fs-md:  0.9375rem;
+  --v3-fs-lg:  clamp(1.05rem, 1.4vw, 1.15rem);
+  --v3-fs-xl:  clamp(1.3rem, 2vw, 1.5rem);
+  --v3-fs-2xl: clamp(1.7rem, 3vw, 2.1rem);
+  --v3-fs-3xl: clamp(2.2rem, 4.4vw, 3rem);
+  --v3-track-tight: -0.022em;
+  --v3-track-snug:  -0.012em;
+  --v3-track-wide:  0.04em;
+
+  /* ---------- Spacing scale (4pt base) ---------- */
+  --v3-s1: 4px;  --v3-s2: 8px;  --v3-s3: 12px; --v3-s4: 16px;
+  --v3-s5: 20px; --v3-s6: 24px; --v3-s8: 32px; --v3-s10: 40px;
+  --v3-s12: 48px; --v3-s16: 64px;
+  --v3-page-max: 1480px;
+  --v3-page-pad: clamp(16px, 4vw, 24px);
+
+  /* ---------- Radii ---------- */
+  --v3-r-xs:  6px;
+  --v3-r-sm:  10px;
+  --v3-r:     14px;
+  --v3-r-md:  18px;
+  --v3-r-lg:  22px;
+  --v3-r-xl:  28px;
+  --v3-r-2xl: 36px;
+  --v3-r-pill: 999px;
+
+  /* ---------- Elevation (5-step, two-part contact + ambient + inset) ---------- */
+  --v3-e0: 0 1px 2px rgba(21,20,15,0.04);
+  --v3-e1: 0 1px 2px rgba(21,20,15,0.05), 0 1px 0 rgba(255,255,255,0.75) inset;
+  --v3-e2: 0 1px 2px rgba(21,20,15,0.05), 0 10px 24px -14px rgba(21,20,15,0.13), 0 1px 0 rgba(255,255,255,0.7) inset;
+  --v3-e3: 0 2px 4px rgba(21,20,15,0.06), 0 20px 44px -18px rgba(21,20,15,0.18), 0 1px 0 rgba(255,255,255,0.7) inset;
+  --v3-e4: 0 4px 8px rgba(21,20,15,0.07), 0 36px 72px -24px rgba(21,20,15,0.24), 0 1px 0 rgba(255,255,255,0.7) inset;
+
+  /* ---------- Glass material ---------- */
+  --v3-glass-bg:   color-mix(in srgb, var(--v3-bg) 78%, transparent);
+  --v3-glass-blur: blur(24px) saturate(1.7);
+  --v3-glass-border: color-mix(in srgb, #ffffff 55%, var(--v3-border));
+
+  /* ---------- Focus ring ---------- */
+  --v3-ring: 0 0 0 2px var(--v3-surface), 0 0 0 4px color-mix(in srgb, var(--v3-navy) 60%, transparent);
+
+  /* ---------- Motion ---------- */
+  --v3-ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --v3-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --v3-spring:      cubic-bezier(0.32, 0.72, 0, 1);
+  --v3-spring-soft: cubic-bezier(0.34, 1.3, 0.64, 1);  /* gentle overshoot */
+  --v3-dur-1: 140ms;
+  --v3-dur-2: 220ms;
+  --v3-dur-3: 360ms;
+  --v3-dur-4: 520ms;
+  --v3-dur-5: 680ms;
+}
+
+/* ---------- Dark mode (warm navy-charcoal, never OLED black) ---------- */
+.v3-dark {
+  --v3-bg:        #11151d;
+  --v3-bg-2:      #161b25;
+  --v3-bg-sunk:   #0d1118;
+  --v3-surface:   #1c222e;
+  --v3-surface-2: #232a38;
+  --v3-surface-3: #2d3543;
+  --v3-border:    #303849;
+  --v3-border-2:  #41495c;
+  --v3-border-3:  #555e72;
+
+  --v3-ink:    #f2efe5;
+  --v3-ink-2:  #cecabd;
+  --v3-ink-3:  #989284;
+  --v3-ink-4:  #6f6a5e;
+
+  --v3-navy:      oklch(0.72 0.085 264);
+  --v3-navy-soft: oklch(0.66 0.080 264);
+  --v3-gold:      oklch(0.80 0.110 85);
+  --v3-gold-soft: oklch(0.86 0.090 85);
+  --v3-crimson:   oklch(0.66 0.140 20);
+  --v3-crimson-soft: oklch(0.74 0.130 20);
+
+  --v3-ok:   oklch(0.74 0.110 155);
+  --v3-warn: oklch(0.80 0.110 78);
+  --v3-err:  oklch(0.70 0.150 25);
+  --v3-info: oklch(0.74 0.090 235);
+
+  --v3-cs: oklch(0.78 0.085 259);
+  --v3-ct: oklch(0.80 0.080 78);
+  --v3-cb: oklch(0.80 0.075 192);
+  --v3-ca: oklch(0.78 0.080 12);
+  --v3-ce: oklch(0.79 0.090 305);
+
+  --v3-glass-bg: color-mix(in srgb, var(--v3-bg) 72%, transparent);
+  --v3-glass-border: color-mix(in srgb, #ffffff 12%, var(--v3-border));
+
+  --v3-e0: 0 1px 2px rgba(0,0,0,0.30);
+  --v3-e1: 0 1px 2px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --v3-e2: 0 1px 2px rgba(0,0,0,0.30), 0 12px 28px -16px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --v3-e3: 0 2px 4px rgba(0,0,0,0.32), 0 24px 52px -20px rgba(0,0,0,0.66), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --v3-e4: 0 4px 8px rgba(0,0,0,0.34), 0 40px 80px -26px rgba(0,0,0,0.72), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --v3-ring: 0 0 0 2px var(--v3-surface), 0 0 0 4px color-mix(in srgb, var(--v3-navy) 70%, transparent);
+}
